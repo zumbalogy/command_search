@@ -1,14 +1,33 @@
+require('chronic')
+
+
+class String
+  # TODO: break these out into non-monkey-patching helpers.
+  def to_b
+    return true   if self == true   || strip =~ /(true|t|yes|y|1)$/i
+    return false  if self == false  || strip.blank? || self =~ /(false|f|no|n|0)$/i
+    include?('t') || include?('ye')
+  end
+end
+
+class Boolean
+  def to_b
+    self
+  end
+end
+
+
 class Searchable
   attr_accessor :search_model
   attr_accessor :alias_fields
   attr_accessor :search_fields
   attr_accessor :command_fields
 
-  def search(model, input)
+  def search(input)
     input = input.downcase
     inputs = clean_searches(input)
     query = build_tree(inputs)
-    model.where(query)
+    query
   end
 
   def clean_searches(input)
@@ -77,7 +96,7 @@ class Searchable
   end
 
   def clean_search(input)
-    input = input.remove(/^"|^'|'$|"$/)
+    input = input.gsub(/^"|^'|'$|"$/, '')
     input = input.gsub(/:"|:'/, ':')
     input = input.gsub(/\|"|\|'|'\||"\|/, '|')
     input
