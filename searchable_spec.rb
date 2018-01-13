@@ -11,47 +11,47 @@ end
 
 Mongoid.load!('./mongoid.yml', :test)
 
+class Hat
+  include ::Mongoid::Document
+  field :title,       type: String
+  field :description, type: String
+  field :state,       type: String
+  field :tags,        type: String
+  field :starred,     type: Boolean
+  field :child_id,    type: String
+  field :feathers,    type: Integer
+  field :fav_date,    type: Time
+  field :custom_h,    type: :hash
+  field :custom_s,    type: :string
+
+  def self.search(search)
+    q = Searchable.new
+    q.search_model = self
+    q.search_fields = [:title, :description, :tags]
+    q.alias_fields = {}
+    q.alias_fields[/^proc$/i] = proc { { search: 'tags:tags2|desk2', terminal: true } }
+    q.alias_fields[/^string$/i] = 'desk2'
+    q.alias_fields[/^hash$/i] = { search: 'tags:tags1' }
+    q.command_fields = {
+      child_id: Boolean,
+      title: String,
+      name: :title,
+      description: String,
+      desc: :description,
+      starred: Boolean,
+      star: :starred,
+      tags: String,
+      tag: :tags,
+      feathers: Integer,
+      fav_date: Time
+    }
+    Hat.where(q.search(search))
+  end
+end
+
 describe Searchable do
   before do
     Mongoid.purge!
-    class Hat
-      include ::Mongoid::Document
-      field :title,       type: String
-      field :description, type: String
-      field :state,       type: String
-      field :tags,        type: String
-      field :starred,     type: Boolean
-      field :child_id,    type: String
-      field :feathers,    type: Integer
-      field :fav_date,    type: Time
-      field :custom_h,    type: :hash
-      field :custom_s,    type: :string
-
-      def self.search(search)
-        q = Searchable.new
-        q.search_model = self
-        q.search_fields = [:title, :description, :tags]
-        q.alias_fields = {}
-        q.alias_fields[/^proc$/i] = proc { { search: 'tags:tags2|desk2', terminal: true } }
-        q.alias_fields[/^string$/i] = 'desk2'
-        q.alias_fields[/^hash$/i] = { search: 'tags:tags1' }
-        q.command_fields = {
-          child_id: Boolean,
-          title: String,
-          name: :title,
-          description: String,
-          desc: :description,
-          starred: Boolean,
-          star: :starred,
-          tags: String,
-          tag: :tags,
-          feathers: Integer,
-          fav_date: Time
-        }
-        Hat.where(q.search(search))
-      end
-    end
-
     Hat.create(title: 'name name1 1')
     Hat.create(title: 'name name2 2', description: 'desk desk1 1')
     Hat.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')

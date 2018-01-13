@@ -1,3 +1,13 @@
+GIT
+  remote: https://github.com/mongoid-rspec/mongoid-rspec.git
+  revision: 472f1460c23d880f1f9243854de1ea5d6daaa837
+  specs:
+    mongoid-rspec (4.0.0.pre.alpha1)
+      activesupport (>= 3.0.0)
+      mongoid (>= 2.0)
+      mongoid-compatibility
+      rspec (~> 3.3)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -47,10 +57,6 @@ GEM
     mongoid-compatibility (0.5.1)
       activesupport
       mongoid (>= 2.0)
-    mongoid-rspec (1.10.0)
-      mongoid (>= 3.0.1)
-      rake
-      rspec (>= 2.14)
     mongoid_orderable (5.1.0)
       mongoid (>= 3.0.0)
       mongoid-compatibility
@@ -109,7 +115,7 @@ PLATFORMS
 DEPENDENCIES
   chronic
   mongoid
-  mongoid-rspec
+  mongoid-rspec!
   mongoid_orderable
   pry
   rspec
