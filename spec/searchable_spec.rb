@@ -1,10 +1,12 @@
-load('./searchable.rb')
+load(__dir__ + '/../lib/searchable.rb')
+
 require('rspec')
 require('mongoid')
 require('rails/mongoid')
 
 require('pry')
 
+# break this into a spec helper maybe
 RSpec.configure do |config|
   config.expect_with(:rspec) { |c| c.syntax = :should }
 end
@@ -30,8 +32,8 @@ class Hat
     q.search_fields = [:title, :description, :tags]
     q.alias_fields = {}
     q.alias_fields[/^proc$/i] = proc { { search: 'tags:tags2|desk2', terminal: true } }
-    q.alias_fields[/^string$/i] = 'desk2'
     q.alias_fields[/^hash$/i] = { search: 'tags:tags1' }
+    q.alias_fields[/^string$/i] = 'desk2'
     q.command_fields = {
       child_id: Boolean,
       title: String,
@@ -73,6 +75,7 @@ describe Searchable do
     Hat.create(title: 'bar', starred: true)
     Hat.create(title: 'bar 2', starred: false)
     Hat.search('starred:true').count.should == 2
+    Hat.search('starred:t').count.should == 2
     Hat.search('starred:false').count.should == 1
   end
 
@@ -120,6 +123,23 @@ describe Searchable do
     Hat.search('name').count.should == 6
     Hat.search('same_name').count.should == 2
   end
+
+  it 'should not be case sensitive' do
+    Hat.search('name1').count.should == 1
+    Hat.search('Name1').count.should == 1
+    Hat.search('name').count.should == 6
+    Hat.search('NAME').count.should == 6
+    Hat.search('same_name').count.should == 2
+    Hat.search('samE_NaMe').count.should == 2
+  end
+
+  # it 'should be able to do case sensitive searches' do
+  #   Hat.create(title: 'fQQ')
+  #   Hat.search('title:fqq').count.should == 1
+  #   Hat.search('title:fQQ').count.should == 1
+  #   Hat.search('title:"fQQ"').count.should == 1
+  #   Hat.search('title:"fqq"').count.should == 0
+  # end
 
   it 'should be able to find things across fields' do
     Hat.search('name3 tags1').count.should == 1

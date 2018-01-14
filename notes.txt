@@ -1,0 +1,66 @@
+"hello"
+{general_search: "hello"}
+{or => {foo => /hello/}, {bar => /hello/}}
+
+
+"-hello"
+{general_search: "hello", negate: true}
+{and => {foo.not => /hello/}, {bar.not => /hello/}}
+
+"red blue"
+{type: and, nest: [{general_search: "red"}, {general_search: "blue"}]
+{and =>
+  {or => {foo => /red/}, {bar => /red/}}
+  {or => {foo => /blue/}, {bar => /blue/}}}
+
+"red|blue"
+{type: or, nest: [{general_search: "red"}, {general_search: "red"}]}
+{or =>
+  {or => {foo => /red/}, {bar => /red/}}
+  {or => {foo => /blue/}, {bar => /blue/}}}
+# and this could be optomized to a single OR with 4 possibilities
+
+"(A|B) (C|D)"
+{type: and, nest: [{type: or, nest: [{general_search: "A"}, {general_search: "B"}]}
+                   {type: or, nest: [{general_search: "C"}, {general_search: "D"}]}]
+{and =>
+  {or =>
+     {or => {foo => /A/}, {bar => /A/}}
+     {or => {foo => /B/}, {bar => /B/}}}
+  {or =>
+     {or => {foo => /C/}, {bar => /C/}}
+     {or => {foo => /D/}, {bar => /D/}}}S
+
+
+
+"(A|B)|(C|D)" -> "A|B|C|D"
+"(A B) (C D)" -> "A B C D"
+
+
+"(A B)|(C D)"
+{type: or, nest: [{type: and, nest: [{general_search: "A"}, {general_search: "B"}]},
+                  {type: and, nest: [{general_search: "C"}, {general_search: "D"}]}]}
+{and =>
+  {or =>
+     {or => {foo => /A/}, {bar => /A/}}
+     {or => {foo => /B/}, {bar => /B/}}}
+  {or =>
+     {or => {foo => /C/}, {bar => /C/}}
+     {or => {foo => /D/}, {bar => /D/}}}}
+
+
+"hi|-lo red:red 'fo ba' re>=da"
+["hi|-lo", "red:ded", "'fo ba'", "re>=da"]
+[["hi", "|", "-lo"], ["red:ded"], ["fo ba"], ["re", ">=", "da"]]
+[["hi", "|", ["-", "lo"]], ["red:ded"], ["fo ba"], ["re", ">=", "da"]]
+
+
+
+
+# this syntax is now not allowed as a negation.
+# it would make having negative values hard to look for.
+# split_parts("foo:-bar")
+
+
+# TODO: test negative numbers.
+# TODO: test sending just : or - or => alone. like searches made on accident or in bad faith

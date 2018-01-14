@@ -1,22 +1,5 @@
 require('chronic')
 
-
-class String
-  # TODO: break these out into non-monkey-patching helpers.
-  def to_b
-    return true   if self == true   || strip =~ /(true|t|yes|y|1)$/i
-    return false  if self == false  || strip.blank? || self =~ /(false|f|no|n|0)$/i
-    include?('t') || include?('ye')
-  end
-end
-
-class Boolean
-  def to_b
-    self
-  end
-end
-
-
 class Searchable
   attr_accessor :search_model
   attr_accessor :alias_fields
@@ -24,32 +7,58 @@ class Searchable
   attr_accessor :command_fields
 
   def search(input)
-    input = input.downcase
-    inputs = clean_searches(input)
-    query = build_tree(inputs)
-    query
+    # inputs = clean_searches(input)
+    # build_tree(inputs)
+
+
+    parts = split_into_parts(input)
+    assigned_parts = parts.map(&method(:assign_part))
   end
 
-  def clean_searches(input)
-    input = input.squeeze(' ').strip
-    # scanner eats anything up to a single or double quote. or
-    #   eats from a double to a double, or a single to a single
-    scanner = /[^\s"']+|"[^"]*"|'[^']*'/
-    split_searches = input.scan(scanner)
-    searches = []
-    while split_searches.any?
-      if split_searches.first[/^[<>\|:]$/] || split_searches.first[/^[<>\|:].+[<>\|:]$/]
-        searches.push([searches.pop, split_searches.shift(2).compact.join].compact.join)
-      elsif split_searches.first[/[<>\|:]$/]
-        searches.push(split_searches.shift(2).compact.join)
-      elsif split_searches.first[/^[<>\|:]/]
-        searches.push([searches.pop, split_searches.shift].compact.join)
-      else
-        searches.push(split_searches.shift)
-      end
-    end
-    searches = searches.map(&method(:clean_search))
-    searches
+
+  # def build_part(part)
+  #   search = part[:search]
+  #   return build_or_parts(part) if search[/.+\|.+/]
+  #   if search[/^-.+/]
+  #     part[:search] = search[1..-1]
+  #     part[:negate] = true
+  #   end
+  #   if alias_fields.any? { |k, _v| k.match(part[:search]) }
+  #     return alias_part(part) unless part[:terminal]
+  #   end
+  #   build_search(part)
+  # end
+
+  # def build_search(input)
+  #   return build_compare_search(input) if input[:search][/^\w+[<>]=?.+/]
+  #   return build_command(input) if is_command?(input)
+  #   regex = /#{Regexp.quote(input[:search])}/im
+  #   mapper = proc { |f| { f => regex } }
+  #   mapper = proc { |f| { f.to_sym.not => regex } } if input[:negate]
+  #   queries = search_fields.map(&mapper)
+  #   return queries.first if queries.length == 1
+  #   return { '$and' => queries } if input[:negate]
+  #   { '$or' => queries }
+  # end
+
+  def deep_map(list, &fn)
+    list.map { |x| x.is_a?(Array) ? deep_map(x, &fn) : fn.call(x) }
+  end
+
+
+  def assign_part(part)
+
+  end
+
+  def split_parts(initial_input)
+    space_quote_scanner = /[^\s"']+|"[^"]*"|'[^']*'/
+    ops_scanner = /\||[<>]={0,1}|[\w\s\-:]+/
+    prefix_scanner = /^\-|[\w\s:]+/
+    parts = initial_input.strip.scan(space_quote_scanner)
+    parts = parts.map { |p| p[/"$|'$/] ? p.squeeze(' ') : p }
+    parts = parts.map { |p| p.scan(ops_scanner) }
+    parts = deep_map(parts) { |p| p[/^-/] ? p.scan(prefix_scanner) : p }
+    parts
   end
 
   def build_tree(inputs)
@@ -177,8 +186,16 @@ class Searchable
     field_details(type)
   end
 
+  def cast_bool(input)
+    return input if input.class == Boolean
+    return true if input == true || input.strip =~ /(true|t|yes|y|1)$/i
+    return false if input == false || input.strip.blank? || input =~ /(false|f|no|n|0)$/i
+    # input.include?('t') || input.include?('ye')
+    # maybe throw error here or such
+  end
+
   def build_bool_command(field, option, negate = false)
-    option = option.to_b
+    option = cast_bool(option)
     option = !option if negate
     type = search_model.fields[field.to_s].type
     return { field => option } if type == Mongoid::Boolean
