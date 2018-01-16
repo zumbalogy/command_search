@@ -35,11 +35,9 @@ class Searchable
   def split_parts(initial_input)
     space_quote_scanner = /"[^"]*"|'[^']*'|[^\s]+/
     or_scanner = /\||[^|]+/
-    # comp_scanner = /[<>]={0,1}|[^<>=]+/
     prefix_scanner = /^\-|.+/
     parts = initial_input.strip.scan(space_quote_scanner)
     parts = deep_map(parts) { |x| my_scan(x, or_scanner) }
-    # parts = deep_map(parts) { |x| my_scan(x, comp_scanner) }
     parts = deep_map(parts) { |x| my_scan(x, prefix_scanner) }
     parts
   end
