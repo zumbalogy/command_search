@@ -7,57 +7,40 @@ class Searchable
   attr_accessor :command_fields
 
   def search(input)
-    # inputs = clean_searches(input)
-    # build_tree(inputs)
-
-
-    parts = split_into_parts(input)
+    parts = split_parts(input)
     assigned_parts = parts.map(&method(:assign_part))
   end
-
-
-  # def build_part(part)
-  #   search = part[:search]
-  #   return build_or_parts(part) if search[/.+\|.+/]
-  #   if search[/^-.+/]
-  #     part[:search] = search[1..-1]
-  #     part[:negate] = true
-  #   end
-  #   if alias_fields.any? { |k, _v| k.match(part[:search]) }
-  #     return alias_part(part) unless part[:terminal]
-  #   end
-  #   build_search(part)
-  # end
-
-  # def build_search(input)
-  #   return build_compare_search(input) if input[:search][/^\w+[<>]=?.+/]
-  #   return build_command(input) if is_command?(input)
-  #   regex = /#{Regexp.quote(input[:search])}/im
-  #   mapper = proc { |f| { f => regex } }
-  #   mapper = proc { |f| { f.to_sym.not => regex } } if input[:negate]
-  #   queries = search_fields.map(&mapper)
-  #   return queries.first if queries.length == 1
-  #   return { '$and' => queries } if input[:negate]
-  #   { '$or' => queries }
-  # end
 
   def deep_map(list, &fn)
     list.map { |x| x.is_a?(Array) ? deep_map(x, &fn) : fn.call(x) }
   end
 
+  def my_scan(str, reg)
+    scanned = str.scan(reg)
+    return str if scanned.count == 1
+    scanned
+  end
 
   def assign_part(part)
-
+    specials = %w(< <= | - >= >)
+    if part.is_a?(String)
+      return { type: :compare, search: part } if part.split(':')[1]
+      return { type: :command, search: part } if part.split(/[<>]/)[1]
+      return { type: :general, search: part }
+    end
+    return { type: :not, nest: part.drop(1).map(&method(:assign_part)) } if part.first == '-'
+    return { type: :or, nest: (part - ['|']).map(&method(:assign_part)) } if part.include?('|')
   end
 
   def split_parts(initial_input)
-    space_quote_scanner = /[^\s"']+|"[^"]*"|'[^']*'/
-    ops_scanner = /\||[<>]={0,1}|[\w\s\-:]+/
-    prefix_scanner = /^\-|[\w\s:]+/
+    space_quote_scanner = /"[^"]*"|'[^']*'|[^\s]+/
+    or_scanner = /\||[^|]+/
+    # comp_scanner = /[<>]={0,1}|[^<>=]+/
+    prefix_scanner = /^\-|.+/
     parts = initial_input.strip.scan(space_quote_scanner)
-    parts = parts.map { |p| p[/"$|'$/] ? p.squeeze(' ') : p }
-    parts = parts.map { |p| p.scan(ops_scanner) }
-    parts = deep_map(parts) { |p| p[/^-/] ? p.scan(prefix_scanner) : p }
+    parts = deep_map(parts) { |x| my_scan(x, or_scanner) }
+    # parts = deep_map(parts) { |x| my_scan(x, comp_scanner) }
+    parts = deep_map(parts) { |x| my_scan(x, prefix_scanner) }
     parts
   end
 
@@ -104,13 +87,6 @@ class Searchable
     build_part(part)
   end
 
-  def clean_search(input)
-    input = input.gsub(/^"|^'|'$|"$/, '')
-    input = input.gsub(/:"|:'/, ':')
-    input = input.gsub(/\|"|\|'|'\||"\|/, '|')
-    input
-  end
-
   def build_search(input)
     return build_compare_search(input) if input[:search][/^\w+[<>]=?.+/]
     return build_command(input) if is_command?(input)
@@ -121,12 +97,6 @@ class Searchable
     return queries.first if queries.length == 1
     return { '$and' => queries } if input[:negate]
     { '$or' => queries }
-  end
-
-  def is_command?(search:, negate:, terminal:)
-    field, option = search.split(':')
-    return false unless option
-    true
   end
 
   def build_compare_search(search:, negate:, terminal:)

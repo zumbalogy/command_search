@@ -55,6 +55,14 @@
 [["hi", "|", ["-", "lo"]], ["red:ded"], ["fo ba"], ["re", ">=", "da"]]
 
 
+"hi|-lo red:red 'fo ba' re>=da"
+[{:type=>:or,
+  :nest=>
+   [{:type=>:general, :search=>"hi"},
+    {:type=>:not, :nest=>[{:type=>:general, :search=>"lo"}]}]},
+ {:type=>:compare, :search=>"red:red"},
+ {:type=>:general, :search=>"'fo ba'"},
+ {:type=>:command, :search=>"re>=da"}]
 
 
 # this syntax is now not allowed as a negation.
@@ -62,5 +70,21 @@
 # split_parts("foo:-bar")
 
 
+# ("-5<x<-10")
+# will not be valid.
+# it would  have to be two statements, -5<x and x<-10. could allow chaining in future
+# it would also have to be x>=-5 if you want to use a negative number
+# chaining ORs is fine. if you want a negative number outside a comparison
+# you have to quote it.
+# could consider all -5 fine, and  - 5 to be "not five"
+
+
+
+
 # TODO: test negative numbers.
 # TODO: test sending just : or - or => alone. like searches made on accident or in bad faith
+# TODO: maybe support a real regex type. using that could mean certian things are not needed.
+
+# sample funny (or previosuly problematic) syntax:
+|b
+-5<x<-10
