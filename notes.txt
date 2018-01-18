@@ -69,7 +69,6 @@
 # it would make having negative values hard to look for.
 # split_parts("foo:-bar")
 
-
 # ("-5<x<-10")
 # will not be valid.
 # it would  have to be two statements, -5<x and x<-10. could allow chaining in future
@@ -88,3 +87,5 @@
 # sample funny (or previosuly problematic) syntax:
 |b
 -5<x<-10
+-(a b)
+a -(b c)

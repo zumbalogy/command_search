@@ -22,7 +22,6 @@ class Searchable
   end
 
   def assign_part(part)
-    specials = %w(< <= | - >= >)
     if part.is_a?(String)
       return { type: :compare, search: part } if part.split(':')[1]
       return { type: :command, search: part } if part.split(/[<>]/)[1]
@@ -30,15 +29,22 @@ class Searchable
     end
     return { type: :not, nest: part.drop(1).map(&method(:assign_part)) } if part.first == '-'
     return { type: :or, nest: (part - ['|']).map(&method(:assign_part)) } if part.include?('|')
+    return { type: :and, nest: part.map(&method(:assign_part)) }
   end
 
   def split_parts(initial_input)
-    space_quote_scanner = /"[^"]*"|'[^']*'|[^\s]+/
+    paren_matcher = /^\(.+\)$/
+    paren_scanner = /\((?>[^)(]+|\g<0>)*\)|[^()\s]+/
+    space_scanner = /"[^"]*"|'[^']*'|[^\s]+/
     or_scanner = /\||[^|]+/
-    prefix_scanner = /^\-|.+/
-    parts = initial_input.strip.scan(space_quote_scanner)
+    not_scanner = /^\-|.+/
+    parts = initial_input.strip.scan(/#{space_scanner}|#{paren_scanner}/)
+    parts = parts.map do |x|
+      next x unless x[paren_matcher]
+      split_parts(x[1..-2])
+    end
     parts = deep_map(parts) { |x| my_scan(x, or_scanner) }
-    parts = deep_map(parts) { |x| my_scan(x, prefix_scanner) }
+    parts = deep_map(parts) { |x| my_scan(x, not_scanner) }
     parts
   end
 
