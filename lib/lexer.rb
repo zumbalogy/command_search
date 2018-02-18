@@ -6,8 +6,6 @@ class Lexer
   # data structure.
 
   # This currently does not support numbers with commas in them
-
-  # TODO: add the greater than and  less than syntax
   class << self
 
     def char_type(char)
