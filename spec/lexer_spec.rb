@@ -141,12 +141,33 @@ describe Lexer do
     ]
   end
 
-  # it 'should handle comparisons' do
-  #   sp('red>5').should == ["red>5"]
-  #   sp('blue<=green').should == ["blue<=green"]
-  #   sp('a<b b>=-1').should == ["a<b", "b>=-1"]
-  #   # sp('1<5<10').should == ["1<5<10"]
-  # end
+  it 'should handle comparisons' do
+    Lexer.lex('red>5').should == [
+      {:type=>:str, :value=>"red"},
+      {:type=>:compare, :value=>">"},
+      {:type=>:number, :value=>"5"}
+    ]
+    Lexer.lex('blue<=green').should == [
+      {:type=>:str, :value=>"blue"},
+      {:type=>:compare, :value=>"<="},
+      {:type=>:str, :value=>"green"}
+    ]
+    Lexer.lex('a<b c>=-1').should == [
+      {:type=>:str, :value=>"a"},
+      {:type=>:compare, :value=>"<"},
+      {:type=>:str, :value=>"b"},
+      {:type=>:str, :value=>"c"},
+      {:type=>:compare, :value=>">="},
+      {:type=>:number, :value=>"-1"}
+    ]
+    Lexer.lex('a<=b<13').should == [
+      {:type=>:str, :value=>"a"},
+      {:type=>:compare, :value=>"<="},
+      {:type=>:str, :value=>"b"},
+      {:type=>:compare, :value=>"<"},
+      {:type=>:number, :value=>"13"}
+    ]
+      end
 
   it 'should handle parens' do
     Lexer.lex('(a)').should == [

@@ -16,6 +16,8 @@ class Lexer
         :quote
       when /[\(\)]/
         :paren
+      when /[<>]/
+        :compare
       when /\s/
         :space
       when /\d/
@@ -26,6 +28,8 @@ class Lexer
         :minus
       when ':'
         :colon
+      when '='
+        :equal
       when '|'
         :pipe
       else
@@ -88,6 +92,12 @@ class Lexer
         i = (out.map { |x| x[:type] }).each_cons(3).find_index([:str, :minus, :str])
         val = out[i..i + 2].map { |x| x[:value] }.join()
         out[i..i + 2] = { type: :str, value: val }
+      end
+
+      while (out.map { |x| x[:type] }).each_cons(2).find_index([:compare, :equal])
+        i = (out.map { |x| x[:type] }).each_cons(2).find_index([:compare, :equal])
+        val = out[i..i + 1].map { |x| x[:value] }.join()
+        out[i..i + 1] = { type: :compare, value: val }
       end
 
       while (out.map { |x| x[:type] }).each_cons(2).find_index([:minus, :number])
