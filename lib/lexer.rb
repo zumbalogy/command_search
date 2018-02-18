@@ -1,11 +1,20 @@
 class Lexer
+
+  # This class takes a string and returns it tokenized into
+  # atoms/words, along with their type. It is coupled to the
+  # parser only in the choice of char_types and basic output
+  # data structure.
+
+  # This currently does not support numbers with commas in them
+
+  # TODO: add the greater than and  less than syntax
   class << self
 
     def char_type(char)
       case char
-      when /[\"|\']/
+      when /[\"\']/
         :quote
-      when /[\(|\)]/
+      when /[\(\)]/
         :paren
       when /\s/
         :space
@@ -20,7 +29,7 @@ class Lexer
       when '|'
         :pipe
       else
-        :char
+        :str
       end
     end
 
@@ -36,11 +45,22 @@ class Lexer
       lst.each_index.select { |i| lst[i][:type] == match }
     end
 
+    def value_indices(match, lst)
+      lst.each_index.select { |i| lst[i][:value] == match }
+    end
+
     def full_tokens(char_token_list)
       out = char_token_list.clone()
 
-      while type_indices(:quote, out).length >= 2
-        (a, b) = type_indices(:quote, out).first(2)
+      while value_indices("'", out).length >= 2
+        (a, b) = value_indices("'", out).first(2)
+        sub = out[a..b]
+        vals = sub.map { |i| i[:value] }
+        out[a..b] = { type: :quoted_str, value: vals.join() }
+      end
+
+      while value_indices('"', out).length >= 2
+        (a, b) = value_indices('"', out).first(2)
         sub = out[a..b]
         vals = sub.map { |i| i[:value] }
         out[a..b] = { type: :quoted_str, value: vals.join() }
@@ -64,14 +84,32 @@ class Lexer
         out[i..i + 2] = { type: :number, value: val }
       end
 
+      while (out.map { |x| x[:type] }).each_cons(3).find_index([:str, :minus, :str])
+        i = (out.map { |x| x[:type] }).each_cons(3).find_index([:str, :minus, :str])
+        val = out[i..i + 2].map { |x| x[:value] }.join()
+        out[i..i + 2] = { type: :str, value: val }
+      end
+
       while (out.map { |x| x[:type] }).each_cons(2).find_index([:minus, :number])
         i = (out.map { |x| x[:type] }).each_cons(2).find_index([:minus, :number])
         val = out[i..i + 1].map { |x| x[:value] }.join()
         out[i..i + 1] = { type: :number, value: val }
       end
 
-      while consecutive(type_indices(:char, out)).any?
-        is = consecutive(type_indices(:char, out)).first
+      while (out.map { |x| x[:type] }).each_cons(2).find_index([:str, :number])
+        i = (out.map { |x| x[:type] }).each_cons(2).find_index([:str, :number])
+        val = out[i..i + 1].map { |x| x[:value] }.join()
+        out[i..i + 1] = { type: :str, value: val }
+      end
+
+      while (out.map { |x| x[:type] }).each_cons(2).find_index([:number, :str])
+        i = (out.map { |x| x[:type] }).each_cons(2).find_index([:number, :str])
+        val = out[i..i + 1].map { |x| x[:value] }.join()
+        out[i..i + 1] = { type: :str, value: val }
+      end
+
+      while consecutive(type_indices(:str, out)).any?
+        is = consecutive(type_indices(:str, out)).first
         val = is.map { |i| out[i][:value] }.join()
         out[is.first..is.last] = { type: :str, value: val }
       end
@@ -91,13 +129,3 @@ class Lexer
 
   end
 end
-
-
-## # some dummy test code
-
-# str = "hello there 'sam bob    joe' -5.2 - (hello the) 234 324.3
-
-# sdf"
-
-# puts str
-# puts Lexer.lex(str)
