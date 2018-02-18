@@ -1,11 +1,4 @@
 class Parser
-
-  ## order of operations:
-  # group parens
-  # negate
-  # colons
-  # ors
-
   class << self
 
     def parens_rindex(input)
@@ -18,7 +11,7 @@ class Parser
     end
 
     def group_parens(input)
-      out = input.clone()
+      out = input
       while parens_rindex(out)
         (a, b) = parens_rindex(out)
         val = out[(a + 1)..(b - 1)]
@@ -27,51 +20,36 @@ class Parser
       out
     end
 
-    def group_negate(input)
-      out = input.clone()
+    def cluster(type, input, cluster_type = :binary)
+      binary = cluster_type == :binary
+      out = input
       out = out[:value] while out.is_a?(Hash)
-      while out.index { |x| x[:type] == :minus }
-        i = out.index { |x| x[:type] == :minus }
-        val = out[i + 1]
-        out[i..(i + 1)] = { type: :nest, nest_type: :minus, value: val }
+      i = nil
+      while i = out.index { |x| x[:type] == type }
+        val = [out[i + 1]]
+        val.unshift(out[i - 1]) if binary
+        front_offset = 0
+        front_offset = 1 if binary
+        out[(i - front_offset)..(i + 1)] = {
+          type: :nest,
+          nest_type: type,
+          nest_op: out[i],
+          value: val
+        }
       end
       out.map do |x|
-        x[:value] = group_negate(x[:value]) if x[:type] == :nest
-        x
-      end
-    end
-
-    def group_colons(input)
-      out = input.clone()
-      while out.index { |x| x[:type] == :colon }
-        i = out.index { |x| x[:type] == :colon }
-        val = [out[i - 1], out[i + 1]]
-        out[(i - 1)..(i + 1)] = { type: :nest, nest_type: :colon, value: val }
-      end
-      out.map do |x|
-        x[:value] = group_colons(x[:value]) if x[:type] == :nest
-        x
-      end
-    end
-
-    def group_pipes(input)
-      out = input.clone()
-      while out.index { |x| x[:type] == :pipe }
-        i = out.index { |x| x[:type] == :pipe }
-        val = [out[i - 1], out[i + 1]]
-        out[(i - 1)..(i + 1)] = { type: :nest, nest_type: :pipe, value: val }
-      end
-      out.map do |x|
-        x[:value] = group_colons(x[:value]) if x[:type] == :nest
+        next x unless x[:type] == :nest
+        x[:value] = cluster(type, x[:value], cluster_type)
         x
       end
     end
 
     def parse(input)
       parens = group_parens(input)
-      negate = group_negate(parens)
-      colons = group_colons(negate)
-      pipes = group_pipes(colons)
+      negate = cluster(:minus, parens, :prefix)
+      colons = cluster(:colon, negate)
+      compare = cluster(:compare, colons)
+      pipes = cluster(:pipe, compare)
       pipes
     end
   end

@@ -68,12 +68,6 @@ class Lexer
         out[a..b] = { type: :quoted_str, value: vals.join() }
       end
 
-      # while consecutive(type_indices(:space, out)).any?
-      #   is = consecutive(type_indices(:space, out)).first
-      #   val = is.map { |i| out[i][:value] }.join()
-      #   out[is.first..is.last] = { type: :space, value: val }
-      # end
-
       while consecutive(type_indices(:number, out)).any?
         is = consecutive(type_indices(:number, out)).first
         val = is.map { |i| out[i][:value] }.join()
