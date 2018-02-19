@@ -1,7 +1,6 @@
 load(__dir__ + '/../lib/lexer.rb')
 load(__dir__ + '/../lib/parser.rb')
 require('rspec')
-require('pry')
 
 # break this into a spec helper maybe
 RSpec.configure do |config|
@@ -13,69 +12,237 @@ def parse(x)
   Parser.parse(tokens)
 end
 
-require 'clipboard'
-def gen(x)
-  out = "parse('#{x}').should == #{parse(x)}"
-  Clipboard.copy(out)
-  out
-end
-
 describe Parser do
-  it 'should be able to split basic parts on spaces' do
+  it 'should not parse simple strings more than the lexer' do
+    Lexer.lex('foo 1 2 a b').should == parse('foo 1 2 a b')
+    Lexer.lex('red "blue green"').should == parse('red "blue green"')
+    parse('red "blue green"').should == Parser.parse(parse('red "blue green"'))
     parse('foo').should == [{:type=>:str, :value=>"foo"}]
     parse('f1oo').should == [{:type=>:str, :value=>"f1oo"}]
-    # sp('f1oo').should == ['f1oo']
-    # sp('a b 1 foo').should == ['a', 'b', '1', 'foo']
-    # sp('1 1 1').should == ['1', '1', '1']
-    # sp('1 2 3').should == ['1', '2', '3']
+    parse('a b 3 c').should == [
+      {:type=>:str, :value=>"a"},
+      {:type=>:str, :value=>"b"},
+      {:type=>:number, :value=>"3"},
+      {:type=>:str, :value=>"c"}]
   end
 
-  # it 'should handle OR statements' do
-  #   sp('a|b').flatten.should == ['a', '|', 'b']
-  #   sp('a|b c|d').should == [['a', '|', 'b'], ['c', '|', 'd']]
-  #   sp('a|b|c').should == [['a', '|', 'b', '|', 'c']]
-  # end
+  it 'should handle parens' do
+    parse('(a)').should == [
+      {:type=>:nest,
+       :nest_type=>:paren,
+       :value=>[{:type=>:str, :value=>"a"}]}]
+    parse('(foo 1 2)').should == [
+      {:type=>:nest,
+       :nest_type=>:paren,
+       :value=>[
+         {:type=>:str, :value=>"foo"},
+         {:type=>:number, :value=>"1"},
+         {:type=>:number, :value=>"2"}]}]
+    parse('a (red 1 x) b').should == [
+      {:type=>:str, :value=>"a"},
+      {:type=>:nest,
+       :nest_type=>:paren,
+       :value=>[
+         {:type=>:str, :value=>"red"},
+         {:type=>:number, :value=>"1"},
+         {:type=>:str, :value=>"x"}]},
+      {:type=>:str, :value=>"b"}]
+    parse('a (x (foo bar) y) b').should == [
+      {:type=>:str, :value=>"a"},
+      {:type=>:nest,
+       :nest_type=>:paren,
+       :value=>
+       [{:type=>:str, :value=>"x"},
+        {:type=>:nest,
+         :nest_type=>:paren,
+         :value=>[
+           {:type=>:str, :value=>"foo"},
+           {:type=>:str, :value=>"bar"}]},
+        {:type=>:str, :value=>"y"}]},
+      {:type=>:str, :value=>"b"}]
+    parse('1 (2 (3 (4 (5))) 6) 7').should == [
+      {:type=>:number, :value=>"1"},
+      {:type=>:nest,
+       :nest_type=>:paren,
+       :value=>
+       [{:type=>:number, :value=>"2"},
+        {:type=>:nest,
+         :nest_type=>:paren,
+         :value=>
+         [{:type=>:number, :value=>"3"},
+          {:type=>:nest,
+           :nest_type=>:paren,
+           :value=>
+           [{:type=>:number, :value=>"4"},
+            {:type=>:nest,
+             :nest_type=>:paren,
+             :value=>[{:type=>:number, :value=>"5"}]}]}]},
+        {:type=>:number, :value=>"6"}]},
+      {:type=>:number, :value=>"7"}]
+  end
 
-  # it 'should handle negating' do
-  #   sp('-a').should == [['-', 'a']]
-  #   sp('-foo -bar').should == [['-', 'foo'], ['-', 'bar']]
-  #   sp('ab-cd').should == ['ab-cd']
-  # end
+  it 'should handle OR statements' do
+    parse('a|b').should == [
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>[{:type=>:str, :value=>"a"},
+                {:type=>:str, :value=>"b"}]}]
+    parse('a|1 2|b').should == [
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>[{:type=>:str, :value=>"a"},
+                {:type=>:number, :value=>"1"}]},
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>[{:type=>:number, :value=>"2"},
+                {:type=>:str, :value=>"b"}]}]
+    parse('a|b|3').should == [
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>
+       [{:type=>:nest,
+         :nest_type=>:pipe,
+         :nest_op=>"|",
+         :value=>[{:type=>:str, :value=>"a"},
+                  {:type=>:str, :value=>"b"}]},
+        {:type=>:number, :value=>"3"}]}]
+    parse('1.2|(x|yy)').should == [
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>
+       [{:type=>:number, :value=>"1.2"},
+        {:type=>:nest,
+         :nest_type=>:paren,
+         :value=>
+         [{:type=>:nest,
+           :nest_type=>:pipe,
+           :nest_op=>"|",
+           :value=>[{:type=>:str, :value=>"x"},
+                    {:type=>:str, :value=>"yy"}]}]}]}]
+  end
 
-  # it 'should handle commands' do
-  #   sp('foo:bar').should == ['foo:bar']
-  #   sp('foo:bar a:b c').should == ['foo:bar', 'a:b', 'c']
-  #   sp('1:2').should == ["1:2"]
-  # end
+  it 'should handle negating' do
+    parse('ab-dc').should == [{:type=>:str, :value=>"ab-dc"}]
+    parse('-12.023').should == [{:type=>:number, :value=>"-12.023"}]
+    parse('- -1').should == [
+      {:type=>:nest,
+       :nest_type=>:minus,
+       :nest_op=>"-",
+       :value=>[{:type=>:number, :value=>"-1"}]}]
+    parse('-a').should == [
+      {:type=>:nest,
+       :nest_type=>:minus,
+       :nest_op=>"-",
+       :value=>[{:type=>:str, :value=>"a"}]}]
+    parse('-foo bar').should == [
+      {:type=>:nest,
+       :nest_type=>:minus,
+       :nest_op=>"-",
+       :value=>[{:type=>:str, :value=>"foo"}]},
+      {:type=>:str, :value=>"bar"}]
+    parse('-(1 foo)').should == [
+      {:type=>:nest,
+       :nest_type=>:minus,
+       :nest_op=>"-",
+       :value=>[
+         {:type=>:nest,
+          :nest_type=>:paren,
+          :value=>[{:type=>:number, :value=>"1"},
+                   {:type=>:str, :value=>"foo"}]}]}]
+    parse('-(-1 2 -foo)').should == [
+      {:type=>:nest,
+       :nest_type=>:minus,
+       :nest_op=>"-",
+       :value=>[
+         {:type=>:nest,
+          :nest_type=>:paren,
+          :value=>[
+            {:type=>:number, :value=>"-1"},
+            {:type=>:number, :value=>"2"},
+            {:type=>:nest,
+             :nest_type=>:minus,
+             :nest_op=>"-",
+             :value=>[{:type=>:str, :value=>"foo"}]}]}]}]
+  end
 
-  # it 'should handle comparisons' do
-  #   sp('red>5').should == ["red>5"]
-  #   sp('blue<=green').should == ["blue<=green"]
-  #   sp('a<b b>=-1').should == ["a<b", "b>=-1"]
-  #   # sp('1<5<10').should == ["1<5<10"]
-  # end
+  it 'should handle commands' do
+    parse('foo:bar').should == [
+      {:type=>:nest,
+       :nest_type=>:colon,
+       :nest_op=>":",
+       :value=>[{:type=>:str, :value=>"foo"},
+                {:type=>:str, :value=>"bar"}]}]
 
-  # # it 'should handle negative numbers' do
-  # #   pending
-  # #   sp('-5').should_not == [["-", "5"]]
-  # # end
+    parse('foo:bar a:b c').should == [
+      {:type=>:nest,
+       :nest_type=>:colon,
+       :nest_op=>":",
+       :value=>[{:type=>:str, :value=>"foo"},
+                {:type=>:str, :value=>"bar"}]},
+      {:type=>:nest,
+       :nest_type=>:colon,
+       :nest_op=>":",
+       :value=>[{:type=>:str, :value=>"a"},
+                {:type=>:str, :value=>"b"}]},
+      {:type=>:str, :value=>"c"}]
 
-  # it 'should handle quotes' do
-  #   sp("'-5'").should == ["'-5'"]
-  #   sp("a 'foo bar' b").should == ["a", "'foo bar'", "b"]
-  # end
+    parse('-a:b -(c d:e)').should == [
+      {:type=>:nest,
+       :nest_type=>:minus,
+       :nest_op=>"-",
+       :value=>[
+         {:type=>:nest,
+          :nest_type=>:colon,
+          :nest_op=>":",
+          :value=>[{:type=>:str, :value=>"a"},
+                   {:type=>:str, :value=>"b"}]}]},
+      {:type=>:nest,
+       :nest_type=>:minus,
+       :nest_op=>"-",
+       :value=>[
+         {:type=>:nest,
+          :nest_type=>:paren,
+          :value=>[
+            {:type=>:str, :value=>"c"},
+            {:type=>:nest,
+             :nest_type=>:colon,
+             :nest_op=>":",
+             :value=>[{:type=>:str, :value=>"d"},
+                      {:type=>:str, :value=>"e"}]}]}]}]
+  end
 
-  # it 'should handle parens' do
-  #   sp('(a)').should == [["a"]]
-  #   sp('(a foo)').should == [["a", "foo"]]
-  #   sp('a (foo bar) b').should == ["a", ["foo", "bar"], "b"]
-  # end
+  it 'should handle comparisons' do
+    parse('red>5').should == [
+      {:type=>:nest,
+       :nest_type=>:compare,
+       :nest_op=>">",
+       :value=>[{:type=>:str, :value=>"red"},
+                {:type=>:number, :value=>"5"}]}]
+    parse('foo<=-5').should == [
+      {:type=>:nest,
+       :nest_type=>:compare,
+       :nest_op=>"<=",
+       :value=>[{:type=>:str, :value=>"foo"},
+                {:type=>:number, :value=>"-5"}]}]
+    parse('a<b b>=-1').should == [
+      {:type=>:nest,
+       :nest_type=>:compare,
+       :nest_op=>"<",
+       :value=>[{:type=>:str, :value=>"a"},
+                {:type=>:str, :value=>"b"}]},
+      {:type=>:nest,
+       :nest_type=>:compare,
+       :nest_op=>">=",
+       :value=>[{:type=>:str, :value=>"b"},
+                {:type=>:number, :value=>"-1"}]}]
 
-  # it 'should handle nested parens' do
-  # end
-
-  # it 'should handle OR and NOT with parens' do
-  # end
+    # parse('1<5<10').should == ["1<5<10"]
+  end
 
   # it 'should handle wacky combinations' do
   # end

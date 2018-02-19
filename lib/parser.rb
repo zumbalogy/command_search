@@ -33,7 +33,7 @@ class Parser
         out[(i - front_offset)..(i + 1)] = {
           type: :nest,
           nest_type: type,
-          nest_op: out[i],
+          nest_op: out[i][:value],
           value: val
         }
       end
@@ -45,12 +45,13 @@ class Parser
     end
 
     def parse(input)
-      parens = group_parens(input)
-      negate = cluster(:minus, parens, :prefix)
-      colons = cluster(:colon, negate)
-      compare = cluster(:compare, colons)
-      pipes = cluster(:pipe, compare)
-      pipes
+      out = input
+      out = group_parens(out)
+      out = cluster(:colon, out)
+      out = cluster(:compare, out)
+      out = cluster(:minus, out, :prefix)
+      out = cluster(:pipe, out)
+      out
     end
   end
 end

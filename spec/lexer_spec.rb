@@ -1,6 +1,5 @@
 load(__dir__ + '/../lib/lexer.rb')
 require('rspec')
-require('pry')
 
 # break this into a spec helper maybe
 RSpec.configure do |config|
