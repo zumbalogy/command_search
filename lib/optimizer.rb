@@ -1,32 +1,30 @@
 class Optimizer
   class << self
-    # '()' => ''
-    # '-()' => ''
-    # '(a)' => a
-    # 'a (b c)' => 'a b c'
-    # '-(a)' => '-a'
-    # '-(-a)' => 'a'
-    # 'a a' => 'a'
-    # 'a|a' => 'a'
-    # 'a|a|b' => 'a|b'
-    # 'a|b b|c' => 'a|b|c'
 
-    # maybe...
-    # '(a b) | (a c)' => 'a b|c'
+    def ands_and_ors(ast)
+      out = ast
 
-    # parse('a (x (foo bar) y) b').should == [
-    #   {type: :str, value: "a"},
-    #   {type: :nest,
-    #    nest_type: :paren,
-    #    value: [
-    #      {type: :str, value: "x"},
-    #      {type: :nest,
-    #       nest_type: :paren,
-    #       value: [
-    #         {type: :str, value: "foo"},
-    #         {type: :str, value: "bar"}]},
-    #      {type: :str, value: "y"}]},
-    #   {type: :str, value: "b"}]
+      or_index = out.index { |x| x[:nest_type] == :pipe }
+      or_list = out.select { |x| x[:nest_type] == :pipe }
+      or_values = or_list.flat_map { |x| x[:value] }
+      new_or = {
+        type: :nest,
+        nest_type: :pipe,
+        nest_op: or_list.first&[:nest_op],
+        value: or_values
+      }
+      out = out.delete_if { |x| x[:nest_type] == :pipe }
+      out = out.insert(or_index, new_or) if or_index
+
+      out = out.uniq
+
+      out.flat_map do |node|
+        next node unless node[:nest_type]
+        node[:value] = ands_and_ors(node[:value])
+        next [] if node[:value] == []
+        node
+      end
+    end
 
     def negate_negate(ast)
       ast.flat_map do |node|
@@ -58,6 +56,7 @@ class Optimizer
       out = ast
       out = denest_parens(out)
       out = negate_negate(out)
+      out = ands_and_ors(out)
       out
     end
   end
@@ -85,7 +84,7 @@ end
 # pp c
 
 
-# str = '-(-a)'
+# str = '(a a (a -b))'
 
 # a = Lexer.lex(str)
 # b = Parser.parse(a)
