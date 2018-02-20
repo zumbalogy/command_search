@@ -17,3 +17,8 @@ is to not allow this syntax.
 a|b|c is parsed as (or a (or b c)) and thats fine.
 
 right now there will be issues with 'foo:-bar'.
+
+right now "" is treated as a valid quoted string.
+
+right now searching "(-)" returns an error, and "(|)"
+causes a freeze.

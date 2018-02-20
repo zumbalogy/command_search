@@ -14,6 +14,13 @@ def gen(x)
 end
 
 describe Lexer do
+
+  it 'should handle empty strings' do
+    Lexer.lex('').should == []
+    Lexer.lex(' ').should == []
+    Lexer.lex("    \n ").should == []
+  end
+
   it 'should be able to split basic parts on spaces' do
     Lexer.lex('foo').should == [{type: :str, value: "foo"}]
     Lexer.lex('f1oo').should == [{type: :str, value: "f1oo"}]

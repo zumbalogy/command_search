@@ -8,7 +8,7 @@ RSpec.configure do |config|
 end
 
 def parse(x)
-  tokens= Lexer.lex(x)
+  tokens = Lexer.lex(x)
   Parser.parse(tokens)
 end
 
@@ -72,11 +72,11 @@ describe Parser do
             {type: :number, value: "3"},
             {type: :nest,
              nest_type: :paren,
-             value: 
-               [{type: :number, value: "4"},
-                {type: :nest,
-                 nest_type: :paren,
-                 value: [{type: :number, value: "5"}]}]}]},
+             value: [
+               {type: :number, value: "4"},
+               {type: :nest,
+                nest_type: :paren,
+                value: [{type: :number, value: "5"}]}]}]},
          {type: :number, value: "6"}]},
       {type: :number, value: "7"}]
   end
@@ -103,13 +103,13 @@ describe Parser do
       {type: :nest,
        nest_type: :pipe,
        nest_op: "|",
-       value: 
-         [{type: :nest,
-           nest_type: :pipe,
-           nest_op: "|",
-           value: [{type: :str, value: "a"},
-                   {type: :str, value: "b"}]},
-          {type: :number, value: "3"}]}]
+       value: [
+         {type: :nest,
+          nest_type: :pipe,
+          nest_op: "|",
+          value: [{type: :str, value: "a"},
+                  {type: :str, value: "b"}]},
+         {type: :number, value: "3"}]}]
     parse('1.2|(x|yy)').should == [
       {type: :nest,
        nest_type: :pipe,
@@ -118,12 +118,12 @@ describe Parser do
          {type: :number, value: "1.2"},
          {type: :nest,
           nest_type: :paren,
-          value: 
-            [{type: :nest,
-              nest_type: :pipe,
-              nest_op: "|",
-              value: [{type: :str, value: "x"},
-                      {type: :str, value: "yy"}]}]}]}]
+          value: [
+            {type: :nest,
+             nest_type: :pipe,
+             nest_op: "|",
+             value: [{type: :str, value: "x"},
+                     {type: :str, value: "yy"}]}]}]}]
   end
 
   it 'should handle negating' do

@@ -4,17 +4,16 @@ class Optimizer
     def ands_and_ors(ast)
       out = ast
 
-      or_index = out.index { |x| x[:nest_type] == :pipe }
-      or_list = out.select { |x| x[:nest_type] == :pipe }
-      or_values = or_list.flat_map { |x| x[:value] }
-      new_or = {
-        type: :nest,
-        nest_type: :pipe,
-        nest_op: or_list.first&[:nest_op],
-        value: or_values
-      }
-      out = out.delete_if { |x| x[:nest_type] == :pipe }
-      out = out.insert(or_index, new_or) if or_index
+      out = out.flatten
+
+      out = out.flat_map do |node|
+        next node unless node[:nest_type] == :pipe
+        or_kids = node[:value].select { |x| x[:nest_type] == :pipe }
+        kid_vals = or_kids.map { |x| x[:value] }
+        node[:value] = node[:value].delete_if { |x| x[:nest_type] == :pipe }
+        node[:value].unshift(*kid_vals)
+        node
+      end
 
       out = out.uniq
 
