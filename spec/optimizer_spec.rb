@@ -1,19 +1,24 @@
-    # '()' => ''
-    # '-()' => ''
-    # '(a)' => a
-    # 'a (b c)' => 'a b c'
-    # '-(a)' => '-a'
-    # '-(-a)' => 'a'
-    # 'a a' => 'a'
-    # 'a|a' => 'a'
-    # 'a|a|b' => 'a|b'
+# '()' => ''
+# '-()' => ''
+# '(a)' => a
+# 'a (b c)' => 'a b c'
+# '-(a)' => '-a'
+# '-(-a)' => 'a'
+# 'a a' => 'a'
+# 'a|a' => 'a'
+# 'a|a|b' => 'a|b'
 
-    # '-(a a)' => '-a'
+# '-(a a)' => '-a'
 
-    # 'a (a (a (a (a))))' => 'a'
+# 'a (a (a (a (a))))' => 'a'
 
-    # 'a b (a b (a b))' => 'a b'
-    # 'a|b a|b' => 'a|b'
+# 'a b (a b (a b))' => 'a b'
+# 'a|b a|b' => 'a|b'
+
+# TODO:
+
+# 'a b a|b' => 'a b'
+# '(a b c) | (a b)' => 'a b'
 
 load(__dir__ + '/../lib/lexer.rb')
 load(__dir__ + '/../lib/parser.rb')
@@ -52,7 +57,12 @@ describe Parser do
       {:type=>:number, :value=>"1"},
       {:type=>:number, :value=>"2"}]
     str_list = [
-      '-(a b)',
+      'foo',
+      '-foo',
+      '-5.2',
+      '- -12',
+      'ab-dc',
+      'a a|b',
       'red "blue green"',
       '1 2 2.34 3 -100 -4.30',
       '(a b) | (c d)'
@@ -76,11 +86,12 @@ describe Parser do
       {:type=>:str, :value=>"bar"},
       {:type=>:str, :value=>"y"},
       {:type=>:str, :value=>"b"}]
-    opt('1 (2 (3 (4 (5))) 6) 7').should == [
+    opt('1 (2 (3 (4 4.5 (5))) 6) 7').should == [
       {:type=>:number, :value=>"1"},
       {:type=>:number, :value=>"2"},
       {:type=>:number, :value=>"3"},
       {:type=>:number, :value=>"4"},
+      {:type=>:number, :value=>"4.5"},
       {:type=>:number, :value=>"5"},
       {:type=>:number, :value=>"6"},
       {:type=>:number, :value=>"7"}]
@@ -112,14 +123,99 @@ describe Parser do
          {type: :str, value: "a"},
          {type: :str, value: "b"},
          {type: :number, value: "3"}]}]
-
-
-    # (or a (or b c)) => (or a b c)
-    # (or (or a b) c) => (or a b c)
-    # (or a b (or c d)) => (or a b c d)
-
-    # parse('1.2|(x|yy)')
-
+    opt('(a) | (a|b)').should == [
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>[{:type=>:str, :value=>"a"},
+                {:type=>:str, :value=>"b"}]}]
+    opt('a|(b|3)').should == [
+      {type: :nest,
+       nest_type: :pipe,
+       nest_op: "|",
+       value: [
+         {type: :str, value: "a"},
+         {type: :str, value: "b"},
+         {type: :number, value: "3"}]}]
+    opt('a|(b|(3|4))').should == [
+      {type: :nest,
+       nest_type: :pipe,
+       nest_op: "|",
+       value: [
+         {type: :str, value: "a"},
+         {type: :str, value: "b"},
+         {type: :number, value: "3"},
+         {type: :number, value: "4"}]}]
+    opt('(a|b|((c|d)|(e|f)))').should == [
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>[
+         {:type=>:str, :value=>"a"},
+         {:type=>:str, :value=>"b"},
+         {:type=>:str, :value=>"c"},
+         {:type=>:str, :value=>"d"},
+         {:type=>:str, :value=>"e"},
+         {:type=>:str, :value=>"f"}]}]
+    opt('(a|b|((c|d)|(e|f|g)))').should == [
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>[
+         {:type=>:str, :value=>"a"},
+         {:type=>:str, :value=>"b"},
+         {:type=>:str, :value=>"c"},
+         {:type=>:str, :value=>"d"},
+         {:type=>:str, :value=>"e"},
+         {:type=>:str, :value=>"f"},
+         {:type=>:str, :value=>"g"}]}]
+    opt('(a|b|((c|d)|(e|f|g)|h|i)|j)|k|l').should == [
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>[
+         {:type=>:str, :value=>"a"},
+         {:type=>:str, :value=>"b"},
+         {:type=>:str, :value=>"c"},
+         {:type=>:str, :value=>"d"},
+         {:type=>:str, :value=>"e"},
+         {:type=>:str, :value=>"f"},
+         {:type=>:str, :value=>"g"},
+         {:type=>:str, :value=>"h"},
+         {:type=>:str, :value=>"i"},
+         {:type=>:str, :value=>"j"},
+         {:type=>:str, :value=>"k"},
+         {:type=>:str, :value=>"l"}]}]
+    opt('(a b) | (c d)').should == [
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>[
+         {:type=>:nest,
+          :nest_type=>:paren,
+          :value=>[{:type=>:str, :value=>"a"},
+                   {:type=>:str, :value=>"b"}]},
+         {:type=>:nest,
+          :nest_type=>:paren,
+          :value=>[{:type=>:str, :value=>"c"},
+                   {:type=>:str, :value=>"d"}]}]}]
+    opt('(a b) | (c d) | (x y)').should == [
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>[
+         {:type=>:nest,
+          :nest_type=>:paren,
+          :value=>[{:type=>:str, :value=>"a"},
+                   {:type=>:str, :value=>"b"}]},
+         {:type=>:nest,
+          :nest_type=>:paren,
+          :value=>[{:type=>:str, :value=>"c"},
+                   {:type=>:str, :value=>"d"}]},
+         {:type=>:nest,
+          :nest_type=>:paren,
+          :value=>[{:type=>:str, :value=>"x"},
+                   {:type=>:str, :value=>"y"}]}]}]
   end
 
   it 'should return [] for empty nonsense' do
@@ -132,20 +228,20 @@ describe Parser do
     # opt('(|)').should == []
   end
 
-  # it 'should handle negating' do
-  #   parse('ab-dc')
-  #   parse('-12.023')
-  #   parse('- -1')
+  it 'should handle negating' do
+    opt('- -a').should == [{type: :str, :value=>"a"}]
+    # opt('- -1').should == [{type: :str, :value=>"a"}]
+    # parse('- -1')
 
-  #   parse('-a')
+    # parse('-a')
 
-  #   parse('-foo bar')
+    # parse('-foo bar')
 
-  #   parse('-(1 foo)')
+    # parse('-(1 foo)')
 
-  #   parse('-(-1 2 -foo)')
+    # parse('-(-1 2 -foo)')
 
-  # end
+  end
 
   # it 'should handle commands' do
   #   parse('foo:bar')

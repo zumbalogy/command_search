@@ -25,7 +25,8 @@ class Parser
       out = input
       out = out[:value] while out.is_a?(Hash)
       i = nil
-      while i = out.index { |x| x[:type] == type }
+      # rindex (vs index) important for nested prefixes
+      while i = out.rindex { |x| x[:type] == type }
         val = [out[i + 1]]
         val.unshift(out[i - 1]) if binary
         front_offset = 0

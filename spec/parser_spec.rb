@@ -100,30 +100,32 @@ describe Parser do
        value: [{type: :number, value: "2"},
                {type: :str, value: "b"}]}]
     parse('a|b|3').should == [
-      {type: :nest,
-       nest_type: :pipe,
-       nest_op: "|",
-       value: [
-         {type: :nest,
-          nest_type: :pipe,
-          nest_op: "|",
-          value: [{type: :str, value: "a"},
-                  {type: :str, value: "b"}]},
-         {type: :number, value: "3"}]}]
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>[
+         {:type=>:str, :value=>"a"},
+         {:type=>:nest,
+          :nest_type=>:pipe,
+          :nest_op=>"|",
+          :value=>[
+            {:type=>:str, :value=>"b"},
+            {:type=>:number, :value=>"3"}]}]}]
     parse('1.2|(x|yy)').should == [
-      {type: :nest,
-       nest_type: :pipe,
-       nest_op: "|",
-       value: [
-         {type: :number, value: "1.2"},
-         {type: :nest,
-          nest_type: :paren,
-          value: [
-            {type: :nest,
-             nest_type: :pipe,
-             nest_op: "|",
-             value: [{type: :str, value: "x"},
-                     {type: :str, value: "yy"}]}]}]}]
+      {:type=>:nest,
+       :nest_type=>:pipe,
+       :nest_op=>"|",
+       :value=>[
+         {:type=>:number, :value=>"1.2"},
+         {:type=>:nest,
+          :nest_type=>:paren,
+          :value=>[
+            {:type=>:nest,
+             :nest_type=>:pipe,
+             :nest_op=>"|",
+             :value=>[
+               {:type=>:str, :value=>"x"},
+               {:type=>:str, :value=>"yy"}]}]}]}]
   end
 
   it 'should handle negating' do
@@ -139,6 +141,14 @@ describe Parser do
        nest_type: :minus,
        nest_op: "-",
        value: [{type: :str, value: "a"}]}]
+    parse('- -a').should == [
+      {type: :nest,
+       nest_type: :minus,
+       nest_op: "-",
+       value: [{type: :nest,
+               nest_type: :minus,
+               nest_op: "-",
+               value: [{type: :str, value: "a"}]}]}]
     parse('-foo bar').should == [
       {type: :nest,
        nest_type: :minus,
@@ -190,7 +200,6 @@ describe Parser do
        value: [{type: :str, value: "a"},
                {type: :str, value: "b"}]},
       {type: :str, value: "c"}]
-
     parse('-a:b -(c d:e)').should == [
       {type: :nest,
        nest_type: :minus,
