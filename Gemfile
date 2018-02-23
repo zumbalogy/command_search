@@ -2,16 +2,17 @@ source 'https://rubygems.org'
 
 # bundle config github.https true
 
-# dev
-gem 'pry'
-
-# test
-gem 'rspec'
-gem 'rspec-rails'
-gem 'mongoid'
-gem 'mongoid-rspec', github: 'mongoid-rspec/mongoid-rspec'
-gem 'mongoid_orderable'
-
-# production
 gem 'chronic'
 gem 'uuid'
+
+group :test, :development do
+  gem 'pry'
+  gem 'clipboard'
+  gem 'mongoid'
+  gem 'mongoid_orderable'
+  # gem 'mongoid-rspec', github: 'mongoid-rspec/mongoid-rspec'
+end
+
+group :test do
+  gem 'rspec'
+end
