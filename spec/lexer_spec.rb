@@ -226,13 +226,13 @@ describe Lexer do
 
   it 'should handle wacky combinations' do
     Lexer.lex('(-)').should == [
-      {:type=>:paren, :value=>"("},
-      {:type=>:minus, :value=>"-"},
-      {:type=>:paren, :value=>")"}]
+      {type: :paren, value: "("},
+      {type: :minus, value: "-"},
+      {type: :paren, value: ")"}]
     Lexer.lex('(|)').should == [
-      {:type=>:paren, :value=>"("},
-      {:type=>:pipe, :value=>"|"},
-      {:type=>:paren, :value=>")"}]
+      {type: :paren, value: "("},
+      {type: :pipe, value: "|"},
+      {type: :paren, value: ")"}]
   end
 
 end

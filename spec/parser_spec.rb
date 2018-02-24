@@ -254,14 +254,14 @@ describe Parser do
   end
 
   it 'should handle wacky combinations' do
-    # parse('(-)').should == [
-    #   {type: :nest,
-    #    nest_type: :paren,
-    #    value: [
-    #      {type: :nest,
-    #       nest_type: :minus,
-    #       nest_op: '-',
-    #       value: []}]}]
+    parse('(-)').should == [
+      {type: :nest,
+       nest_type: :paren,
+       value: [
+         {type: :nest,
+          nest_type: :minus,
+          nest_op: '-',
+          value: []}]}]
     parse('(|)').should == [
       {type: :nest,
        nest_type: :paren,

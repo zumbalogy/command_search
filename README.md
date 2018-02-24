@@ -1,6 +1,4 @@
 
-
-
 One potential future feature (besides more cusomizable syntax and all)
 would be to be able to specify a certian number of matches. like,
 this name field must have the string ":)" 3 times. having
@@ -14,11 +12,13 @@ as to keep the comparison logic binary. the alternative
 is to not allow this syntax.
 
 
-a|b|c is parsed as (or a (or b c)) and thats fine.
-
 right now there will be issues with 'foo:-bar'.
 
 right now "" is treated as a valid quoted string.
 
-right now searching "(-)" returns an error, and "(|)"
-causes a freeze.
+it might be good to have a way to tell "collection" types (paren, or, minus)
+from other nest types (compare and command) in the ast, to avoid code like
+
+     [:paren, :pipe, :minus].include?(x[:nest_type])
+
+TODO: integration specs with DB, test for error messages and such.
