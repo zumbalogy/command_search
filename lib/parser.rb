@@ -24,11 +24,12 @@ class Parser
       binary = cluster_type == :binary
       out = input
       out = out[:value] while out.is_a?(Hash)
+      out.compact!
       i = nil
       # rindex (vs index) important for nested prefixes
       while i = out.rindex { |x| x[:type] == type }
         val = [out[i + 1]]
-        val.unshift(out[i - 1]) if binary
+        val.unshift(out[i - 1]) if binary && i > 0
         front_offset = 0
         front_offset = 1 if binary
         out[(i - front_offset)..(i + 1)] = {

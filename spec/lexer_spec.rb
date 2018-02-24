@@ -224,7 +224,15 @@ describe Lexer do
     ]
   end
 
-  # it 'should handle wacky combinations' do
-  # end
+  it 'should handle wacky combinations' do
+    Lexer.lex('(-)').should == [
+      {:type=>:paren, :value=>"("},
+      {:type=>:minus, :value=>"-"},
+      {:type=>:paren, :value=>")"}]
+    Lexer.lex('(|)').should == [
+      {:type=>:paren, :value=>"("},
+      {:type=>:pipe, :value=>"|"},
+      {:type=>:paren, :value=>")"}]
+  end
 
 end

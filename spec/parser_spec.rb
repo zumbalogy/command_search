@@ -253,7 +253,22 @@ describe Parser do
     # parse('1<5<10').should == ["1<5<10"]
   end
 
-  # it 'should handle wacky combinations' do
-  # end
-
+  it 'should handle wacky combinations' do
+    # parse('(-)').should == [
+    #   {type: :nest,
+    #    nest_type: :paren,
+    #    value: [
+    #      {type: :nest,
+    #       nest_type: :minus,
+    #       nest_op: '-',
+    #       value: []}]}]
+    parse('(|)').should == [
+      {type: :nest,
+       nest_type: :paren,
+       value: [
+         {type: :nest,
+          nest_type: :pipe,
+          nest_op: '|',
+          value: []}]}]
+  end
 end

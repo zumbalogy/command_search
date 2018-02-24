@@ -59,6 +59,8 @@ describe Parser do
     str_list = [
       'foo',
       '-foo',
+      '-foo:bar',
+      'hello<=44.2',
       '-5.2',
       '- -12',
       'ab-dc',
@@ -224,46 +226,40 @@ describe Parser do
     opt("   \n ").should == []
     opt('()').should == []
     opt(' ( ( ()) -(()  )) ').should == []
-    # opt('(-)').should == []
-    # opt('(|)').should == []
+    opt('(-)').should == []
+    opt('(|)').should == []
   end
 
   it 'should handle negating' do
     opt('- -a').should == [{type: :str, :value=>"a"}]
-    # opt('- -1').should == [{type: :str, :value=>"a"}]
-    # parse('- -1')
-
-    # parse('-a')
-
-    # parse('-foo bar')
-
-    # parse('-(1 foo)')
-
-    # parse('-(-1 2 -foo)')
-
+    opt('-a').should == [
+      {:type=>:nest,
+       :nest_type=>:minus,
+       :nest_op=>"-",
+       :value=>[{:type=>:str, :value=>"a"}]}]
+    opt('- -1').should == [
+      {:type=>:nest,
+       :nest_type=>:minus,
+       :nest_op=>"-",
+       :value=>[{:type=>:number, :value=>"-1"}]}]
+    opt('-(-1 2 -foo)').should == [
+      {:type=>:nest,
+       :nest_type=>:minus,
+       :nest_op=>"-",
+       :value=>[
+         {:type=>:number, :value=>"-1"},
+         {:type=>:number, :value=>"2"},
+         {:type=>:nest,
+          :nest_type=>:minus,
+          :nest_op=>"-",
+          :value=>[{:type=>:str, :value=>"foo"}]}]}]
   end
 
-  # it 'should handle commands' do
-  #   parse('foo:bar')
-
-  #   parse('foo:bar a:b c')
-
-  #   parse('-a:b -(c d:e)')
-
+  # it 'should handle fancier logic' do
+  #   opt('a b a|b').should == [{:type=>:str, :value=>"a"},
+  #                             {:type=>:str, :value=>"b"}]
+  #   opt('(a b c) | (a b)').should == [{:type=>:str, :value=>"a"},
+  #                                     {:type=>:str, :value=>"b"}]
   # end
-
-  # it 'should handle comparisons' do
-  #   parse('red>5')
-
-  #   parse('foo<=-5')
-
-  #   parse('a<b b>=-1')
-
-
-  #   # parse('1<5<10')
-  # end
-
-  # # it 'should handle wacky combinations' do
-  # # end
 
 end
