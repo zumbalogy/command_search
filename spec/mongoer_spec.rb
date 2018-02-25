@@ -86,17 +86,6 @@ describe Mongoer do
            {"$or"=>[{"f1"=>/c/mi}, {"f2"=>/c/mi}]},
            {"$or"=>[{"f1"=>/d/mi}, {"f2"=>/d/mi}]}]}]}
 
-    # q('(1 foo 2)').should == [
-    #   {:type=>:number, :value=>"1"},
-    #   {:type=>:str, :value=>"foo"},
-    #   {:type=>:number, :value=>"2"}]
-    # q('a (x (foo bar) y) b').should == [
-    #   {:type=>:str, :value=>"a"},
-    #   {:type=>:str, :value=>"x"},
-    #   {:type=>:str, :value=>"foo"},
-    #   {:type=>:str, :value=>"bar"},
-    #   {:type=>:str, :value=>"y"},
-    #   {:type=>:str, :value=>"b"}]
     # q('1 (2 (3 (4 4.5 (5))) 6) 7').should == [
     #   {:type=>:number, :value=>"1"},
     #   {:type=>:number, :value=>"2"},
@@ -112,16 +101,6 @@ describe Mongoer do
   # end
 
   # it 'should handle compares' do
-  # end
-
-  # it 'should return [] for empty nonsense' do
-  #   q('').should == []
-  #   q('   ').should == []
-  #   q("   \n ").should == []
-  #   q('()').should == []
-  #   q(' ( ( ()) -(()  )) ').should == []
-  #   q('(-)').should == []
-  #   q('(|)').should == []
   # end
 
   # it 'should handle negating' do
@@ -148,6 +127,18 @@ describe Mongoer do
   #         :nest_op=>"-",
   #         :value=>[{:type=>:str, :value=>"foo"}]}]}]
   # end
+
+  it 'should return [] for empty nonsense' do
+    fields = ['hello']
+    q('', fields).should == []
+    q('   ', fields).should == []
+    q("   \n ", fields).should == []
+    q('()', fields).should == []
+    q(' ( ( ()) -(()  )) ', fields).should == []
+    q('(-)', fields).should == []
+    q('(|)', fields).should == []
+  end
+
 
   # it 'should wacky inputs' do
   # end
