@@ -26,7 +26,7 @@ class Mongoer
     def build_searches(ast, fields, command_types)
       ast.flat_map do |x|
         if [:paren, :pipe, :minus].include?(x[:nest_type])
-          x[:value] = build_general_searches(x[:value], fields)
+          x[:value] = build_searches(x[:value], fields, command_types)
         elsif x[:nest_type] == :colon
           # aliasing will be done before ast gets to mongoer.rb
           # TODO: dispatch on field type
@@ -42,22 +42,34 @@ class Mongoer
     end
 
     def build_tree(ast)
-      out = ast
-      out = out.flat_map do |x|
+      ast.flat_map do |x|
         next x unless x[:nest_type]
         mongo_types = { paren: '$and', pipe: '$or', minus: '$not' }
         key = mongo_types[x[:nest_type]]
-        { type => build_tree(x[:value]) }
+        { key => build_tree(x[:value]) }
       end
-      return out.first if out.count == 1
-      { '$and' => out }
+    end
+
+    def collapse_ors(ast)
+      ast.flat_map do |x|
+        ['$and', '$or', '$not'].map do |key|
+          next unless x[key]
+          x[key] = collapse_ors(x[key])
+        end
+        next x unless x['$or']
+        val = x['$or'].flat_map { |kid| kid['$or'] || kid }
+        { '$or' => val }
+      end
     end
 
     def build_query(ast, fields, command_types = {})
-      # Numbers are searched as strings unless part of a compare command
+      # Numbers are searched as strings unless part of a compare/command
       out = ast
       out = build_searches(out, fields, command_types)
       out = build_tree(out)
+      out = collapse_ors(out)
+      out = out.first if out.count == 1
+      out = { '$and' => out } if out.count > 1
       out
     end
   end
