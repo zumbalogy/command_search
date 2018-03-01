@@ -1,17 +1,4 @@
-load(__dir__ + '/../lib/lexer.rb')
-require('rspec')
-
-# break this into a spec helper maybe
-RSpec.configure do |config|
-  config.expect_with(:rspec) { |c| c.syntax = :should }
-end
-
-require 'clipboard'
-def gen(x)
-  out = "Lexer.lex('#{x}').should == #{Lexer.lex(x)}"
-  Clipboard.copy(out)
-  out
-end
+load(__dir__ + '/./spec_helper.rb')
 
 describe Lexer do
 
@@ -234,5 +221,4 @@ describe Lexer do
       {type: :pipe, value: "|"},
       {type: :paren, value: ")"}]
   end
-
 end

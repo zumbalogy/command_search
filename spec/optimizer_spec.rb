@@ -20,15 +20,7 @@
 # 'a b a|b' => 'a b'
 # '(a b c) | (a b)' => 'a b'
 
-load(__dir__ + '/../lib/lexer.rb')
-load(__dir__ + '/../lib/parser.rb')
-load(__dir__ + '/../lib/optimizer.rb')
-require('rspec')
-
-# break this into a spec helper maybe
-RSpec.configure do |config|
-  config.expect_with(:rspec) { |c| c.syntax = :should }
-end
+load(__dir__ + '/./spec_helper.rb')
 
 def parse(x)
   tokens = Lexer.lex(x)
@@ -37,14 +29,6 @@ end
 
 def opt(x)
   Optimizer.optimize(parse(x))
-end
-
-require 'clipboard'
-def gen(x)
-  out = "opt('#{x}').should == #{opt(x)}"
-  Clipboard.copy(out)
-  pp opt(x)
-  out
 end
 
 describe Parser do

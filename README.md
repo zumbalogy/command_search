@@ -24,3 +24,10 @@ from other nest types (compare and command) in the ast, to avoid code like
 TODO: integration specs with DB, test for error messages and such.
 
 TODO: handle strings vs symbols when doing command_types and such in systimatic way.
+
+TODO: write a validator step and a user-defined-preprocessing step. call it transformer or something.
+--- hmm, any string pre-processing could just be handled by the user.
+--- but maybe a helper function that can be passed a string or regex, and
+--- the string would be converted to a sane regex that handled word boundries
+--- and casing and all. (and user could pass in own regex if they want to differnt
+--- defaults).

@@ -1,13 +1,5 @@
 load(__dir__ + '/../lib/lexer.rb')
-load(__dir__ + '/../lib/parser.rb')
-load(__dir__ + '/../lib/optimizer.rb')
-load(__dir__ + '/../lib/mongoer.rb')
-require('rspec')
-
-# break this into a spec helper maybe
-RSpec.configure do |config|
-  config.expect_with(:rspec) { |c| c.syntax = :should }
-end
+load(__dir__ + '/./spec_helper.rb')
 
 def parse(x)
   tokens = Lexer.lex(x)
@@ -20,14 +12,6 @@ end
 
 def q(x, fields, command_types = {})
   Mongoer.build_query(opt(x), fields, command_types)
-end
-
-require 'clipboard'
-def gen(x, y)
-  out = "q('#{x}', fields).should == #{q(x, y)}"
-  Clipboard.copy(out)
-  pp q(x, y)
-  out
 end
 
 describe Mongoer do

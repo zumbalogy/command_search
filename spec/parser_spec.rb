@@ -1,11 +1,4 @@
-load(__dir__ + '/../lib/lexer.rb')
-load(__dir__ + '/../lib/parser.rb')
-require('rspec')
-
-# break this into a spec helper maybe
-RSpec.configure do |config|
-  config.expect_with(:rspec) { |c| c.syntax = :should }
-end
+load(__dir__ + '/./spec_helper.rb')
 
 def parse(x)
   tokens = Lexer.lex(x)
