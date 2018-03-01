@@ -22,3 +22,5 @@ from other nest types (compare and command) in the ast, to avoid code like
      [:paren, :pipe, :minus].include?(x[:nest_type])
 
 TODO: integration specs with DB, test for error messages and such.
+
+TODO: handle strings vs symbols when doing command_types and such in systimatic way.
