@@ -31,3 +31,10 @@ TODO: write a validator step and a user-defined-preprocessing step. call it tran
 --- the string would be converted to a sane regex that handled word boundries
 --- and casing and all. (and user could pass in own regex if they want to differnt
 --- defaults).
+
+
+TODO: make sure periods in strings work, like "Dr.Foo"
+TODO: current commands are passed though as commands without validation.
+
+
+Note: in example project, have a "sort by" example

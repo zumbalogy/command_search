@@ -1,20 +1,7 @@
+require('chronic')
+
 class Mongoer
   class << self
-    # sample input AST
-    # ---- 'name3 desc:desk2' -------
-    # [{:type=>:str, :value=>"name3"},
-    #  {:type=>:nest,
-    #   :nest_type=>:colon,
-    #   :nest_op=>":",
-    #   :value=>[{:type=>:str, :value=>"desc"}, {:type=>:str, :value=>"desk2"}]}]
-
-    #     search('name3 desc:desk2') =>
-    #      {'$and' => [
-    #         { '$or' => [
-    #           { 'title' => /name3/mi },
-    #           { 'description' => /name3/mi },
-    #           { 'tags' => /name3/mi }]},
-    #         { 'description' => /desk2/mi }]}
 
     def build_search(str, fields)
       fields = [fields] unless fields.is_a?(Array)
@@ -31,12 +18,17 @@ class Mongoer
       type = command_types[key.to_sym] # String, Numeric, TODO: boolean, time
       if type == String
         val = /#{raw_val}/mi
-      elsif type == Numeric
+      elsif type == Numeric # should maybe accept float and int seperatly too
         if raw_val == raw_val.to_i.to_s
           val = raw_val.to_i
         else
           val = raw_val.to_f
         end
+      elsif type == Time # Should handle date too maybe?
+        date = Chronic.parse(raw_val, { guess: nil })
+        val = [{ key => { '$gte' => date.begin } },
+               { key => { '$lte' => date.end   } }]
+        key = '$and'
       end
 
       # regex (case insensitive probably best default, and let
@@ -46,23 +38,46 @@ class Mongoer
       { key => val }
     end
 
-    def build_compare(ast_node, _command_types)
-      # this should maybe error if not numeric and all
+    def build_compare(ast_node, command_types)
       (field_node, search_node) = ast_node[:value]
       key = field_node[:value]
       raw_val = search_node[:value]
-      if raw_val == raw_val.to_i.to_s
-        val = raw_val.to_i
-      else
-        val = raw_val.to_f
-      end
+      raw_op = ast_node[:nest_op]
+      type = command_types[key.to_sym]
+
       op_map = {
         '<' => '$lt',
         '>' => '$gt',
         '<=' => '$lte',
         '>=' => '$gte'
       }
-      op = op_map[ast_node[:nest_op]]
+      op = op_map[raw_op]
+
+      if type == Numeric
+        if raw_val == raw_val.to_i.to_s
+          val = raw_val.to_i
+        else
+          val = raw_val.to_f
+        end
+      elsif type == Time
+        # foo <  day | day.start
+        # foo <= day | day.end
+        # foo >  day | day.end
+        # foo >= day | day.start
+        date_start_map = {
+          '<' => :start,
+          '>' => :end,
+          '<=' => :end,
+          '>=' => :start
+        }
+        date_pick = date_start_map[raw_op]
+        date = Chronic.parse(raw_val, { guess: nil })
+        if date_pick == :start
+          val = date.first
+        elsif date_pick == :end
+          val = date.last
+        end
+      end
       { key => { op => val } }
     end
 

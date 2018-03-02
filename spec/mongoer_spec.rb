@@ -1,5 +1,6 @@
-load(__dir__ + '/../lib/lexer.rb')
 load(__dir__ + '/./spec_helper.rb')
+require('chronic')
+# require('date')
 
 def parse(x)
   tokens = Lexer.lex(x)
@@ -86,16 +87,22 @@ describe Mongoer do
     #   is strange.
   end
 
-  # it 'should handle aliased commands' do
-  # end
 
   # it 'should handle boolean commands' do
   # end
 
-  # it 'should handle time commands' do
-  #   fields = ['f1']
-  #   commands = { str1: String, int1: Integer }
-  # end
+  it 'should handle time commands' do
+    def q2(s); q(s, [], { created: Time }); end
+    res = q2('created:yesterday')
+    start = res['$and'].first['created']['$gte']
+    stop = res['$and'].last['created']['$lte']
+    (stop - start).should == (60 * 60 * 24)
+
+    q2('created:"april 10 2000"').should == {
+      "$and"=>[
+        {"created"=>{"$gte"=>Chronic.parse("2000-04-10 00:00:00")}},
+        {"created"=>{"$lte"=>Chronic.parse('2000-04-11 00:00:00')}}]}
+  end
 
   it 'should handle compares' do
     def q2(s); q(s, ['f1'], { num1: Numeric }); end
@@ -103,6 +110,14 @@ describe Mongoer do
     q2('num1<=5.20').should == {'num1'=>{'$lte'=>5.20}}
     q2('num1>0').should == {'num1'=>{'$gt'=>0}}
     q2('num1>=1000').should == {'num1'=>{'$gte'=>1000}}
+  end
+
+  it 'should handle time compares' do
+    def q2(s); q(s, [], { created: Time }); end
+    q2('created<8/8/8888').should == {"created"=>{"$lt"=>Chronic.parse('8888-08-08 00:00:00')}}
+    q2('created<=8/8/8888').should == {"created"=>{"$lte"=>Chronic.parse('8888-08-09 00:00:00')}}
+    q2("created>'1/1/11 1:11pm'").should == {"created"=>{"$gt"=>Chronic.parse("2011-01-01 13:11:01")}}
+    q2("created>='january 2020'").should =={"created"=>{"$gte"=>Chronic.parse("2020-01-01 00:00:00")}}
   end
 
   # it 'should handle negating' do

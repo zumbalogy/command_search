@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 # bundle config github.https true
 
 gem 'chronic'
-gem 'uuid'
+# gem 'uuid'
 
 group :test, :development do
   gem 'pry'
