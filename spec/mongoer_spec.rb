@@ -120,30 +120,17 @@ describe Mongoer do
     q2("created>='january 2020'").should =={"created"=>{"$gte"=>Chronic.parse("2020-01-01 00:00:00")}}
   end
 
-  # it 'should handle negating' do
-  #   q('- -a').should == [{type: :str, :value=>"a"}]
-  #   q('-a').should == [
-  #     {:type=>:nest,
-  #      :nest_type=>:minus,
-  #      :nest_op=>"-",
-  #      :value=>[{:type=>:str, :value=>"a"}]}]
-  #   q('- -1').should == [
-  #     {:type=>:nest,
-  #      :nest_type=>:minus,
-  #      :nest_op=>"-",
-  #      :value=>[{:type=>:number, :value=>"-1"}]}]
-  #   q('-(-1 2 -foo)').should == [
-  #     {:type=>:nest,
-  #      :nest_type=>:minus,
-  #      :nest_op=>"-",
-  #      :value=>[
-  #        {:type=>:number, :value=>"-1"},
-  #        {:type=>:number, :value=>"2"},
-  #        {:type=>:nest,
-  #         :nest_type=>:minus,
-  #         :nest_op=>"-",
-  #         :value=>[{:type=>:str, :value=>"foo"}]}]}]
-  # end
+  it 'should handle negating' do
+    def q2(s); q(s, [:foo, :bar], { red: Numeric }); end
+    q2('- -a').should == {"$or"=>[{:foo=>/a/mi}, {:bar=>/a/mi}]}
+    q2('-a').should == {'$not'=>[{"$or"=>[{:foo=>/a/mi}, {:bar=>/a/mi}]}]}
+    q2('-red:-1').should == {'$not'=>[{"red"=>-1}]}
+    q2('-(-1 2 -abc)').should == {
+      "$not"=>[
+        {"$or"=>[{:foo=>/-1/mi}, {:bar=>/-1/mi}]},
+        {"$or"=>[{:foo=>/2/mi}, {:bar=>/2/mi}]},
+        {"$not"=>[{"$or"=>[{:foo=>/abc/mi}, {:bar=>/abc/mi}]}]}]}
+  end
 
   it 'should return [] for empty nonsense' do
     fields = ['hello']
