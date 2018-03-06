@@ -10,13 +10,40 @@ class Mongoer
       { '$or' => forms }
     end
 
+    def is_bool_str?(str)
+      return true if str[/^true$|^false$/i]
+      false
+    end
+
+    def make_boolean(str)
+      return true if str[/^true$/i]
+      false
+    end
+
     def build_command(ast_node, command_types)
       # aliasing will be probably done before ast gets to mongoer.rb
       (field_node, search_node) = ast_node[:value]
       key = field_node[:value]
       raw_val = search_node[:value]
-      type = command_types[key.to_sym] # String, Numeric, TODO: boolean, time
-      if type == String
+      raw_type = command_types[key.to_sym]
+
+      if raw_type.is_a?(Array)
+        is_existance_bool = raw_type.include?(:allow_existence_boolean) && is_bool_str?(raw_val)
+        type = (raw_type - [:allow_existence_boolean]).first
+      else
+        is_bool = false
+        type = raw_type
+      end
+
+      if defined?(Boolean) && type = Boolean
+        val = make_boolean(raw_val)
+      elsif is_existance_bool
+        # This returns true for empty arrays, when it probably should not.
+        # Alternativly, something like tags>5 could return things that have more
+        # than 5 tags in the array.
+        # https://stackoverflow.com/questions/22367335/mongodb-check-if-value-exists-for-a-field-in-a-document
+        val = { '$exists' => make_boolean(raw_val) }
+      elsif type == String
         val = /#{raw_val}/mi
       elsif type == Numeric # should maybe accept float and int seperatly too
         if raw_val == raw_val.to_i.to_s
@@ -43,7 +70,13 @@ class Mongoer
       key = field_node[:value]
       raw_val = search_node[:value]
       raw_op = ast_node[:nest_op]
-      type = command_types[key.to_sym]
+      raw_type = command_types[key.to_sym]
+
+      if raw_type.is_a?(Array)
+        type = (raw_type - [:allow_boolean]).first
+      else
+        type = raw_type
+      end
 
       op_map = {
         '<' => '$lt',
@@ -52,7 +85,6 @@ class Mongoer
         '>=' => '$gte'
       }
       op = op_map[raw_op]
-
       if type == Numeric
         if raw_val == raw_val.to_i.to_s
           val = raw_val.to_i

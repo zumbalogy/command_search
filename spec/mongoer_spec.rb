@@ -12,7 +12,9 @@ def opt(x)
 end
 
 def q(x, fields, command_types = {})
-  Mongoer.build_query(opt(x), fields, command_types)
+  parsed = opt(x)
+  dealiased = Dealiaser.dealias(parsed, command_types)
+  Mongoer.build_query(dealiased, fields, command_types)
 end
 
 describe Mongoer do
@@ -87,21 +89,27 @@ describe Mongoer do
     #   is strange.
   end
 
-
-  # it 'should handle boolean commands' do
-  # end
-
   it 'should handle time commands' do
     def q2(s); q(s, [], { created: Time }); end
     res = q2('created:yesterday')
     start = res['$and'].first['created']['$gte']
     stop = res['$and'].last['created']['$lte']
     (stop - start).should == (60 * 60 * 24)
-
     q2('created:"april 10 2000"').should == {
       "$and"=>[
         {"created"=>{"$gte"=>Chronic.parse("2000-04-10 00:00:00")}},
         {"created"=>{"$lte"=>Chronic.parse('2000-04-11 00:00:00')}}]}
+  end
+
+  it 'should handle boolean commands' do
+    def q2(s); q(s, [], { paid: :paid_at, paid_at: [Date, :allow_existence_boolean] }); end
+    q2('paid:true').should == {"paid_at"=>{"$exists"=>true}}
+    q2('paid:false').should == {"paid_at"=>{"$exists"=>false}}
+    def q3(s); q(s, [], { foo: [String, :allow_existence_boolean] }); end
+    q3('foo:"true"').should == {"foo"=>/"true"/mi}
+    q3('foo:false').should == {"foo"=>{"$exists"=>false}}
+    q3('foo:false|foo:error').should == {"$or"=>[{"foo"=>{"$exists"=>false}},
+                                                 {"foo"=>/error/mi}]}
   end
 
   it 'should handle compares' do

@@ -38,3 +38,16 @@ TODO: current commands are passed though as commands without validation.
 
 
 Note: in example project, have a "sort by" example
+
+Note: it should also have a way to test presence of something that
+is also searchable as a string. so, as an example, "error:'not found'|error:false"
+or some such could work.
+
+
+TODO: support arrays (and maybe other nesting/relations)
+
+
+TODO: consider adding support for 'backwards' compares like 50<grade instead of grade>50
+ -- note that this would potentially be problematic for fields that share a name with
+ -- something that chronic could parse as a date. but could  just default to left side
+ -- is the field. but maybe less is more when it comes to magical behaviour.
