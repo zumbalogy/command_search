@@ -58,14 +58,16 @@ class Lexer
         (a, b) = value_indices("'", out).first(2)
         sub = out[a..b]
         vals = sub.map { |i| i[:value] }
-        out[a..b] = { type: :quoted_str, value: vals.join() }
+        trimmed_vals = vals.take(vals.length - 1).drop(1)
+        out[a..b] = { type: :quoted_str, value: trimmed_vals.join() }
       end
 
       while value_indices('"', out).length >= 2
         (a, b) = value_indices('"', out).first(2)
         sub = out[a..b]
         vals = sub.map { |i| i[:value] }
-        out[a..b] = { type: :quoted_str, value: vals.join() }
+        trimmed_vals = vals.take(vals.length - 1).drop(1)
+        out[a..b] = { type: :quoted_str, value: trimmed_vals.join() }
       end
 
       while consecutive(type_indices(:number, out)).any?

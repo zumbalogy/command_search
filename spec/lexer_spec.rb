@@ -27,21 +27,21 @@ describe Lexer do
     ]
   end
 
-  it 'should handle quotes' do
-    Lexer.lex('"foo"').should == [{type: :quoted_str, value: "\"foo\""}]
-    Lexer.lex("'bar'").should == [{type: :quoted_str, value: "'bar'"}]
+  it 'should handle quotes, removing surrounding quotes' do
+    Lexer.lex('"foo"').should == [{type: :quoted_str, value: "foo"}]
+    Lexer.lex("'bar'").should == [{type: :quoted_str, value: "bar"}]
     Lexer.lex("a 'b foo'").should == [
       {type: :str, value: "a"},
-      {type: :quoted_str, value: "'b foo'"}
+      {type: :quoted_str, value: "b foo"}
     ]
     Lexer.lex("foo 'a b' bar").should == [
       {type: :str, value: "foo"},
-      {type: :quoted_str, value: "'a b'"},
+      {type: :quoted_str, value: "a b"},
       {type: :str, value: "bar"}
     ]
     Lexer.lex("-3 '-11 x'").should == [
       {type: :number, value: "-3"},
-      {type: :quoted_str, value: "'-11 x'"}
+      {type: :quoted_str, value: "-11 x"}
     ]
     Lexer.lex('a b " c').should == [
       {type: :str, value: "a"},
@@ -51,7 +51,7 @@ describe Lexer do
     ]
     Lexer.lex("a 'b \" c'").should == [
       {type: :str, value: "a"},
-      {type: :quoted_str, value: "'b \" c'"}
+      {type: :quoted_str, value: "b \" c"}
     ]
   end
 
@@ -87,11 +87,11 @@ describe Lexer do
     ]
     Lexer.lex('-"foo bar"').should == [
       {type: :minus, value: "-"},
-      {type: :quoted_str, value: "\"foo bar\""}
+      {type: :quoted_str, value: "foo bar"}
     ]
     Lexer.lex('-"foo -bar" -x').should == [
       {type: :minus, value: "-"},
-      {type: :quoted_str, value: "\"foo -bar\""},
+      {type: :quoted_str, value: "foo -bar"},
       {type: :minus, value: "-"},
       {type: :str, value: "x"}
     ]
@@ -130,7 +130,7 @@ describe Lexer do
     Lexer.lex('1:"2"').should == [
       {type: :number, value: "1"},
       {type: :colon, value: ":"},
-      {type: :quoted_str, value: '"2"'}
+      {type: :quoted_str, value: '2'}
     ]
   end
 

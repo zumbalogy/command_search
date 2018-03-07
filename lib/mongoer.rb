@@ -5,7 +5,7 @@ class Mongoer
 
     def build_search(str, fields)
       fields = [fields] unless fields.is_a?(Array)
-      forms = fields.map { |f| { f => /#{str}/mi } }
+      forms = fields.map { |f| { f => /#{Regexp.escape(str)}/mi } }
       return forms if forms.count < 2
       { '$or' => forms }
     end
@@ -24,11 +24,15 @@ class Mongoer
       # aliasing will be probably done before ast gets to mongoer.rb
       (field_node, search_node) = ast_node[:value]
       key = field_node[:value]
-      raw_val = search_node[:value]
       raw_type = command_types[key.to_sym]
 
+      raw_val = search_node[:value]
+      search_type = search_node[:type]
+
       if raw_type.is_a?(Array)
-        is_existance_bool = raw_type.include?(:allow_existence_boolean) && is_bool_str?(raw_val)
+        is_bool = raw_type.include?(:allow_existence_boolean) &&
+                  is_bool_str?(raw_val) &&
+                  search_type != :quoted_str
         type = (raw_type - [:allow_existence_boolean]).first
       else
         is_bool = false
@@ -37,14 +41,18 @@ class Mongoer
 
       if defined?(Boolean) && type = Boolean
         val = make_boolean(raw_val)
-      elsif is_existance_bool
+      elsif is_bool
         # This returns true for empty arrays, when it probably should not.
         # Alternativly, something like tags>5 could return things that have more
         # than 5 tags in the array.
         # https://stackoverflow.com/questions/22367335/mongodb-check-if-value-exists-for-a-field-in-a-document
         val = { '$exists' => make_boolean(raw_val) }
       elsif type == String
-        val = /#{raw_val}/mi
+        if search_type == :quoted_string
+          val = /#{Regexp.escape(raw_val)}/
+        else
+          val = /#{Regexp.escape(raw_val)}/mi
+        end
       elsif type == Numeric # should maybe accept float and int seperatly too
         if raw_val == raw_val.to_i.to_s
           val = raw_val.to_i

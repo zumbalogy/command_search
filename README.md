@@ -51,3 +51,8 @@ TODO: consider adding support for 'backwards' compares like 50<grade instead of 
  -- note that this would potentially be problematic for fields that share a name with
  -- something that chronic could parse as a date. but could  just default to left side
  -- is the field. but maybe less is more when it comes to magical behaviour.
+
+
+Right now, a blindspot if you want to search 'foo:"tRue"' and have have tRue not
+be case sensitive. (since quotes are used to escape from true part if thats enabled
+but also used to preserve case)
