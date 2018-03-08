@@ -39,7 +39,7 @@ class Mongoer
         type = raw_type
       end
 
-      if defined?(Boolean) && type = Boolean
+      if defined?(Boolean) && type == Boolean
         val = make_boolean(raw_val)
       elsif is_bool
         # This returns true for empty arrays, when it probably should not.
