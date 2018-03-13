@@ -56,3 +56,6 @@ TODO: consider adding support for 'backwards' compares like 50<grade instead of 
 Right now, a blindspot if you want to search 'foo:"tRue"' and have have tRue not
 be case sensitive. (since quotes are used to escape from true part if thats enabled
 but also used to preserve case)
+
+
+TODO: rubocop (add it to circleCI too)
