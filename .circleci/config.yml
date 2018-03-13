@@ -4,18 +4,18 @@
 #
 version: 2
 
-dependencies:
-  cache_directories:
-    - mongodb-linux-x86_64-ubuntu1204-3.2.0
-  pre:
-    - if [[ ! -d mongodb-linux-x86_64-ubuntu1204-3.6.0 ]]; then wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.6.0.tgz && tar xvzf mongodb-linux-x86_64-ubuntu1204-3.6.0.tgz; fi
-    - sudo stop mongodb
-    - sudo cp mongodb-linux-x86_64-ubuntu1204-3.6.0/bin/* /usr/bin
-    - sudo start mongodb
+# dependencies:
+#   cache_directories:
+#     - mongodb-linux-x86_64-ubuntu1204-3.2.0
+#   pre:
+#     - if [[ ! -d mongodb-linux-x86_64-ubuntu1204-3.6.0 ]]; then wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.6.0.tgz && tar xvzf mongodb-linux-x86_64-ubuntu1204-3.6.0.tgz; fi
+#     - sudo stop mongodb
+#     - sudo cp mongodb-linux-x86_64-ubuntu1204-3.6.0/bin/* /usr/bin
+#     - sudo start mongodb
 
-machine:
-  services:
-    - mongodb
+# machine:
+#   services:
+#     - mongodb
 
 jobs:
   build:
