@@ -139,13 +139,15 @@ describe Mongoer do
   it 'should handle negating' do
     def q2(s); q(s, [:foo, :bar], { red: Numeric }); end
     q2('- -a').should == {"$or"=>[{:foo=>/a/mi}, {:bar=>/a/mi}]}
-    q2('-a').should == {'$not'=>[{"$or"=>[{:foo=>/a/mi}, {:bar=>/a/mi}]}]}
-    q2('-red:-1').should == {'$not'=>[{"red"=>-1}]}
+    q2('-a').should == {"$and"=>[{:foo=>{"$not"=>/a/mi}}, {:bar=>{"$not"=>/a/mi}}]}
+    q2('-red:-1').should == {"red"=>{"$not"=>-1}}
     q2('-(-1 2 -abc)').should == {
-      "$not"=>[
-        {"$or"=>[{:foo=>/\-1/mi}, {:bar=>/\-1/mi}]},
-        {"$or"=>[{:foo=>/2/mi}, {:bar=>/2/mi}]},
-        {"$not"=>[{"$or"=>[{:foo=>/abc/mi}, {:bar=>/abc/mi}]}]}]}
+      "$and"=>[{"$and"=>[{:foo=>{"$not"=>/\-1/mi}},
+                         {:bar=>{"$not"=>/\-1/mi}}]},
+               {"$and"=>[{:foo=>{"$not"=>/2/mi}},
+                         {:bar=>{"$not"=>/2/mi}}]},
+               {"$or"=>[{:foo=>/abc/mi},
+                        {:bar=>/abc/mi}]}]}
   end
 
   it 'should return [] for empty nonsense' do
