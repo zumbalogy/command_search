@@ -11,9 +11,17 @@ class Mongoer
       else
         regex = /#{Regexp.escape(str)}/mi
       end
-      forms = fields.map { |f| { f => regex } }
+      if ast_node[:negate]
+        forms = fields.map { |f| { f => { '$not' => regex } } }
+      else
+        forms = fields.map { |f| { f => regex } }
+      end
       return forms if forms.count < 2
-      { '$or' => forms }
+      if ast_node[:negate]
+        { '$and' => forms }
+      else
+        { '$or' => forms }
+      end
     end
 
     def is_bool_str?(str)
@@ -47,8 +55,10 @@ class Mongoer
 
       if defined?(Boolean) && type == Boolean
         # val = make_boolean(raw_val)
-        val = [{key => {'$exists' => true }},
-               {key => {'$ne' => !make_boolean(raw_val) }}]
+        bool = make_boolean(raw_val)
+        bool = !bool if field_node[:negate]
+        val = [{ key => { '$exists' => true } },
+               { key => { '$ne' => !bool } }]
         key = '$and'
       elsif is_bool
         # This returns true for empty arrays, when it probably should not.
@@ -57,12 +67,13 @@ class Mongoer
         # https://stackoverflow.com/questions/22367335/mongodb-check-if-value-exists-for-a-field-in-a-document
         # val = { '$exists' => make_boolean(raw_val) }
         bool = make_boolean(raw_val)
+        bool = !bool if field_node[:negate]
         if bool
           key = '$and'
-          val = [{'$exists' => true },
-                 {'$ne' => false }]
+          val = [{ '$exists' => true },
+                 { '$ne' => false }]
         else
-          val = {'$exists' => false }
+          val = { '$exists' => false }
         end
       elsif type == String
         if search_type == :quoted_str
@@ -77,17 +88,28 @@ class Mongoer
           val = raw_val.to_f
         end
       elsif type == Time # Should handle date too maybe?
-        date = Chronic.parse(raw_val, { guess: nil })
-        val = [{ key => { '$gte' => date.begin } },
-               { key => { '$lte' => date.end   } }]
-        key = '$and'
+        time_str = raw_val.gsub('_', ' ')
+        date = Chronic.parse(time_str, { guess: nil })
+        if field_node[:negate]
+          val = [{ key => { '$gte' => date.end   } },
+                 { key => { '$lte' => date.begin } }]
+          key = '$or'
+        else
+          val = [{ key => { '$gte' => date.begin } },
+                 { key => { '$lte' => date.end   } }]
+          key = '$and'
+        end
       end
 
       # regex (case insensitive probably best default, and let
       # proper regex and alias support allow developers to have
       # case sensitive if they want maybe.)
 
-      { key => val }
+      if field_node[:negate] && (type == Numeric || type == String)
+        { key => { '$not' => val } }
+      else
+        { key => val }
+      end
     end
 
     def build_compare(ast_node, command_types)
@@ -103,13 +125,23 @@ class Mongoer
         type = raw_type
       end
 
-      op_map = {
+      reverse_ops = {
+        '<' => '>=',
+        '<=' => '>',
+        '>' => '<=',
+        '>=' => '<'
+      }
+
+      op = raw_op
+      op = reverse_ops[raw_op] if field_node[:negate]
+
+      mongo_op_map = {
         '<' => '$lt',
         '>' => '$gt',
         '<=' => '$lte',
         '>=' => '$gte'
       }
-      op = op_map[raw_op]
+      mongo_op = mongo_op_map[op]
       if type == Numeric
         if raw_val == raw_val.to_i.to_s
           val = raw_val.to_i
@@ -127,15 +159,16 @@ class Mongoer
           '<=' => :end,
           '>=' => :start
         }
-        date_pick = date_start_map[raw_op]
-        date = Chronic.parse(raw_val, { guess: nil })
+        date_pick = date_start_map[op]
+        time_str = raw_val.gsub('_', ' ')
+        date = Chronic.parse(time_str, { guess: nil })
         if date_pick == :start
           val = date.first
         elsif date_pick == :end
           val = date.last
         end
       end
-      { key => { op => val } }
+      { key => { mongo_op => val } }
     end
 
     def build_searches(ast, fields, command_types)
@@ -177,9 +210,24 @@ class Mongoer
       end
     end
 
+    def decompose_nots(ast, not_depth = 0)
+      ast.flat_map do |x|
+        if x[:nest_type] == :minus
+          decompose_nots(x[:value], not_depth + 1)
+        elsif x[:nest_type]
+          x[:value] = decompose_nots(x[:value], not_depth)
+          x
+        else
+          x[:negate] = not_depth.odd?
+          x
+        end
+      end
+    end
+
     def build_query(ast, fields, command_types = {})
       # Numbers are searched as strings unless part of a compare/command
       out = ast
+      out = decompose_nots(out)
       out = build_searches(out, fields, command_types)
       out = build_tree(out)
       out = collapse_ors(out)

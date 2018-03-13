@@ -278,7 +278,21 @@ describe Hat do # TODO: describe real class
     Hat.search('tags:tags2|tags1 tags:tags2').count.should == 1
   end
 
-  # it 'should handle ors with quotes' do
+  it 'should handle ORs with quotes' do
+    # q.alias_fields[/^string$/i] = 'desk2'
+    Hat.search('desk1|desk2').count.should == 2
+    Hat.search('desk1|"desk2"').count.should == 2
+    Hat.search("desk1|'desk2'").count.should == 2
+    Hat.search("'desk1'|'desk2'").count.should == 2
+    Hat.search('"desk1"|"desk2"').count.should == 2
+    Hat.search("'desk1'|desk2").count.should == 2
+    Hat.search('"desk1"|desk2').count.should == 2
+    Hat.search('"desk1"|"de|sk2"').count.should == 1
+    Hat.search('"desk1"|desk2|"someone\'s iHat"').count.should == 3
+    Hat.search('"desk1"|\'desk2\'|"someone\'s iHat"').count.should == 3
+  end
+
+  # it 'should handle regex aliases' do
   #   # q.alias_fields[/^string$/i] = 'desk2'
   #   Hat.search('desk1|string').count.should == 2
   #   Hat.search('desk1|"string"').count.should == 2
@@ -287,26 +301,26 @@ describe Hat do # TODO: describe real class
   #   Hat.search('"desk1"|"string"').count.should == 2
   #   Hat.search("'desk1'|string").count.should == 2
   #   Hat.search('"desk1"|string').count.should == 2
-  #   Hat.search('"desk1"|string').count.should == 2
   #   Hat.search('"desk1"|string|"someone\'s iHat"').count.should == 3
   #   Hat.search('"desk1"|\'string\'|"someone\'s iHat"').count.should == 3
   # end
 
-  # it 'it should handle negative searches' do
-  #   check = 9
-  #   Hat.search('').count.should == check
-  #   (Hat.search('tags1').count + Hat.search('-tags1').count).should == check
-  #   (Hat.search('tags:tags1').count + Hat.search('-tags:tags1').count).should == check
-  #   (Hat.search('tags1 tags2').count + Hat.search('-tags1|-tags2').count).should == check
-  # end
+  it 'it should handle negative searches' do
+    check = 9
+    Hat.search('').count.should == check
+    (Hat.search('tags1').count + Hat.search('-tags1').count).should == check
+    (Hat.search('tags:tags1').count + Hat.search('-tags:tags1').count).should == check
+    (Hat.search('tags1 tags2').count + Hat.search('-tags1|-tags2').count).should == check
+  end
 
-  # it 'it should handle multiple searches some negative' do
-  #   Hat.search('-tags1 -tags2').count.should == 7
-  #   Hat.search('tags1 -tags2').count.should == 1
-  #   Hat.search('tags1 -tags:tags2').count.should == 1
-  #   Hat.search('tags:tags1 -tags2').count.should == 1
-  #   Hat.search('tags:tags1 -tags:tags2').count.should == 1
-  # end
+  it 'it should handle multiple searches some negative' do
+    Hat.search('-tags1 -tags2').count.should == 7
+    Hat.search('tags1 -tags2').count.should == 1
+    Hat.search('tags2 -tags2').count.should == 0
+    Hat.search('tags1 -tags:tags2').count.should == 1
+    Hat.search('tags:tags1 -tags2').count.should == 1
+    Hat.search('tags:tags1 -tags:tags2').count.should == 1
+  end
 
   it 'should handle comparisons' do
     Hat.search('feathers>0').count.should == 3
@@ -318,21 +332,21 @@ describe Hat do # TODO: describe real class
     Hat.search('feathers<=5').count.should == 2
   end
 
-  # it 'should handle comparisons with dates' do
-  #   Hat.search('fav_date<=1_day_ago').count.should == 3
-  #   Hat.search('fav_date<=15_days_ago').count.should == 2
-  #   Hat.search('fav_date<3_months_ago').count.should == 1
-  #   Hat.search('fav_date<2_years_ago').count.should == 0
-  # end
+  it 'should handle comparisons with dates' do
+    Hat.search('fav_date<=1_day_ago').count.should == 3
+    Hat.search('fav_date<=15_days_ago').count.should == 2
+    Hat.search('fav_date<3_months_ago').count.should == 1
+    Hat.search('fav_date<2_years_ago').count.should == 0
+  end
 
-  # it 'should handle negative comparisons and ORs put together. commands too' do
-  #   Hat.search('-fav_date<2_years_ago').count.should == 3
-  #   Hat.search('-fav_date<3_months_ago').count.should == 2
-  #   Hat.search('-fav_date<=1_day_ago').count.should == 0
-  #   Hat.search('-fav_date<=1_day_ago|fav_date<=1_day_ago').count.should == 3
-  #   Hat.search('-fav_date<=1_day_ago|desk1').count.should == 1
-  #   Hat.search('-fav_date<=1_day_ago|-desk1').count.should == 8
-  # end
+  it 'should handle negative comparisons and ORs put together. commands too' do
+    Hat.search('-fav_date<2_years_ago').count.should == 3
+    Hat.search('-fav_date<3_months_ago').count.should == 2
+    Hat.search('-fav_date<=1_day_ago').count.should == 0
+    Hat.search('-fav_date<=1_day_ago|fav_date<=1_day_ago').count.should == 3
+    Hat.search('-fav_date<=1_day_ago|desk1').count.should == 1
+    Hat.search('-fav_date<=1_day_ago|-desk1').count.should == 8
+  end
 
   # it 'should error gracefully' do
   #   Hat.search('(-sdf:sdfdf>sd\'s":f-').count.should == 0
