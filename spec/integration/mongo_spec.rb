@@ -348,6 +348,18 @@ describe Hat do # TODO: describe real class
     Hat.search('-fav_date<=1_day_ago|-desk1').count.should == 8
   end
 
+  it 'should handle nesting via parentheses' do
+    Hat.search('-(-desk1)').count.should == 1
+    Hat.search('(desk1 name2) | desk3').count.should == 2
+    Hat.search('(desk1 name2) | desk3').count.should == 2
+    Hat.create(title: 'a9 b9')
+    Hat.create(title: 'b9 c9')
+    Hat.create(title: 'c9 d9')
+    Hat.search('(a9 b9) | (c9|d9)').count.should == 3
+    Hat.search('(a9 b9) | (c9 d9)').count.should == 2
+    Hat.search('(a9 b9) (c9 d9)').count.should == 0
+  end
+
   # it 'should error gracefully' do
   #   Hat.search('(-sdf:sdfdf>sd\'s":f-').count.should == 0
   #   Hat.search('""sdfdsfhellosdf|dsfsdf::>>><><').count.should == 0
