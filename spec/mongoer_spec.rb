@@ -23,7 +23,7 @@ describe Mongoer do
     fields = ['f1']
     q('foo', fields).should == { "f1"=>/foo/mi }
     q('red "blue green"', fields).should == { '$and' => [{"f1"=>/red/mi},
-                                                         {"f1"=>/blue\ green/mi}]}
+                                                         {"f1"=>/blue\ green/}]}
     q('foo 1 2', fields).should == {"$and"=>[{"f1"=>/foo/mi},
                                              {"f1"=>/1/mi},
                                              {"f1"=>/2/mi}]}
@@ -31,8 +31,8 @@ describe Mongoer do
     q('foo "blue green"', fields).should == {
       "$and"=>[{"$or"=>[{"f1"=>/foo/mi},
                         {"f2"=>/foo/mi}]},
-               {"$or"=>[{"f1"=>/blue\ green/mi},
-                        {"f2"=>/blue\ green/mi}]}]}
+               {"$or"=>[{"f1"=>/blue\ green/},
+                        {"f2"=>/blue\ green/}]}]}
     q('foo 1 2', fields).should == {
       "$and"=>[{"$or"=>[{"f1"=>/foo/mi},
                         {"f2"=>/foo/mi}]},
@@ -44,8 +44,8 @@ describe Mongoer do
 
   it 'should sanitize inputs' do
     def q2(s); q(s, ['f1'], { str1: String }); end
-    q2('"a b"').should == {"f1"=>/a\ b/mi}
-    q2("str1:'a-b'").should == {"str1"=>/a\-b/mi}
+    q2('"a b"').should == {"f1"=>/a\ b/}
+    q2("str1:'a-b'").should == {"str1"=>/a\-b/}
   end
 
   it 'should handle ORs' do
@@ -113,8 +113,9 @@ describe Mongoer do
     # q2('paid:true').should == {"paid_at"=>{"$exists"=>true}}
     # q2('paid:false').should == {"paid_at"=>{"$exists"=>false}}
     def q3(s); q(s, [], { foo: [String, :allow_existence_boolean] }); end
-    q3('foo:"true"').should == {"foo"=>/true/mi}
+    q3('foo:"true"').should == {"foo"=>/true/}
     q3('foo:false').should == {"foo"=>{"$exists"=>false}}
+    q3('foo:true').should == {"$and"=>[{"$exists"=>true}, {"$ne"=>false}]}
     q3('foo:false|foo:error').should == {"$or"=>[{"foo"=>{"$exists"=>false}},
                                                  {"foo"=>/error/mi}]}
   end
@@ -149,13 +150,13 @@ describe Mongoer do
 
   it 'should return [] for empty nonsense' do
     fields = ['hello']
-    q('', fields).should == []
-    q('   ', fields).should == []
-    q("   \n ", fields).should == []
-    q('()', fields).should == []
-    q(' ( ( ()) -(()  )) ', fields).should == []
-    q('(-)', fields).should == []
-    q('(|)', fields).should == []
+    q('', fields).should == {}
+    q('   ', fields).should == {}
+    q("   \n ", fields).should == {}
+    q('()', fields).should == {}
+    q(' ( ( ()) -(()  )) ', fields).should == {}
+    q('(-)', fields).should == {}
+    q('(|)', fields).should == {}
   end
 
   # it 'should wacky inputs' do

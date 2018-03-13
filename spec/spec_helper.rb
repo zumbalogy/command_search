@@ -3,7 +3,9 @@ load(__dir__ + '/../lib/parser.rb')
 load(__dir__ + '/../lib/dealiaser.rb')
 load(__dir__ + '/../lib/optimizer.rb')
 load(__dir__ + '/../lib/mongoer.rb')
+
 require('rspec')
+require('pry')
 
 
 RSpec.configure do |config|

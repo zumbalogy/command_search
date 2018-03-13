@@ -3,9 +3,15 @@ require('chronic')
 class Mongoer
   class << self
 
-    def build_search(str, fields)
+    def build_search(ast_node, fields)
+      str = ast_node[:value]
       fields = [fields] unless fields.is_a?(Array)
-      forms = fields.map { |f| { f => /#{Regexp.escape(str)}/mi } }
+      if ast_node[:type] == :quoted_str
+        regex = /#{Regexp.escape(str)}/
+      else
+        regex = /#{Regexp.escape(str)}/mi
+      end
+      forms = fields.map { |f| { f => regex } }
       return forms if forms.count < 2
       { '$or' => forms }
     end
@@ -40,15 +46,26 @@ class Mongoer
       end
 
       if defined?(Boolean) && type == Boolean
-        val = make_boolean(raw_val)
+        # val = make_boolean(raw_val)
+        val = [{key => {'$exists' => true }},
+               {key => {'$ne' => !make_boolean(raw_val) }}]
+        key = '$and'
       elsif is_bool
         # This returns true for empty arrays, when it probably should not.
         # Alternativly, something like tags>5 could return things that have more
         # than 5 tags in the array.
         # https://stackoverflow.com/questions/22367335/mongodb-check-if-value-exists-for-a-field-in-a-document
-        val = { '$exists' => make_boolean(raw_val) }
+        # val = { '$exists' => make_boolean(raw_val) }
+        bool = make_boolean(raw_val)
+        if bool
+          key = '$and'
+          val = [{'$exists' => true },
+                 {'$ne' => false }]
+        else
+          val = {'$exists' => false }
+        end
       elsif type == String
-        if search_type == :quoted_string
+        if search_type == :quoted_str
           val = /#{Regexp.escape(raw_val)}/
         else
           val = /#{Regexp.escape(raw_val)}/mi
@@ -125,7 +142,7 @@ class Mongoer
       ast.flat_map do |x|
         case x[:nest_type]
         when nil
-          x = build_search(x[:value], fields)
+          x = build_search(x, fields)
         when :colon
           x = build_command(x, command_types)
         when :compare
@@ -166,6 +183,7 @@ class Mongoer
       out = build_searches(out, fields, command_types)
       out = build_tree(out)
       out = collapse_ors(out)
+      out = {} if out == []
       out = out.first if out.count == 1
       out = { '$and' => out } if out.count > 1
       out
