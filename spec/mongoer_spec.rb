@@ -23,16 +23,20 @@ describe Mongoer do
     fields = ['f1']
     q('foo', fields).should == { "f1"=>/foo/mi }
     q('red "blue green"', fields).should == { '$and' => [{"f1"=>/red/mi},
-                                                         {"f1"=>/blue\ green/}]}
+                                                         {"f1"=>/\bblue\ green\b/}]}
     q('foo 1 2', fields).should == {"$and"=>[{"f1"=>/foo/mi},
                                              {"f1"=>/1/mi},
                                              {"f1"=>/2/mi}]}
     fields = ['f1', 'f2']
+    q('red', fields).should == {"$or"=>[{"f1"=>/red/mi},
+                                        {"f2"=>/red/mi}]}
+    q('"red"', fields).should == {"$or"=>[{"f1"=>/\bred\b/},
+                                          {"f2"=>/\bred\b/}]}
     q('foo "blue green"', fields).should == {
       "$and"=>[{"$or"=>[{"f1"=>/foo/mi},
                         {"f2"=>/foo/mi}]},
-               {"$or"=>[{"f1"=>/blue\ green/},
-                        {"f2"=>/blue\ green/}]}]}
+               {"$or"=>[{"f1"=>/\bblue\ green\b/},
+                        {"f2"=>/\bblue\ green\b/}]}]}
     q('foo 1 2', fields).should == {
       "$and"=>[{"$or"=>[{"f1"=>/foo/mi},
                         {"f2"=>/foo/mi}]},
@@ -44,8 +48,8 @@ describe Mongoer do
 
   it 'should sanitize inputs' do
     def q2(s); q(s, ['f1'], { str1: String }); end
-    q2('"a b"').should == {"f1"=>/a\ b/}
-    q2("str1:'a-b'").should == {"str1"=>/a\-b/}
+    q2('"a b"').should == {"f1"=>/\ba\ b\b/}
+    q2("str1:'a-b'").should == {"str1"=>/\ba\-b\b/}
   end
 
   it 'should handle ORs' do
@@ -113,7 +117,7 @@ describe Mongoer do
     # q2('paid:true').should == {"paid_at"=>{"$exists"=>true}}
     # q2('paid:false').should == {"paid_at"=>{"$exists"=>false}}
     def q3(s); q(s, [], { foo: [String, :allow_existence_boolean] }); end
-    q3('foo:"true"').should == {"foo"=>/true/}
+    q3('foo:"true"').should == {"foo"=>/\btrue\b/}
     q3('foo:false').should == {"foo"=>{"$exists"=>false}}
     q3('foo:true').should == {"$and"=>[{"$exists"=>true}, {"$ne"=>false}]}
     q3('foo:false|foo:error').should == {"$or"=>[{"foo"=>{"$exists"=>false}},

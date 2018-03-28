@@ -59,3 +59,44 @@ but also used to preserve case)
 
 
 TODO: rubocop (add it to circleCI too)
+
+
+Search across feilds
+ann
+ann orange
+
+Seach specific values and fields
+"Ann"
+color:orange
+
+Use aliases
+favorite_color:orange
+color:red
+(maybe do points/score)
+
+Check booleans and existance
+admin:true
+score:false
+
+Match with logical ORs
+red|blue
+red|blue|bob
+
+Match with logical NOTs
+-red
+-(red|blue)
+(green admin) | john
+
+Search ranges and dates (via the Chronic Gem)
+score<=100
+born>today
+
+----------
+(foo?) causes error if attempted to be passed in URL, so maybe i should have warning
+for URL safe searches or so.
+
+chronic thinks that "2000" means 20:20 today, not year 2000.
+also it would be nice if "monday" matched any date on a monday, not just like this monday.
+ -- for command at least (maybe compare it makes less sense)
+
+----------------------------

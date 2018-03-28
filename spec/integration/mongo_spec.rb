@@ -26,7 +26,7 @@ class Hat
       star: :starred,
       tags: String,
       tag: :tags,
-      feathers: Numeric,
+      feathers: [Numeric, :allow_existence_boolean],
       fav_date: Time
     }
     tokens = Lexer.lex(query)
@@ -55,6 +55,16 @@ describe Hat do # TODO: describe real class
   it 'should be able to do an empty string query' do
     Hat.search('').selector.should == {}
     Hat.search('').count.should == 9
+  end
+
+  it 'should be able to do speicific matches' do
+    Hat.create(title: 'ann')
+    Hat.create(title: 'anne')
+    Hat.create(title: 'nne')
+    Hat.create(title: 'nn')
+    Hat.search('"ann"').count.should == 1
+    Hat.search('"nn"').count.should == 1
+    Hat.search('"nne"').count.should == 1
   end
 
   it 'should be able to search for a boolean' do
@@ -97,9 +107,9 @@ describe Hat do # TODO: describe real class
     Hat.search("'quoted tag'").count.should == 1
     Hat.search("'quoted tag'").selector.should == {
       '$or' => [
-        { 'title' => /quoted\ tag/ },
-        { 'description' => /quoted\ tag/ },
-        { 'tags' => /quoted\ tag/ }
+        { 'title' => /\bquoted\ tag\b/ },
+        { 'description' => /\bquoted\ tag\b/ },
+        { 'tags' => /\bquoted\ tag\b/ }
       ]
     }
   end
@@ -157,9 +167,9 @@ describe Hat do # TODO: describe real class
       '$and' => [
         { '$or' => [{ 'title' => /multi/mi }, { 'description' => /multi/mi }, { 'tags' => /multi/mi }] },
         { '$or' => [
-            { 'title' => /quoted\ tag/ },
-            { 'description' => /quoted\ tag/ },
-            { 'tags' => /quoted\ tag/ }
+            { 'title' => /\bquoted\ tag\b/ },
+            { 'description' => /\bquoted\ tag\b/ },
+            { 'tags' => /\bquoted\ tag\b/ }
           ] }
       ]
     }
@@ -169,6 +179,11 @@ describe Hat do # TODO: describe real class
     Hat.search('title:name1').count.should == 1
     Hat.search('title:name1').selector.should == { 'title' => /name1/mi }
     Hat.search('title:name500').count.should == 0
+  end
+
+  it 'should handle numeric existance checks' do
+    Hat.search('feathers:true').count.should == 3
+    Hat.search('feathers:false').count.should == 6
   end
 
   # it 'should handle undefined commands' do
@@ -188,7 +203,7 @@ describe Hat do # TODO: describe real class
   it 'should be able to find things with quoted commands' do
     Hat.search("tag:'quoted tag'").count.should == 1
     Hat.search("tags:'quoted tag'").count.should == 1
-    Hat.search("tags:'quoted tag'").selector.should == { 'tags' => /quoted\ tag/ }
+    Hat.search("tags:'quoted tag'").selector.should == { 'tags' => /\bquoted\ tag\b/ }
   end
 
   it 'should be able to find things with multiple commands' do
@@ -237,9 +252,9 @@ describe Hat do # TODO: describe real class
   it 'should handle quoted apostrophes' do
     Hat.search("\"someone's iHat\"").count.should == 1
     Hat.search("\"someone's iHat\"").selector.should == {"$or"=>[
-                                                           {"title"=>/someone's\ iHat/},
-                                                           {"description"=>/someone's\ iHat/},
-                                                           {"tags"=>/someone's\ iHat/}]}
+                                                           {"title"=>/\bsomeone's\ iHat\b/},
+                                                           {"description"=>/\bsomeone's\ iHat\b/},
+                                                           {"tags"=>/\bsomeone's\ iHat\b/}]}
     Hat.search("title:\"someone's iHat\"").count.should == 1
     Hat.search("title:\"someone's iHat\"|name4").count.should == 2
   end
@@ -360,7 +375,15 @@ describe Hat do # TODO: describe real class
     Hat.search('(a9 b9) (c9 d9)').count.should == 0
   end
 
+  it 'should handle quesiton marks without error' do
+    Hat.search("?").count.should == 0
+    Hat.search("(?)").count.should == 0
+    Hat.search("(redgreenblue01?)").count.should == 0
+
+  end
+
   # it 'should error gracefully' do
+  #   lopsided parens
   #   Hat.search('(-sdf:sdfdf>sd\'s":f-').count.should == 0
   #   Hat.search('""sdfdsfhellosdf|dsfsdf::>>><><').count.should == 0
   # end

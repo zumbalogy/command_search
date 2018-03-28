@@ -7,7 +7,7 @@ class Mongoer
       str = ast_node[:value]
       fields = [fields] unless fields.is_a?(Array)
       if ast_node[:type] == :quoted_str
-        regex = /#{Regexp.escape(str)}/
+        regex = /\b#{Regexp.escape(str)}\b/
       else
         regex = /#{Regexp.escape(str)}/mi
       end
@@ -39,6 +39,7 @@ class Mongoer
       (field_node, search_node) = ast_node[:value]
       key = field_node[:value]
       raw_type = command_types[key.to_sym]
+      type = raw_type
 
       raw_val = search_node[:value]
       search_type = search_node[:type]
@@ -69,15 +70,15 @@ class Mongoer
         bool = make_boolean(raw_val)
         bool = !bool if field_node[:negate]
         if bool
+          val = [{ key => { '$exists' => true } },
+                 { key => { '$ne' => false } }]
           key = '$and'
-          val = [{ '$exists' => true },
-                 { '$ne' => false }]
         else
           val = { '$exists' => false }
         end
       elsif type == String
         if search_type == :quoted_str
-          val = /#{Regexp.escape(raw_val)}/
+          val = /\b#{Regexp.escape(raw_val)}\b/
         else
           val = /#{Regexp.escape(raw_val)}/mi
         end
