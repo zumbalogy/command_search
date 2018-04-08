@@ -113,13 +113,16 @@ describe Mongoer do
   end
 
   it 'should handle boolean commands' do
+    def q1(s); q(s, [], { b: Boolean }); end
+    q1('b:true').should == {"$and"=>[{"b"=>{"$exists"=>true}}, {"b"=>{"$ne"=>false}}]}
+    q1('b:false').should == {"$and"=>[{"b"=>{"$exists"=>true}}, {"b"=>{"$ne"=>true}}]}
     def q2(s); q(s, [], { paid: :paid_at, paid_at: [Date, :allow_existence_boolean] }); end
     # q2('paid:true').should == {"paid_at"=>{"$exists"=>true}}
     # q2('paid:false').should == {"paid_at"=>{"$exists"=>false}}
     def q3(s); q(s, [], { foo: [String, :allow_existence_boolean] }); end
     q3('foo:"true"').should == {"foo"=>/\btrue\b/}
     q3('foo:false').should == {"foo"=>{"$exists"=>false}}
-    q3('foo:true').should == {"$and"=>[{"$exists"=>true}, {"$ne"=>false}]}
+    q3('foo:true').should == {"$and"=>[{"foo"=>{"$exists"=>true}}, {"foo"=>{"$ne"=>false}}]}
     q3('foo:false|foo:error').should == {"$or"=>[{"foo"=>{"$exists"=>false}},
                                                  {"foo"=>/error/mi}]}
   end

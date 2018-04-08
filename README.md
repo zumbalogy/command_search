@@ -8,9 +8,8 @@ an option  to pass though to real regexes might solve this.
 right now, a<b<c is lexed as a,<,b,<,c and then parsed as
 (< a (< b c)), but should maybe be parsed as (< a b c),
 or lexed to the logical equavalent, (and (< a b) (< b c))
-as to keep the comparison logic binary. the alternative
-is to not allow this syntax.
-
+as to keep the comparison logic binary.
+the alternative is to not allow this syntax.
 
 right now there will be issues with 'foo:-bar'.
 
@@ -35,7 +34,6 @@ TODO: write a validator step and a user-defined-preprocessing step. call it tran
 
 TODO: make sure periods in strings work, like "Dr.Foo"
 TODO: current commands are passed though as commands without validation.
-
 
 Note: in example project, have a "sort by" example
 
@@ -100,3 +98,20 @@ also it would be nice if "monday" matched any date on a monday, not just like th
  -- for command at least (maybe compare it makes less sense)
 
 ----------------------------
+
+it might be nice to have an optional character, so that:
+['a b', 'a b c', 'b c']
+first two can be matched with the query "a b c?" (or so) instead of "(a b) | (a b c)"
+
+-------------------------------
+
+def q1(s); q(s, [], { b: Boolean }); end
+  q1('b:false').should == {"$and"=>[{"b"=>{"$exists"=>true}}, {"b"=>{"$ne"=>true}}]}
+
+could maybe be optomized to return b=>false
+
+-------------------------------
+
+TODO: test out problems of nesting " and ' quote types. currently
+' quotes are run first but what should really happen is that the outtermost
+quotes should run first or at least eat up inner nested quotes.
