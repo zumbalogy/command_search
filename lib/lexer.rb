@@ -61,8 +61,9 @@ class Lexer
       len = pattern.count
       while (out.map { |x| x[:type] }).each_cons(len).find_index(pattern)
         i = (out.map { |x| x[:type] }).each_cons(len).find_index(pattern)
-        val = out[i..i + (len - 1)].map { |x| x[:value] }.join()
-        out[i..i + (len - 1)] = { type: group_type, value: val }
+        span = (i..i - (len - 1))
+        val = out[span].map { |x| x[:value] }.join()
+        out[span] = { type: group_type, value: val }
       end
       out
     end
