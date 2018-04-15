@@ -76,11 +76,13 @@ class Lexer
 
       out = group_quoted_strings(out)
 
-      out = group_pattern(out, :number,  [:number,  :number])
-      out = group_pattern(out, :number,  [:number,  :period, :number])
-      out = group_pattern(out, :str,     [:str,     :minus,  :str])
       out = group_pattern(out, :compare, [:compare, :equal])
+      out = group_pattern(out, :number,  [:number,  :number])
       out = group_pattern(out, :number,  [:minus,   :number])
+      out = group_pattern(out, :number,  [:number,  :period, :number])
+      out = group_pattern(out, :str,     [:period])
+      out = group_pattern(out, :str,     [:equal])
+      out = group_pattern(out, :str,     [:str,     :minus])
       out = group_pattern(out, :str,     [:str,     :number])
       out = group_pattern(out, :str,     [:number,  :str])
       out = group_pattern(out, :str,     [:str,     :str])

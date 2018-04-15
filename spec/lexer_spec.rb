@@ -13,6 +13,14 @@ describe Lexer do
     Lexer.lex('f1oo').should == [{type: :str, value: "f1oo"}]
     Lexer.lex('ab_cd').should == [{type: :str, value: "ab_cd"}]
     Lexer.lex('ab?cd').should == [{type: :str, value: "ab?cd"}]
+    Lexer.lex('Dr.Foo').should == [{type: :str, value: "Dr.Foo"}]
+    Lexer.lex('Dr.-Foo').should == [{type: :str, value: "Dr.-Foo"}]
+    Lexer.lex('Dr.=Foo').should == [{type: :str, value: "Dr.=Foo"}]
+    Lexer.lex('Dr=.Foo').should == [{type: :str, value: "Dr=.Foo"}]
+    Lexer.lex('Dr-.Foo').should == [{type: :str, value: "Dr-.Foo"}]
+    Lexer.lex('F.O.O.').should == [{type: :str, value: "F.O.O."}]
+    Lexer.lex('foo-bar-').should == [{type: :str, value: "foo-bar-"}]
+    Lexer.lex('foo=bar=').should == [{type: :str, value: "foo=bar="}]
     Lexer.lex('a b c 1 foo').should == [
       {type: :str, value: "a"},
       {type: :str, value: "b"},
