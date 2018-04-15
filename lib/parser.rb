@@ -21,7 +21,7 @@ class Parser
     end
 
     def cluster(type, input, cluster_type = :binary)
-      binary = cluster_type == :binary
+      binary = (cluster_type == :binary)
       out = input
       out = out[:value] while out.is_a?(Hash)
       out.compact!
