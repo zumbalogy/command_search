@@ -53,6 +53,20 @@ describe Lexer do
       {type: :str, value: "a"},
       {type: :quoted_str, value: "b \" c"}
     ]
+    Lexer.lex('"a\'b"').should == [{type: :quoted_str, value: "a\'b"}]
+    Lexer.lex("'a\"b'").should == [{type: :quoted_str, value: "a\"b"}]
+    Lexer.lex("'a\"\"b'").should == [{type: :quoted_str, value: "a\"\"b"}]
+    Lexer.lex('"a\'\'b"').should == [{type: :quoted_str, value: "a\'\'b"}]
+    Lexer.lex("'red \"blue' \" green").should == [
+      {type: :quoted_str, value: "red \"blue"},
+      {type: :quote, value: '"'},
+      {type: :str, value: "green"}
+    ]
+    Lexer.lex('"red \'blue" \' green').should == [
+      {type: :quoted_str, value: "red \'blue"},
+      {type: :quote, value: "'"},
+      {type: :str, value: "green"}
+    ]
   end
 
   it 'should handle OR statements' do

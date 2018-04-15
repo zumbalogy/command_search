@@ -42,16 +42,19 @@ class Lexer
       lst.each_index.select { |i| lst[i][:value] == match }
     end
 
-    def group_quoted_string(input, str_type)
+    def group_quoted_strings(input)
       out = input
-      while value_indices(str_type, out).length >= 2
-        (a, b) = value_indices(str_type, out).first(2)
-        vals = out[a..b].map { |i| i[:value] }
+      while value_indices("'", out).length >= 2 || value_indices('"', out).length >= 2
+        (a, b) = value_indices("'", out).first(2)
+        (c, d) = value_indices('"', out).first(2)
+        if a && b && (c == nil || (a < c))
+          (x, y) = [a, b]
+        else
+          (x, y) = [c, d]
+        end
+        vals = out[x..y].map { |i| i[:value] }
         trimmed_vals = vals.take(vals.length - 1).drop(1)
-        # this should make sure to eat up any inner nested quotes.
-        # by flattening out the trimmed values.
-        # also I want ("hello'"' there") to be a total single quote i guess.
-        out[a..b] = { type: :quoted_str, value: trimmed_vals.join() }
+        out[x..y] = { type: :quoted_str, value: trimmed_vals.join() }
       end
       out
     end
@@ -71,8 +74,7 @@ class Lexer
     def full_tokens(char_token_list)
       out = char_token_list.clone()
 
-      out = group_quoted_string(out, "'")
-      out = group_quoted_string(out, '"')
+      out = group_quoted_strings(out)
 
       out = group_pattern(out, :number,  [:number,  :number])
       out = group_pattern(out, :number,  [:number,  :period, :number])
