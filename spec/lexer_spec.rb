@@ -8,19 +8,25 @@ describe Lexer do
     Lexer.lex("    \n ").should == []
   end
 
-  it 'should be able to split basic parts on spaces' do
+  it 'should correctly categorize strings' do
     Lexer.lex('foo').should == [{type: :str, value: "foo"}]
     Lexer.lex('f1oo').should == [{type: :str, value: "f1oo"}]
     Lexer.lex('ab_cd').should == [{type: :str, value: "ab_cd"}]
     Lexer.lex('ab?cd').should == [{type: :str, value: "ab?cd"}]
+    Lexer.lex('F.O.O.').should == [{type: :str, value: "F.O.O."}]
     Lexer.lex('Dr.Foo').should == [{type: :str, value: "Dr.Foo"}]
     Lexer.lex('Dr.-Foo').should == [{type: :str, value: "Dr.-Foo"}]
     Lexer.lex('Dr.=Foo').should == [{type: :str, value: "Dr.=Foo"}]
     Lexer.lex('Dr=.Foo').should == [{type: :str, value: "Dr=.Foo"}]
     Lexer.lex('Dr-.Foo').should == [{type: :str, value: "Dr-.Foo"}]
-    Lexer.lex('F.O.O.').should == [{type: :str, value: "F.O.O."}]
     Lexer.lex('foo-bar-').should == [{type: :str, value: "foo-bar-"}]
     Lexer.lex('foo=bar=').should == [{type: :str, value: "foo=bar="}]
+    Lexer.lex('a1-.2').should == [{type: :str, value: "a1-.2"}]
+    Lexer.lex('1-.2').should == [{type: :str, value: "1-.2"}]
+    Lexer.lex('1.-2').should == [{type: :str, value: "1.-2"}]
+  end
+
+  it 'should be able to split basic parts on spaces' do
     Lexer.lex('a b c 1 foo').should == [
       {type: :str, value: "a"},
       {type: :str, value: "b"},
@@ -96,6 +102,23 @@ describe Lexer do
       {type: :pipe, value: "|"},
       {type: :str, value: "b"},
       {type: :pipe, value: "|"},
+      {type: :str, value: "c"}
+    ]
+  end
+
+  it 'should handle duplicate pipe operators' do
+    Lexer.lex('a||b|c').should == [
+      {type: :str, value: "a"},
+      {type: :pipe, value: "||"},
+      {type: :str, value: "b"},
+      {type: :pipe, value: "|"},
+      {type: :str, value: "c"}
+    ]
+    Lexer.lex('a||b||||c').should == [
+      {type: :str, value: "a"},
+      {type: :pipe, value: "||"},
+      {type: :str, value: "b"},
+      {type: :pipe, value: "||||"},
       {type: :str, value: "c"}
     ]
   end
@@ -182,6 +205,12 @@ describe Lexer do
       {type: :compare, value: "<"},
       {type: :number, value: "13"}
     ]
+  end
+
+  it 'should handle spaces in comparisons' do
+    Lexer.lex('red>5').should == Lexer.lex('red > 5')
+    Lexer.lex('foo<=Monday').should == Lexer.lex('foo <= Monday')
+    Lexer.lex('foo<=Monday').should_not == Lexer.lex('foo < = Monday')
   end
 
   it 'should handle parens' do

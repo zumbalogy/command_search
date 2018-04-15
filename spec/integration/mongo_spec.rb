@@ -278,9 +278,13 @@ describe Hat do # TODO: describe real class
 
   it 'it should handle multiple OR searches' do
     Hat.search('desk1|desk2 desk2|desk3').count.should == 1
+    Hat.search('desk1|desk2 desk2||desk3').count.should == 1
+    Hat.search('desk1|desk2 desk2|||desk3').count.should == 1
+    Hat.search('desk1||desk2 desk2|||desk3').count.should == 1
     Hat.search('desk1|desk2 desk1|desk2').count.should == 2
     Hat.search('desk1|desk2|desk3 desk1|desk2').count.should == 2
     Hat.search('desk1|desk2|desk3 desk1|desk3|desk2').count.should == 3
+    Hat.search('desk1||desk2|desk3 desk1|||desk3|desk2').count.should == 3
   end
 
   it 'it should handle multiple OR searches with command and non command searches' do
