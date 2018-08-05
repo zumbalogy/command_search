@@ -5,7 +5,7 @@ this name field must have the string ":)" 3 times. having
 an option  to pass though to real regexes might solve this.
 
 
-right now, there are issues with comparing dates
+right now, there are likely issues with comparing dates.
 
 right now there will be issues with 'foo:-bar'.
 
