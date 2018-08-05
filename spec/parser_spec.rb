@@ -242,8 +242,36 @@ describe Parser do
        nest_op: '>=',
        value: [{type: :str, value: 'b'},
                {type: :number, value: '-1'}]}]
+  end
 
-    # parse('1<5<10').should == ['1<5<10']
+  it 'should handle chained comparisons' do
+    parse('0<red<5').should == [
+      {type: :nest,
+       nest_type: :compare,
+       nest_op: '<',
+       value: [{type: :number, value: '0'},
+               {type: :str, value: 'red'}]},
+      {type: :nest,
+       nest_type: :compare,
+       nest_op: '<',
+       value: [{type: :str, value: 'red'},
+               {type: :number, value: '5'}]}]
+    parse('cyan<blue>=-1>-34').should == [
+      {type: :nest,
+       nest_type: :compare,
+       nest_op: '<',
+       value: [{type: :str, value: 'cyan'},
+               {type: :str, value: 'blue'}]},
+      {type: :nest,
+       nest_type: :compare,
+       nest_op: '>=',
+       value: [{type: :str, value: 'blue'},
+               {type: :number, value: '-1'}]},
+      {type: :nest,
+       nest_type: :compare,
+       nest_op: '>',
+       value: [{type: :number, value: '-1'},
+               {type: :number, value: '-34'}]}]
   end
 
   it 'should handle wacky combinations' do

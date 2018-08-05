@@ -46,10 +46,22 @@ class Parser
       end
     end
 
+    def unchain(type, input)
+      input.each_index { |i|
+        front = input.dig(i, :type)
+        mid = input.dig(i + 1, :type)
+        back = input.dig(i + 2, :type)
+        if (front == type && mid != type && back == type)
+          input.insert(i + 1, input[i + 1])
+        end
+      }
+    end
+
     def parse(input)
       out = input
       out = group_parens(out)
       out = cluster(:colon, out)
+      out = unchain(:compare, out)
       out = cluster(:compare, out)
       out = cluster(:minus, out, :prefix)
       out = cluster(:pipe, out)

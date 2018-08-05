@@ -84,7 +84,6 @@ describe Mongoer do
            {'$or'=>[{'f1'=>/d/mi}, {'f2'=>/d/mi}]}]}]}
   end
 
-
   it 'should handle basic commands' do
     def q2(s); q(s, ['f1'], { str1: String, num1: Numeric }); end
     q2('str1:red').should == {'str1'=>/red/mi}
@@ -132,6 +131,8 @@ describe Mongoer do
     q2('num1<-230').should == {'num1'=>{'$lt'=>-230}}
     q2('num1<=5.20').should == {'num1'=>{'$lte'=>5.20}}
     q2('num1>0').should == {'num1'=>{'$gt'=>0}}
+    q2('0<num1').should == {'num1'=>{'$gt'=>0}}
+    q2('-5>=num1').should == {'num1'=>{'$lte'=>-5}}
     q2('num1>=1000').should == {'num1'=>{'$gte'=>1000}}
   end
 

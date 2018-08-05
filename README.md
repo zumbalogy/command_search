@@ -5,11 +5,7 @@ this name field must have the string ":)" 3 times. having
 an option  to pass though to real regexes might solve this.
 
 
-right now, a<b<c is lexed as a,<,b,<,c and then parsed as
-(< a (< b c)), but should maybe be parsed as (< a b c),
-or lexed to the logical equivalent, (and (< a b) (< b c))
-as to keep the comparison logic binary.
-the alternative is to not allow this syntax.
+right now, there are likely issues with comparing dates.
 
 right now there will be issues with 'foo:-bar'.
 
@@ -86,6 +82,7 @@ Match with logical NOTs
 Search ranges and dates (via the Chronic Gem)
 score<=100
 born>today
+a<b<c
 
 ----------
 (foo?) causes error if attempted to be passed in URL, so maybe i should have warning

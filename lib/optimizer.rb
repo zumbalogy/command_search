@@ -4,6 +4,7 @@ class Optimizer
     def ands_and_ors(ast)
       ast.uniq.map do |node|
         next node unless node[:nest_type]
+        next node if node[:nest_type] == :compare
         node[:value] = ands_and_ors(node[:value])
         node[:value] = node[:value].flat_map do |kid|
           next kid unless kid[:nest_type]

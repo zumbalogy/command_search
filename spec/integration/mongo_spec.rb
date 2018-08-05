@@ -12,6 +12,7 @@ class Hat
   field :starred,     type: Boolean
   field :child_id,    type: String
   field :feathers,    type: Integer
+  field :cost,        type: Integer
   field :fav_date,    type: Time
 
   def self.search(query)
@@ -27,13 +28,14 @@ class Hat
       tags: String,
       tag: :tags,
       feathers: [Numeric, :allow_existence_boolean],
+      cost: Numeric,
       fav_date: Time
     }
     tokens = Lexer.lex(query)
     parsed = Parser.parse(tokens)
-    opted = Optimizer.optimize(parsed)
-    dealiased = Dealiaser.dealias(opted, command_fields)
-    mongo_query = Mongoer.build_query(dealiased, search_fields, command_fields)
+    dealiased = Dealiaser.dealias(parsed, command_fields)
+    opted = Optimizer.optimize(dealiased)
+    mongo_query = Mongoer.build_query(opted, search_fields, command_fields)
     Hat.where(mongo_query)
   end
 end
@@ -47,9 +49,9 @@ describe Hat do
     Hat.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
     Hat.create(description: "desk new \n line")
     Hat.create(tags: "multi tag, 'quoted tag'")
-    Hat.create(title: 'same_name', feathers: 2, fav_date: 2.months.ago)
-    Hat.create(title: 'same_name', feathers: 5, fav_date: 1.year.ago)
-    Hat.create(title: "someone's iHat", feathers: 8, fav_date: 1.week.ago)
+    Hat.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
+    Hat.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
+    Hat.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
   end
 
   it 'should be able to do an empty string query' do
@@ -342,6 +344,7 @@ describe Hat do
   end
 
   it 'should handle comparisons' do
+    Hat.search('0<feathers').count.should == 3
     Hat.search('feathers>0').count.should == 3
     Hat.search('feathers>2').count.should == 2
     Hat.search('feathers>5').count.should == 1
@@ -349,6 +352,20 @@ describe Hat do
     Hat.search('feathers>=8').count.should == 1
     Hat.search('feathers<8').count.should == 2
     Hat.search('feathers<=5').count.should == 2
+    Hat.search('feathers<cost').count.should == 1
+    Hat.search('feathers>cost').count.should == 2
+    Hat.search('cost>cost').count.should == 0
+    Hat.search('cost<=cost').count.should == Hat.count
+  end
+
+  it 'should handle chained comparisons' do
+    Hat.search('100>feathers>0').count.should == 3
+    Hat.search('0<feathers>2').count.should == 2
+    Hat.search('0<feathers<cost').count.should == 1
+    Hat.search('feathers>=cost>0').count.should == 1
+    Hat.search('feathers>=cost>=0').count.should == 2
+    Hat.search('-5<feathers>=cost>=0').count.should == 2
+    Hat.search('0<feathers<cost<200').count.should == 1
   end
 
   it 'should handle comparisons with dates' do
