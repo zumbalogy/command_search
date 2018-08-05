@@ -38,7 +38,7 @@ class Hat
   end
 end
 
-describe Hat do # TODO: describe real class
+describe Hat do
   before do
     Mongoid.purge!
     Hat.create(title: 'name name1 1')
@@ -380,10 +380,9 @@ describe Hat do # TODO: describe real class
   end
 
   it 'should handle quesiton marks without error' do
-    Hat.search("?").count.should == 0
-    Hat.search("(?)").count.should == 0
-    Hat.search("(redgreenblue01?)").count.should == 0
-
+    Hat.search('?').count.should == 0
+    Hat.search('(?)').count.should == 0
+    Hat.search('(redgreenblue01?)').count.should == 0
   end
 
   # it 'should error gracefully' do

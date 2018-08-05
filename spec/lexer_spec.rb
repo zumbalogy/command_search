@@ -215,61 +215,61 @@ describe Lexer do
 
   it 'should handle parens' do
     Lexer.lex('(a)').should == [
-      {type: :paren, value: "("},
-      {type: :str, value: "a"},
-      {type: :paren, value: ")"}
+      {type: :paren, value: '('},
+      {type: :str, value: 'a'},
+      {type: :paren, value: ')'}
     ]
     Lexer.lex('(a foo)').should == [
-      {type: :paren, value: "("},
-      {type: :str, value: "a"},
-      {type: :str, value: "foo"},
-      {type: :paren, value: ")"}
+      {type: :paren, value: '('},
+      {type: :str, value: 'a'},
+      {type: :str, value: 'foo'},
+      {type: :paren, value: ')'}
     ]
     Lexer.lex('(a (foo bar) b) c').should == [
-      {type: :paren, value: "("},
-      {type: :str, value: "a"},
-      {type: :paren, value: "("},
-      {type: :str, value: "foo"},
-      {type: :str, value: "bar"},
-      {type: :paren, value: ")"},
-      {type: :str, value: "b"},
-      {type: :paren, value: ")"},
-      {type: :str, value: "c"}
+      {type: :paren, value: '('},
+      {type: :str, value: 'a'},
+      {type: :paren, value: '('},
+      {type: :str, value: 'foo'},
+      {type: :str, value: 'bar'},
+      {type: :paren, value: ')'},
+      {type: :str, value: 'b'},
+      {type: :paren, value: ')'},
+      {type: :str, value: 'c'}
     ]
   end
 
   it 'should handle OR and NOT with parens' do
     Lexer.lex('(a -(foo bar))').should == [
-      {type: :paren, value: "("},
-      {type: :str, value: "a"},
-      {type: :minus, value: "-"},
-      {type: :paren, value: "("},
-      {type: :str, value: "foo"},
-      {type: :str, value: "bar"},
-      {type: :paren, value: ")"},
-      {type: :paren, value: ")"}
+      {type: :paren, value: '('},
+      {type: :str, value: 'a'},
+      {type: :minus, value: '-'},
+      {type: :paren, value: '('},
+      {type: :str, value: 'foo'},
+      {type: :str, value: 'bar'},
+      {type: :paren, value: ')'},
+      {type: :paren, value: ')'}
     ]
     Lexer.lex('(a b) | (foo bar)').should == [
-      {type: :paren, value: "("},
-      {type: :str, value: "a"},
-      {type: :str, value: "b"},
-      {type: :paren, value: ")"},
-      {type: :pipe, value: "|"},
-      {type: :paren, value: "("},
-      {type: :str, value: "foo"},
-      {type: :str, value: "bar"},
-      {type: :paren, value: ")"}
+      {type: :paren, value: '('},
+      {type: :str, value: 'a'},
+      {type: :str, value: 'b'},
+      {type: :paren, value: ')'},
+      {type: :pipe, value: '|'},
+      {type: :paren, value: '('},
+      {type: :str, value: 'foo'},
+      {type: :str, value: 'bar'},
+      {type: :paren, value: ')'}
     ]
   end
 
   it 'should handle wacky combinations' do
     Lexer.lex('(-)').should == [
-      {type: :paren, value: "("},
-      {type: :minus, value: "-"},
-      {type: :paren, value: ")"}]
+      {type: :paren, value: '('},
+      {type: :minus, value: '-'},
+      {type: :paren, value: ')'}]
     Lexer.lex('(|)').should == [
-      {type: :paren, value: "("},
-      {type: :pipe, value: "|"},
-      {type: :paren, value: ")"}]
+      {type: :paren, value: '('},
+      {type: :pipe, value: '|'},
+      {type: :paren, value: ')'}]
   end
 end

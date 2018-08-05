@@ -28,8 +28,8 @@ describe Dealiaser do
       {type: :nest,
        nest_type: :compare,
        nest_op: '<',
-       value: [{type: :str, value: "bar"},
-               {type: :number, value: "100"}]}]
+       value: [{type: :str, value: 'bar'},
+               {type: :number, value: '100'}]}]
   end
 
   # it 'should wacky inputs' do
