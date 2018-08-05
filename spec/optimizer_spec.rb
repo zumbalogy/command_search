@@ -49,6 +49,7 @@ describe Parser do
       '- -12',
       'ab-dc',
       'a a|b',
+      'a<=a',
       'red "blue green"',
       '1 2 2.34 3 -100 -4.30',
       '(a b) | (c d)'

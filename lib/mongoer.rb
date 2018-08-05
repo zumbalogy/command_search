@@ -35,7 +35,7 @@ class Mongoer
     end
 
     def build_command(ast_node, command_types)
-      # aliasing will be probably done before ast gets to mongoer.rb
+      # aliasing will is done before ast gets to mongoer.rb
       (field_node, search_node) = ast_node[:value]
       key = field_node[:value]
       raw_type = command_types[key.to_sym]
@@ -114,10 +114,38 @@ class Mongoer
     end
 
     def build_compare(ast_node, command_types)
-      (field_node, search_node) = ast_node[:value]
-      key = field_node[:value]
-      raw_val = search_node[:value]
-      raw_op = ast_node[:nest_op]
+      flip_ops = {
+        '<' => '>',
+        '>' => '<',
+        '<=' => '>=',
+        '>=' => '<='
+      }
+      reverse_ops = {
+        '<' => '>=',
+        '<=' => '>',
+        '>' => '<=',
+        '>=' => '<'
+      }
+      mongo_op_map = {
+        '<' => '$lt',
+        '>' => '$gt',
+        '<=' => '$lte',
+        '>=' => '$gte'
+      }
+
+      keys = command_types.keys
+      (first_node, last_node) = ast_node[:value]
+      key = first_node[:value]
+      val = last_node[:value]
+      op = ast_node[:nest_op]
+      op = reverse_ops[op] if first_node[:negate]
+
+      if keys.include?(val.to_sym)
+        (key, val) = [val, key]
+        op = flip_ops[op]
+      end
+
+      mongo_op = mongo_op_map[op]
       raw_type = command_types[key.to_sym]
 
       if raw_type.is_a?(Array)
@@ -126,28 +154,16 @@ class Mongoer
         type = raw_type
       end
 
-      reverse_ops = {
-        '<' => '>=',
-        '<=' => '>',
-        '>' => '<=',
-        '>=' => '<'
-      }
-
-      op = raw_op
-      op = reverse_ops[raw_op] if field_node[:negate]
-
-      mongo_op_map = {
-        '<' => '$lt',
-        '>' => '$gt',
-        '<=' => '$lte',
-        '>=' => '$gte'
-      }
-      mongo_op = mongo_op_map[op]
-      if type == Numeric
-        if raw_val == raw_val.to_i.to_s
-          val = raw_val.to_i
+      if command_types[val.to_sym]
+        val = '$' + val
+        key = '$' + key
+        val = [key, val]
+        key = '$expr'
+      elsif type == Numeric
+        if val == val.to_i.to_s
+          val = val.to_i
         else
-          val = raw_val.to_f
+          val = val.to_f
         end
       elsif type == Time
         # foo <  day | day.start
@@ -161,7 +177,7 @@ class Mongoer
           '>=' => :start
         }
         date_pick = date_start_map[op]
-        time_str = raw_val.gsub('_', ' ')
+        time_str = val.gsub('_', ' ')
         date = Chronic.parse(time_str, { guess: nil })
         if date_pick == :start
           val = date.first

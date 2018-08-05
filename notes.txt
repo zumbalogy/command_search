@@ -78,8 +78,6 @@
 # could consider all -5 fine, and  - 5 to be "not five"
 
 
-
-
 # TODO: test negative numbers.
 # TODO: test sending just : or - or => alone. like searches made on accident or in bad faith
 # TODO: maybe support a real regex type. using that could mean certian things are not needed.
