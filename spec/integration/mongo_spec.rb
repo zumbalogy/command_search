@@ -59,7 +59,7 @@ describe Hat do
     Hat.search('').count.should == 9
   end
 
-  it 'should be able to do speicific matches' do
+  it 'should be able to do specific matches' do
     Hat.create(title: 'ann')
     Hat.create(title: 'anne')
     Hat.create(title: 'nne')

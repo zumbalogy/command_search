@@ -47,14 +47,14 @@ class Parser
     end
 
     def unchain(type, input)
-      input.each_index { |i|
+      input.each_index do |i|
         front = input.dig(i, :type)
         mid = input.dig(i + 1, :type)
         back = input.dig(i + 2, :type)
         if (front == type && mid != type && back == type)
           input.insert(i + 1, input[i + 1])
         end
-      }
+      end
     end
 
     def parse(input)
