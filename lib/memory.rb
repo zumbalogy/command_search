@@ -46,22 +46,22 @@ class Memory
       ast_array.all? do |node|
         val = node[:value]
         case node[:nest_type]
+        when nil
+          if node[:type] == :quoted_str
+            field_vals.any? { |x| x[/\b#{Regexp.escape(val)}\b/]}
+          else
+            field_vals.any? { |x| x[/#{Regexp.escape(val)}/mi] }
+          end
+        when :colon
+          command_check(item, val, command_types)
+        when :compare
+          compare_check(item, node, val)
         when :pipe
           val.any? { |v| check(item, v, fields, command_types) }
         when :minus
           !val.any? { |v| check(item, v, fields, command_types) }
         when :paren
           val.all? { |v| check(item, v, fields, command_types) }
-        when :colon
-          command_check(item, val, command_types)
-        when :compare
-          compare_check(item, node, val)
-        else
-          if node[:type] == :quoted_str
-            field_vals.any? { |x| x[/\b#{Regexp.escape(val)}\b/]}
-          else
-            field_vals.any? { |x| x[/#{Regexp.escape(val)}/mi] }
-          end
         end
       end
     end
