@@ -305,20 +305,24 @@ describe Memory do
     search('0<feathers<cost<200').count.should == 1
   end
 
-  xit 'should handle comparisons with dates' do
+  it 'should handle comparisons with dates' do
     search('fav_date<=1_day_ago').count.should == 3
     search('fav_date<=15_days_ago').count.should == 2
     search('fav_date<3_months_ago').count.should == 1
     search('fav_date<2_years_ago').count.should == 0
   end
 
-  xit 'should handle negative comparisons and ORs put together. commands too' do
-    search('-fav_date<2_years_ago').count.should == 3
-    search('-fav_date<3_months_ago').count.should == 2
-    search('-fav_date<=1_day_ago').count.should == 0
-    search('-fav_date<=1_day_ago|fav_date<=1_day_ago').count.should == 3
-    search('-fav_date<=1_day_ago|desk1').count.should == 1
-    search('-fav_date<=1_day_ago|-desk1').count.should == 8
+  it 'should handle negative comparisons and ORs put together. commands too' do
+    # NOTE: Unlike mongo version, items that dont have a key are returned
+    # in the negation case. so if the search is "-foo" an item {bar: 5} will be
+    # returned
+    search('fav_date<2_years_ago').count.should == 0
+    search('-fav_date<2_years_ago').count.should == 9
+    search('-fav_date<3_months_ago').count.should == 8
+    search('-fav_date<=1_day_ago').count.should == 6
+    search('-fav_date<=1_day_ago|fav_date<=1_day_ago').count.should == 9
+    search('-fav_date<=1_day_ago|desk1').count.should == 6
+    search('-fav_date<=1_day_ago|-desk1').count.should == 9
   end
 
   it 'should handle nesting via parentheses' do

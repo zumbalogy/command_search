@@ -17,7 +17,7 @@ class Memory
           item[cmd] == false
         end
       elsif allow_existence_boolean && (cmd_search[/true/i] || cmd_search[/false/i])
-        if cmd_search == 'true'
+        if cmd_search[/true/i]
           item[cmd]
         else
           item[cmd] == nil
@@ -33,10 +33,40 @@ class Memory
       end
     end
 
-    def compare_check(item, node, val)
-      fn = node[:nest_op].to_sym.to_proc
-      args = val.map { |v| v[:type] == :number ? v[:value] : item[v[:value].to_sym] }
+    def compare_check(item, node, command_types)
+      children = node[:value]
+      cmd = children.find { |c| command_types[c[:value].to_sym] }
+      raw_cmd_type = [command_types[cmd[:value].to_sym]].flatten
+      cmd_type = (raw_cmd_type - [:allow_existence_boolean]).first
+
+      args = children.map do |child|
+        child_val = child[:value]
+        item_val = item[child_val.to_s] || item[child_val.to_sym]
+        if child != cmd
+          item_val ||= child_val
+        end
+        return unless item_val
+        if cmd_type == Time
+          date_start_map = {
+            '<' => :start,
+            '>' => :end,
+            '<=' => :end,
+            '>=' => :start
+          }
+          date_pick = date_start_map[node[:nest_op]]
+          time_str = item_val.gsub('.', ' ').gsub('_', ' ')
+          date = Chronic.parse(time_str, { guess: nil })
+          if date_pick == :start
+            date.first
+          else
+            date.last
+          end
+        else
+          item_val
+        end
+      end
       return unless args.all?
+      fn = node[:nest_op].to_sym.to_proc
       fn.call(*args.map(&:to_f))
     end
 
@@ -55,7 +85,7 @@ class Memory
         when :colon
           command_check(item, val, command_types)
         when :compare
-          compare_check(item, node, val)
+          compare_check(item, node, command_types)
         when :pipe
           val.any? { |v| check(item, v, fields, command_types) }
         when :minus
