@@ -56,10 +56,12 @@ class Memory
           command_check(item, val, command_types)
         when :compare
           compare_check(item, node, val)
-        when :quoted_str
-          field_vals.any? { |x| x[/\b#{Regexp.escape(val)}\b/]}
         else
-          field_vals.any? { |x| x[/#{Regexp.escape(val)}/mi] }
+          if node[:type] == :quoted_str
+            field_vals.any? { |x| x[/\b#{Regexp.escape(val)}\b/]}
+          else
+            field_vals.any? { |x| x[/#{Regexp.escape(val)}/mi] }
+          end
         end
       end
     end
