@@ -177,7 +177,7 @@ class Mongoer
           '>=' => :start
         }
         date_pick = date_start_map[op]
-        time_str = val.gsub('_', ' ')
+        time_str = val.gsub(/[\._-]/, ' ')
         date = Chronic.parse(time_str, { guess: nil })
         if date_pick == :start
           val = date.first

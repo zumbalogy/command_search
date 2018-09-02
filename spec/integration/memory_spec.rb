@@ -308,8 +308,10 @@ describe Memory do
   it 'should handle comparisons with dates' do
     search('fav_date<=1_day_ago').count.should == 3
     search('fav_date<=15_days_ago').count.should == 2
+    search('fav_date<=15-days.ago').count.should == 2
     search('fav_date<3_months_ago').count.should == 1
     search('fav_date<2_years_ago').count.should == 0
+    search('fav_date>1/1/1900').count.should == 3
   end
 
   it 'should handle negative comparisons and ORs put together. commands too' do

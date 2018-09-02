@@ -54,7 +54,7 @@ class Memory
             '>=' => :start
           }
           date_pick = date_start_map[node[:nest_op]]
-          time_str = item_val.gsub('.', ' ').gsub('_', ' ')
+          time_str = item_val.gsub(/[\._-]/, ' ')
           date = Chronic.parse(time_str, { guess: nil })
           if date_pick == :start
             date.first
