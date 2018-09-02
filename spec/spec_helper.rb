@@ -3,15 +3,14 @@ load(__dir__ + '/../lib/parser.rb')
 load(__dir__ + '/../lib/dealiaser.rb')
 load(__dir__ + '/../lib/optimizer.rb')
 load(__dir__ + '/../lib/mongoer.rb')
+load(__dir__ + '/../lib/memory.rb')
 
 require('rspec')
 require('pry')
 
-
 RSpec.configure do |config|
   config.expect_with(:rspec) { |c| c.syntax = :should }
 end
-
 
 # require 'clipboard'
 # def gen(x, y)

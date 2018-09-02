@@ -76,7 +76,7 @@ class Lexer
 
       out = group_quoted_strings(out)
 
-      out = group_pattern(out, :pipe,    [:pipe, :pipe])
+      out = group_pattern(out, :pipe,    [:pipe,    :pipe])
       out = group_pattern(out, :compare, [:compare, :equal])
 
       out = group_pattern(out, :number,  [:number,  :period, :number])

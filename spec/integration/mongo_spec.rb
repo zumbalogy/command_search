@@ -59,7 +59,7 @@ describe Hat do
     Hat.search('').count.should == 9
   end
 
-  it 'should be able to do speicific matches' do
+  it 'should be able to do specific matches' do
     Hat.create(title: 'ann')
     Hat.create(title: 'anne')
     Hat.create(title: 'nne')
@@ -377,8 +377,11 @@ describe Hat do
 
   it 'should handle negative comparisons and ORs put together. commands too' do
     Hat.search('-fav_date<2_years_ago').count.should == 3
+    Hat.search('-fav_date<1/20/1803').count.should == 3
     Hat.search('-fav_date<3_months_ago').count.should == 2
+    Hat.search('-fav_date<3-months-ago').count.should == 2
     Hat.search('-fav_date<=1_day_ago').count.should == 0
+    Hat.search('-fav_date<=1.day.ago').count.should == 0
     Hat.search('-fav_date<=1_day_ago|fav_date<=1_day_ago').count.should == 3
     Hat.search('-fav_date<=1_day_ago|desk1').count.should == 1
     Hat.search('-fav_date<=1_day_ago|-desk1').count.should == 8
