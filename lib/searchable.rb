@@ -5,10 +5,7 @@ load(__dir__ + '/optimizer.rb')
 load(__dir__ + '/mongoer.rb')
 load(__dir__ + '/memory.rb')
 
-class SearchableBoolean
-end
-
-Boolean ||= SearchableBoolean
+class Boolean; end
 
 class Searchable
   class << self
