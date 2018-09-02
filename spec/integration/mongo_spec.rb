@@ -31,12 +31,7 @@ class Hat
       cost: Numeric,
       fav_date: Time
     }
-    tokens = Lexer.lex(query)
-    parsed = Parser.parse(tokens)
-    dealiased = Dealiaser.dealias(parsed, command_fields)
-    opted = Optimizer.optimize(dealiased)
-    mongo_query = Mongoer.build_query(opted, search_fields, command_fields)
-    Hat.where(mongo_query)
+    Searchable.search(Hat, query, search_fields, command_fields)
   end
 end
 
