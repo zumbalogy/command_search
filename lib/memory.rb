@@ -36,6 +36,7 @@ class Memory
     def compare_check(item, node, command_types)
       children = node[:value]
       cmd = children.find { |c| command_types[c[:value].to_sym] }
+      return false unless cmd
       raw_cmd_type = [command_types[cmd[:value].to_sym]].flatten
       cmd_type = (raw_cmd_type - [:allow_existence_boolean]).first
 
