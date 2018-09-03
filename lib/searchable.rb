@@ -14,7 +14,8 @@ class Searchable
       tokens = Lexer.lex(query)
       parsed = Parser.parse(tokens)
       dealiased = Dealiaser.dealias(parsed, command_fields)
-      opted = Optimizer.optimize(dealiased)
+      cleaned = Dealiaser.decompose_unaliasable(parsed, command_fields)
+      opted = Optimizer.optimize(cleaned)
       if source.respond_to?(:mongo_client) && source.queryable
         fields = [:__SEARCHABLE_mongo_search_field_dummy_key__] if fields.empty?
         mongo_query = Mongoer.build_query(opted, fields, command_fields)

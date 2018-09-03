@@ -6,7 +6,8 @@ def parse(x)
 end
 
 def dealias(x, aliases)
-  Dealiaser.dealias(parse(x), aliases)
+  dealiased = Dealiaser.dealias(parse(x), aliases)
+  Dealiaser.decompose_unaliasable(dealiased, aliases)
 end
 
 describe Dealiaser do

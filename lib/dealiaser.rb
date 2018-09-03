@@ -28,10 +28,15 @@ class Dealiaser
         next x unless x[:nest_type]
         x[:value] = dealias(x[:value], aliases)
         next x unless [:colon, :compare].include?(x[:nest_type])
-        x = unnest_unaliased(x, aliases)
-        next x unless [:colon, :compare].include?(x[:nest_type])
         x[:value] = dealias_values(x[:value], aliases)
         x
+      end
+    end
+
+    def decompose_unaliasable(ast, aliases)
+      ast.flat_map do |x|
+        next x unless [:colon, :compare].include?(x[:nest_type])
+        unnest_unaliased(x, aliases)
       end
     end
   end
