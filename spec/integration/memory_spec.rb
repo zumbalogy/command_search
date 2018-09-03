@@ -12,9 +12,6 @@ $hats = [
   { title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
 ]
 
-class Boolean
-end
-
 def search(query, list = $hats)
   search_fields = [:title, :description, :tags]
   command_fields = {
@@ -31,12 +28,7 @@ def search(query, list = $hats)
     cost: Numeric,
     fav_date: Time
   }
-  tokens = Lexer.lex(query)
-  parsed = Parser.parse(tokens)
-  dealiased = Dealiaser.dealias(parsed, command_fields)
-  opted = Optimizer.optimize(dealiased)
-  selector = Memory.build_query(opted, search_fields, command_fields)
-  list.select(&selector)
+  Searchable.search(list, query, search_fields, command_fields)
 end
 
 describe Memory do

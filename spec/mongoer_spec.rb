@@ -1,6 +1,4 @@
 load(__dir__ + '/./spec_helper.rb')
-require('chronic')
-# require('date')
 
 def parse(x)
   tokens = Lexer.lex(x)

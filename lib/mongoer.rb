@@ -190,18 +190,16 @@ class Mongoer
 
     def build_searches(ast, fields, command_types)
       ast.flat_map do |x|
-        case x[:nest_type]
-        when nil
-          x = build_search(x, fields)
-        when :colon
+        type = x[:nest_type]
+        if type == :colon
           x = build_command(x, command_types)
-        when :compare
+        elsif type == :compare
           x = build_compare(x, command_types)
-          x
-        else
-          # [:paren, :pipe, :minus]
+        elsif [:paren, :pipe, :minus].include?(type)
           x[:value] = build_searches(x[:value], fields, command_types)
           x
+        else
+          x = build_search(x, fields)
         end
       end
     end

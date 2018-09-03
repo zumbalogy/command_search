@@ -6,7 +6,8 @@ def parse(x)
 end
 
 def dealias(x, aliases)
-  Dealiaser.dealias(parse(x), aliases)
+  dealiased = Dealiaser.dealias(parse(x), aliases)
+  Dealiaser.decompose_unaliasable(dealiased, aliases)
 end
 
 describe Dealiaser do
@@ -32,6 +33,9 @@ describe Dealiaser do
                {type: :number, value: '100'}]}]
   end
 
-  # it 'should wacky inputs' do
-  # end
+  it 'should set unaliased commands to normal searches' do
+    dealias('foo foo:bar', {}).should_not == parse('foo foo:bar')
+    dealias('a:b', {}).should == [{ type: :str, value: 'a:b' }]
+  end
+
 end
