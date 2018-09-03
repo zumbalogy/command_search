@@ -339,6 +339,17 @@ describe CommandSearch::Memory do
     search('(redgreenblue01?)').count.should == 0
   end
 
+  it 'should be able to work with strings and symbols' do
+    CommandSearch.search([{foo: 3}], '2', ['foo']).count.should == 0
+    CommandSearch.search([{foo: 3}], '2', [:foo]).count.should == 0
+    CommandSearch.search([{foo: 3}], '3', ['foo']).count.should == 1
+    CommandSearch.search([{foo: 3}], '3', [:foo]).count.should == 1
+    CommandSearch.search([{'foo' => 3}], '2', ['foo']).count.should == 0
+    CommandSearch.search([{'foo' => 3}], '2', [:foo]).count.should == 0
+    CommandSearch.search([{'foo' => 3}], '3', ['foo']).count.should == 1
+    CommandSearch.search([{'foo' => 3}], '3', [:foo]).count.should == 1
+  end
+
   # it 'should error gracefully' do
   #   lopsided parens
   #   search('(-sdf:sdfdf>sd\'s":f-').count.should == 0
