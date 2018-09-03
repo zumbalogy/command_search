@@ -4,7 +4,7 @@ load(__dir__ + '/../lib/dealiaser.rb')
 load(__dir__ + '/../lib/optimizer.rb')
 load(__dir__ + '/../lib/mongoer.rb')
 load(__dir__ + '/../lib/memory.rb')
-load(__dir__ + '/../lib/searchable.rb')
+load(__dir__ + '/../lib/command_search.rb')
 
 require('rspec')
 require('pry')

@@ -28,7 +28,7 @@ def search(query, list = $hats)
     cost: Numeric,
     fav_date: Time
   }
-  Searchable.search(list, query, search_fields, command_fields)
+  CommandSearch.search(list, query, search_fields, command_fields)
 end
 
 describe Memory do

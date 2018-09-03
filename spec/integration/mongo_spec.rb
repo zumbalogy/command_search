@@ -31,7 +31,7 @@ class Hat
       cost: Numeric,
       fav_date: Time
     }
-    Searchable.search(Hat, query, search_fields, command_fields)
+    CommandSearch.search(Hat, query, search_fields, command_fields)
   end
 end
 
