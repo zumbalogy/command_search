@@ -207,14 +207,15 @@ describe Parser do
                   {type: :str, value: 'y'}]}]}]
   end
 
-  it 'should return [] for empty nonsense' do
+  it 'should handle for empty or somewhat empty nonsense' do
     opt('').should == []
     opt('   ').should == []
     opt("   \n ").should == []
     opt('()').should == []
     opt(' ( ( ()) -(()  )) ').should == []
-    opt('(-)').should == []
-    opt('(|)').should == []
+    opt(' ( ( ()) -((-(()|(()|()))|(()|())-((-())))  )) ').should == []
+    opt('(-)').should == [{type: :str, value: '-'}]
+    opt('(|)').should == [{type: :str, value: '|'}]
   end
 
   it 'should handle negating' do
