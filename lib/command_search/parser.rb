@@ -1,5 +1,6 @@
-class Parser
-  class << self
+module CommandSearch
+  module Parser
+    module_function
 
     def parens_rindex(input)
       val_list = input.map { |x| x[:value] }

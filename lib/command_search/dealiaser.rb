@@ -1,5 +1,6 @@
-class Dealiaser
-  class << self
+module CommandSearch
+  module Dealiaser
+    module_function
 
     def dealias_key(key, aliases)
       while aliases[key.to_sym].is_a?(Symbol)

@@ -1,7 +1,8 @@
 require('chronic')
 
-class Mongoer
-  class << self
+module CommandSearch
+  module Mongoer
+    module_function
 
     def build_search(ast_node, fields)
       str = ast_node[:value]
@@ -45,9 +46,7 @@ class Mongoer
       search_type = search_node[:type]
 
       if raw_type.is_a?(Array)
-        is_bool = raw_type.include?(:allow_existence_boolean) &&
-                  is_bool_str?(raw_val) &&
-                  search_type != :quoted_str
+        is_bool = raw_type.include?(:allow_existence_boolean) && is_bool_str?(raw_val) && search_type != :quoted_str
         type = (raw_type - [:allow_existence_boolean]).first
       else
         is_bool = false
@@ -58,8 +57,10 @@ class Mongoer
         # val = make_boolean(raw_val)
         bool = make_boolean(raw_val)
         bool = !bool if field_node[:negate]
-        val = [{ key => { '$exists' => true } },
-               { key => { '$ne' => !bool } }]
+        val = [
+          { key => { '$exists' => true } },
+          { key => { '$ne' => !bool } }
+        ]
         key = '$and'
       elsif is_bool
         # This returns true for empty arrays, when it probably should not.
@@ -70,8 +71,10 @@ class Mongoer
         bool = make_boolean(raw_val)
         bool = !bool if field_node[:negate]
         if bool
-          val = [{ key => { '$exists' => true } },
-                 { key => { '$ne' => false } }]
+          val = [
+            { key => { '$exists' => true } },
+            { key => { '$ne' => false } }
+          ]
           key = '$and'
         else
           val = { '$exists' => false }
@@ -92,12 +95,16 @@ class Mongoer
         time_str = raw_val.gsub('_', ' ')
         date = Chronic.parse(time_str, { guess: nil })
         if field_node[:negate]
-          val = [{ key => { '$gte' => date.end   } },
-                 { key => { '$lte' => date.begin } }]
+          val = [
+            { key => { '$gte' => date.end   } },
+            { key => { '$lte' => date.begin } }
+          ]
           key = '$or'
         else
-          val = [{ key => { '$gte' => date.begin } },
-                 { key => { '$lte' => date.end   } }]
+          val = [
+            { key => { '$gte' => date.begin } },
+            { key => { '$lte' => date.end   } }
+          ]
           key = '$and'
         end
       end

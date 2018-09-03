@@ -1,5 +1,6 @@
-class Optimizer
-  class << self
+module CommandSearch
+  module Optimizer
+    module_function
 
     def ands_and_ors(ast)
       ast.uniq.map do |node|

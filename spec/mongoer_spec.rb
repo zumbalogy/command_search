@@ -1,21 +1,21 @@
 load(__dir__ + '/./spec_helper.rb')
 
 def parse(x)
-  tokens = Lexer.lex(x)
-  Parser.parse(tokens)
+  tokens = CommandSearch::Lexer.lex(x)
+  CommandSearch::Parser.parse(tokens)
 end
 
 def opt(x)
-  Optimizer.optimize(parse(x))
+  CommandSearch::Optimizer.optimize(parse(x))
 end
 
 def q(x, fields, command_types = {})
   parsed = opt(x)
-  dealiased = Dealiaser.dealias(parsed, command_types)
-  Mongoer.build_query(dealiased, fields, command_types)
+  dealiased = CommandSearch::Dealiaser.dealias(parsed, command_types)
+  CommandSearch::Mongoer.build_query(dealiased, fields, command_types)
 end
 
-describe Mongoer do
+describe CommandSearch::Mongoer do
 
   it 'should work for basic string searches' do
     fields = ['f1']

@@ -31,7 +31,7 @@ def search(query, list = $hats)
   CommandSearch.search(list, query, search_fields, command_fields)
 end
 
-describe Memory do
+describe CommandSearch::Memory do
 
   it 'should be able to do an empty string query' do
     search('').count.should == $hats.count

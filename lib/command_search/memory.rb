@@ -1,7 +1,8 @@
 require('chronic')
 
-class Memory
-  class << self
+module CommandSearch
+  module Memory
+    module_function
 
     def command_check(item, val, command_types)
       cmd = val[0][:value].to_sym

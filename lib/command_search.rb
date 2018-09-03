@@ -1,9 +1,9 @@
-load(__dir__ + '/lexer.rb')
-load(__dir__ + '/parser.rb')
-load(__dir__ + '/dealiaser.rb')
-load(__dir__ + '/optimizer.rb')
-load(__dir__ + '/mongoer.rb')
-load(__dir__ + '/memory.rb')
+load(__dir__ + '/command_search/lexer.rb')
+load(__dir__ + '/command_search/parser.rb')
+load(__dir__ + '/command_search/dealiaser.rb')
+load(__dir__ + '/command_search/optimizer.rb')
+load(__dir__ + '/command_search/mongoer.rb')
+load(__dir__ + '/command_search/memory.rb')
 
 class Boolean; end
 
@@ -11,7 +11,7 @@ module CommandSearch
   module_function
 
   def search(source, query, fields, command_fields = {})
-    tokens = Lexer.lex(query)
+    tokens = CommandSearch::Lexer.lex(query)
     parsed = Parser.parse(tokens)
     dealiased = Dealiaser.dealias(parsed, command_fields)
     cleaned = Dealiaser.decompose_unaliasable(parsed, command_fields)
