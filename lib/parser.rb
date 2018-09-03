@@ -5,9 +5,9 @@ class Parser
       val_list = input.map { |x| x[:value] }
       open_i = val_list.rindex('(')
       return unless open_i
-      close_i = val_list.drop(open_i).index(')') + open_i
-      return unless close_i
-      [open_i, close_i]
+      close_offset = val_list.drop(open_i).index(')')
+      return unless close_offset
+      [open_i, close_offset + open_i]
     end
 
     def group_parens(input)
@@ -57,6 +57,20 @@ class Parser
       end
     end
 
+    def clean_ununused_command_syntax(input)
+      input.map do |x|
+        if x[:type] == :paren && x[:value].is_a?(String)
+          x[:type] = :str
+        end
+        if x[:type] == :nest && x[:nest_type] != :paren && x[:value] == []
+          x = { type: :str, value: x[:nest_op] }
+        end
+        next x unless x[:type] == :nest
+        x[:value] = clean_ununused_command_syntax(x[:value])
+        x
+      end
+    end
+
     def parse(input)
       out = input
       out = group_parens(out)
@@ -65,6 +79,7 @@ class Parser
       out = cluster(:compare, out)
       out = cluster(:minus, out, :prefix)
       out = cluster(:pipe, out)
+      out = clean_ununused_command_syntax(out)
       out
     end
   end

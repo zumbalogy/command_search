@@ -163,11 +163,13 @@ describe Mongoer do
     q("   \n ", fields).should == {}
     q('()', fields).should == {}
     q(' ( ( ()) -(()  )) ', fields).should == {}
-    q('(-)', fields).should == {}
-    q('(|)', fields).should == {}
   end
 
-  # it 'should wacky inputs' do
-  # end
+  it 'should wacky inputs' do
+    fields = ['hello']
+    q('(-)', fields).should == {"hello"=>/\-/mi}
+    q('(|)', fields).should == {"hello"=>/\|/mi}
+    q(':', fields).should == {"hello"=>/:/mi}
+  end
 
 end

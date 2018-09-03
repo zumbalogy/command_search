@@ -74,6 +74,17 @@ describe Parser do
       {type: :number, value: '7'}]
   end
 
+  it 'should handle unbalanced parens' do
+    parse('(').should == [{type: :str, value: '('}]
+    parse('(foo').should == [{type: :str, value: '('}, {type: :str, value: 'foo'}]
+    parse(')').should == [{type: :str, value: ')'}]
+  end
+
+  it 'should clean up straggling command syntax' do
+    parse(':').should == [{type: :str, value: ':'}]
+    parse('|').should == [{type: :str, value: '|'}]
+  end
+
   it 'should handle OR statements' do
     parse('a|b').should == [
       {type: :nest,
@@ -278,18 +289,10 @@ describe Parser do
     parse('(-)').should == [
       {type: :nest,
        nest_type: :paren,
-       value: [
-         {type: :nest,
-          nest_type: :minus,
-          nest_op: '-',
-          value: []}]}]
+       value: [{type: :str, value: '-'}]}]
     parse('(|)').should == [
       {type: :nest,
        nest_type: :paren,
-       value: [
-         {type: :nest,
-          nest_type: :pipe,
-          nest_op: '|',
-          value: []}]}]
+       value: [{type: :str, value: '|'}]}]
   end
 end
