@@ -32,6 +32,9 @@ describe Dealiaser do
                {type: :number, value: '100'}]}]
   end
 
-  # it 'should wacky inputs' do
-  # end
+  it 'should set unaliased commands to normal searches' do
+    dealias('foo foo:bar', {}).should_not == parse('foo foo:bar')
+    dealias('a:b', {}).should == [{ type: :str, value: 'a:b' }]
+  end
+
 end

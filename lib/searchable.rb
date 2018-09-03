@@ -10,7 +10,7 @@ class Boolean; end
 class Searchable
   class << self
 
-    def search(source, query, fields, command_fields = [])
+    def search(source, query, fields, command_fields = {})
       tokens = Lexer.lex(query)
       parsed = Parser.parse(tokens)
       dealiased = Dealiaser.dealias(parsed, command_fields)

@@ -14,12 +14,22 @@ class Dealiaser
       [key_node, seach_node]
     end
 
+    def unnest_unaliased(node, aliases)
+      type = node[:nest_type]
+      values = node[:value].map { |x| x[:value].to_sym }
+      return node if type == :colon && aliases[values.first]
+      return node if type == :compare && (values & aliases.keys).any?
+      str_values = values.join(node[:nest_op])
+      { type: :str, value: str_values }
+    end
+
     def dealias(ast, aliases)
       ast.flat_map do |x|
-        n_type = x[:nest_type]
-        next x unless n_type
+        next x unless x[:nest_type]
         x[:value] = dealias(x[:value], aliases)
-        next x unless [:colon, :compare].include?(n_type)
+        next x unless [:colon, :compare].include?(x[:nest_type])
+        x = unnest_unaliased(x, aliases)
+        next x unless [:colon, :compare].include?(x[:nest_type])
         x[:value] = dealias_values(x[:value], aliases)
         x
       end

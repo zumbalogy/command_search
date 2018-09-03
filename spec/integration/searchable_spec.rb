@@ -44,7 +44,7 @@ describe Searchable do
     Bird.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
   end
 
-  it('should be able to determine in memory vs mongo searches') do
+  it 'should be able to determine in memory vs mongo searches' do
     search_fields = [:title, :description, :tags]
     command_fields = {
       has_child_id: Boolean,
@@ -56,15 +56,21 @@ describe Searchable do
     Searchable.search($birds, query, search_fields, command_fields).count.should == 2
   end
 
-  it('should be able to work without command fields') do
+  it 'should be able to work without command fields' do
+    birds2 = [
+      { title: 'bird:1' },
+      { title: 'title:2' }
+    ]
     search_fields = [:title, :description, :tags]
     query = '3|tags2'
     Searchable.search(Bird, query, search_fields).count.should == 2
     Searchable.search($birds, query, search_fields).count.should == 2
+    Searchable.search(birds2, 'bird:1', search_fields).count.should == 1
+    Searchable.search(birds2, 'title:2', search_fields).count.should == 1
   end
 
 
-  it('should be able to work without search fields') do
+  it 'should be able to work without search fields' do
     command_fields = {
       has_child_id: Boolean,
       title: String,
@@ -74,12 +80,8 @@ describe Searchable do
     Searchable.search($birds, 'name:3', [], command_fields).count.should == 1
     Searchable.search(Bird, '3', [], command_fields).count.should == 0
     Searchable.search($birds, '3', [], command_fields).count.should == 0
-    pending
     Searchable.search($birds, 'feathers>4', [], command_fields).count.should == 0
     Searchable.search(Bird, 'feathers>4', [], command_fields).count.should == 0
-  end
-
-  xit('should be able to work without any fields') do
   end
 
 end
