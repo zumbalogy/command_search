@@ -3,9 +3,7 @@ module CommandSearch
     module_function
 
     def dealias_key(key, aliases)
-      while aliases[key.to_sym].is_a?(Symbol)
-        key = aliases[key.to_sym]
-      end
+      key = aliases[key.to_sym] while aliases[key.to_sym].is_a?(Symbol)
       key.to_s
     end
 

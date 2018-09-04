@@ -107,6 +107,10 @@ describe CommandSearch::Mongoer do
       '$and'=>[
         {'created'=>{'$gte'=>Chronic.parse('2000-04-10 00:00:00')}},
         {'created'=>{'$lte'=>Chronic.parse('2000-04-11 00:00:00')}}]}
+    q2('-created:"april-10.2000"').should == {
+      '$or'=>[
+        {'created'=>{'$gt'=>Chronic.parse('2000-04-11 00:00:00')}},
+        {'created'=>{'$lt'=>Chronic.parse('2000-04-10 00:00:00')}}]}
   end
 
   it 'should handle boolean commands' do

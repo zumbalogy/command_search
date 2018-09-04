@@ -91,13 +91,13 @@ module CommandSearch
         else
           val = raw_val.to_f
         end
-      elsif type == Time # Should handle date too maybe?
-        time_str = raw_val.gsub('_', ' ')
-        date = Chronic.parse(time_str, { guess: nil })
+      elsif type == Time # TODO: Should handle date too maybe?
+        time_str = raw_val.tr('_.-', ' ')
+        date = Chronic.parse(time_str, guess: nil)
         if field_node[:negate]
           val = [
-            { key => { '$gte' => date.end   } },
-            { key => { '$lte' => date.begin } }
+            { key => { '$gt' => date.end   } },
+            { key => { '$lt' => date.begin } }
           ]
           key = '$or'
         else
@@ -184,8 +184,8 @@ module CommandSearch
           '>=' => :start
         }
         date_pick = date_start_map[op]
-        time_str = val.gsub(/[\._-]/, ' ')
-        date = Chronic.parse(time_str, { guess: nil })
+        time_str = val.tr('_.-', ' ')
+        date = Chronic.parse(time_str, guess: nil)
         if date_pick == :start
           val = date.first
         elsif date_pick == :end
@@ -199,14 +199,14 @@ module CommandSearch
       ast.flat_map do |x|
         type = x[:nest_type]
         if type == :colon
-          x = build_command(x, command_types)
+          build_command(x, command_types)
         elsif type == :compare
-          x = build_compare(x, command_types)
+          build_compare(x, command_types)
         elsif [:paren, :pipe, :minus].include?(type)
           x[:value] = build_searches(x[:value], fields, command_types)
           x
         else
-          x = build_search(x, fields)
+          build_search(x, fields)
         end
       end
     end

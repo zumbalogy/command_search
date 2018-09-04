@@ -220,6 +220,8 @@ describe CommandSearch::Parser do
     opt('(-)').should == []
     opt('(|)').should == []
     opt('(:)').should == []
+    opt('(()').should == []
+    opt(')())').should == []
     opt('(())').should == []
     opt(':').should == []
     opt('-').should == []
