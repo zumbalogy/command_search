@@ -54,6 +54,22 @@ describe CommandSearch do
     query = 'name:3|tags2'
     CommandSearch.search(Bird, query, search_fields, command_fields).count.should == 2
     CommandSearch.search($birds, query, search_fields, command_fields).count.should == 2
+    CommandSearch.search(Bird, 'name:name4', search_fields, command_fields).count.should == 1
+    CommandSearch.search($birds, 'name:name4', search_fields, command_fields).count.should == 1
+    CommandSearch.search(Bird, 'badKey:foo', search_fields, command_fields).count.should == 0
+    CommandSearch.search($birds, 'badKey:foo', search_fields, command_fields).count.should == 0
+  end
+
+  it 'should handle invalid keys' do
+    search_fields = [:title, :description, :tags]
+    command_fields = {
+      has_child_id: Boolean,
+      title: String
+    }
+    query = 'name:3|tags2'
+    CommandSearch.search($birds, query, search_fields, command_fields).count.should == 1
+    pending
+    CommandSearch.search(Bird, query, search_fields, command_fields).count.should == 1
   end
 
   it 'should be able to work without command fields' do

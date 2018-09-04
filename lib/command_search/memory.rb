@@ -43,9 +43,7 @@ module CommandSearch
       args = children.map do |child|
         child_val = child[:value]
         item_val = item[child_val.to_s] || item[child_val.to_sym]
-        if child != cmd
-          item_val ||= child_val
-        end
+        item_val ||= child_val unless child == cmd
         return unless item_val
         if cmd_type == Time
           date_start_map = {
@@ -79,7 +77,7 @@ module CommandSearch
         case node[:nest_type]
         when nil
           if node[:type] == :quoted_str
-            field_vals.any? { |x| x.to_s[/\b#{Regexp.escape(val)}\b/]}
+            field_vals.any? { |x| x.to_s[/\b#{Regexp.escape(val)}\b/] }
           else
             field_vals.any? { |x| x.to_s[/#{Regexp.escape(val)}/mi] }
           end
@@ -90,7 +88,7 @@ module CommandSearch
         when :pipe
           val.any? { |v| check(item, v, fields, command_types) }
         when :minus
-          !val.any? { |v| check(item, v, fields, command_types) }
+          val.none? { |v| check(item, v, fields, command_types) }
         when :paren
           val.all? { |v| check(item, v, fields, command_types) }
         end
