@@ -226,6 +226,12 @@ describe CommandSearch::Parser do
     opt('|').should == []
   end
 
+  it 'should handle empty strings' do
+    opt('""').should == []
+    opt("''").should == []
+    opt("'' foo").should == [{type: :str, value: 'foo'}]
+  end
+
   it 'should handle single sides ORs' do
     opt('|a').should == [{type: :str, value: 'a'}]
     opt('a|').should == [{type: :str, value: 'a'}]
