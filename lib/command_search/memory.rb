@@ -73,7 +73,7 @@ module CommandSearch
 
     def check(item, ast, fields, command_types)
       field_vals = fields.map { |x| item[x] || item[x.to_s] || item[x.to_sym] }.compact
-      ast_array = ast.kind_of?(Array) ? ast : [ast]
+      ast_array = ast.is_a?(Array) ? ast : [ast]
       ast_array.all? do |node|
         val = node[:value]
         case node[:nest_type]
