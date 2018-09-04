@@ -48,14 +48,14 @@ module CommandSearch
       while value_indices("'", out).length >= 2 || value_indices('"', out).length >= 2
         (a, b) = value_indices("'", out).first(2)
         (c, d) = value_indices('"', out).first(2)
-        if a && b && (c == nil || (a < c))
+        if a && b && (c.nil? || (a < c))
           (x, y) = [a, b]
         else
           (x, y) = [c, d]
         end
         vals = out[x..y].map { |i| i[:value] }
         trimmed_vals = vals.take(vals.length - 1).drop(1)
-        out[x..y] = { type: :quoted_str, value: trimmed_vals.join() }
+        out[x..y] = { type: :quoted_str, value: trimmed_vals.join }
       end
       out
     end
@@ -73,7 +73,7 @@ module CommandSearch
     end
 
     def full_tokens(char_token_list)
-      out = char_token_list.clone()
+      out = char_token_list.clone
 
       out = group_quoted_strings(out)
 
@@ -98,7 +98,7 @@ module CommandSearch
 
     def lex(input)
       char_tokens = input.split('').map(&method(:char_token))
-      tokens = full_tokens(char_tokens)
+      full_tokens(char_tokens)
     end
   end
 end
