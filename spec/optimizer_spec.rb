@@ -207,15 +207,33 @@ describe CommandSearch::Parser do
                   {type: :str, value: 'y'}]}]}]
   end
 
-  it 'should handle for empty or somewhat empty nonsense' do
+  it 'should handle for empty nonsense' do
     opt('').should == []
     opt('   ').should == []
     opt("   \n ").should == []
     opt('()').should == []
     opt(' ( ( ()) -(()  )) ').should == []
-    opt(' ( ( ()) -((-(()|(()|()))|(()|())-((-())))  )) ').should == []
-    opt('(-)').should == [{type: :str, value: '-'}]
-    opt('(|)').should == [{type: :str, value: '|'}]
+    opt(' ( ( ()) -((-(()||(()|()))|(()|())-((-())))  )) ').should == []
+  end
+
+  it 'should handle wacky null nonsense' do
+    opt('(-)').should == []
+    opt('(|)').should == []
+    opt('(:)').should == []
+    opt('(())').should == []
+    opt(':').should == []
+    opt('-').should == []
+    opt('|').should == []
+  end
+
+  it 'should handle single sides ORs' do
+    opt('|a').should == [{type: :str, value: 'a'}]
+    opt('a|').should == [{type: :str, value: 'a'}]
+    opt('||||a').should == [{type: :str, value: 'a'}]
+    opt('a||').should == [{type: :str, value: 'a'}]
+    opt('|a|').should == [{type: :str, value: 'a'}]
+    opt('||a|||').should == [{type: :str, value: 'a'}]
+    opt('||a|()||').should == [{type: :str, value: 'a'}]
   end
 
   it 'should handle negating' do

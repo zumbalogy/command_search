@@ -75,14 +75,11 @@ describe CommandSearch::Parser do
   end
 
   it 'should handle unbalanced parens' do
-    parse('(').should == [{type: :str, value: '('}]
-    parse('(foo').should == [{type: :str, value: '('}, {type: :str, value: 'foo'}]
-    parse(')').should == [{type: :str, value: ')'}]
-  end
-
-  it 'should clean up straggling command syntax' do
-    parse(':').should == [{type: :str, value: ':'}]
-    parse('|').should == [{type: :str, value: '|'}]
+    parse('(').should == []
+    parse('((').should == []
+    parse(')(').should == []
+    parse(')))').should == []
+    parse('(foo').should == [{type: :str, value: 'foo'}]
   end
 
   it 'should handle OR statements' do
@@ -132,7 +129,30 @@ describe CommandSearch::Parser do
                {type: :str, value: 'yy'}]}]}]}]
   end
 
-  it 'should handle negating' do
+  it 'should handle unbalanced ORs' do
+    parse('|a').should == [
+      {
+        type: :nest,
+        nest_type: :pipe,
+        nest_op: '|',
+        value: [
+          {type: :str, value: 'a'}
+        ]
+      }
+    ]
+    parse('a|').should == [
+      {
+        type: :nest,
+        nest_type: :pipe,
+        nest_op: '|',
+        value: [
+          {type: :str, value: 'a'}
+        ]
+      }
+    ]
+  end
+
+it 'should handle negating' do
     parse('ab-dc').should == [{type: :str, value: 'ab-dc'}]
     parse('-12.023').should == [{type: :number, value: '-12.023'}]
     parse('- -1').should == [
@@ -286,13 +306,15 @@ describe CommandSearch::Parser do
   end
 
   it 'should handle wacky combinations' do
+    parse(':').should == [{type: :nest, nest_type: :colon, nest_op: ':', value: []}]
+    parse('|').should == [{type: :nest, nest_type: :pipe, nest_op: '|', value: []}]
     parse('(-)').should == [
       {type: :nest,
        nest_type: :paren,
-       value: [{type: :str, value: '-'}]}]
+       value: [{type: :nest, nest_type: :minus, nest_op: '-', value: []}]}]
     parse('(|)').should == [
       {type: :nest,
        nest_type: :paren,
-       value: [{type: :str, value: '|'}]}]
+       value: [{type: :nest, nest_type: :pipe, nest_op: '|', value: []}]}]
   end
 end

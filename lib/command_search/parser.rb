@@ -32,7 +32,7 @@ module CommandSearch
         val = [out[i + 1]]
         val.unshift(out[i - 1]) if binary && i > 0
         front_offset = 0
-        front_offset = 1 if binary
+        front_offset = 1 if binary && i > 0
         out[(i - front_offset)..(i + 1)] = {
           type: :nest,
           nest_type: type,
@@ -59,17 +59,15 @@ module CommandSearch
     end
 
     def clean_ununused_command_syntax(input)
-      input.map do |x|
+      out = input.map do |x|
         if x[:type] == :paren && x[:value].is_a?(String)
-          x[:type] = :str
-        end
-        if x[:type] == :nest && x[:nest_type] != :paren && x[:value] == []
-          x = { type: :str, value: x[:nest_op] }
+          next
         end
         next x unless x[:type] == :nest
         x[:value] = clean_ununused_command_syntax(x[:value])
         x
       end
+      out.compact
     end
 
     def parse(input)

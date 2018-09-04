@@ -8,10 +8,11 @@ module CommandSearch
         next node if node[:nest_type] == :compare
         node[:value] = ands_and_ors(node[:value])
         node[:value] = node[:value].flat_map do |kid|
-          next kid unless kid[:nest_type]
-          kid[:value] = ands_and_ors(kid[:value])
           next kid[:value] if kid[:nest_type] == :pipe
           kid
+        end
+        if node[:nest_type] == :pipe && node[:value].length == 1
+          next node[:value].first
         end
         node
       end

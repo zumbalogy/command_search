@@ -167,9 +167,9 @@ describe CommandSearch::Mongoer do
 
   it 'should wacky inputs' do
     fields = ['hello']
-    q('(-)', fields).should == {"hello"=>/\-/mi}
-    q('(|)', fields).should == {"hello"=>/\|/mi}
-    q(':', fields).should == {"hello"=>/:/mi}
+    q('(-)', fields).should == {}
+    q('(|)', fields).should == {}
+    q(':', fields).should == {}
   end
 
 end

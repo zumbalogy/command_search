@@ -83,4 +83,19 @@ describe CommandSearch do
     CommandSearch.search(Bird, 'feathers>4', [], command_fields).count.should == 0
   end
 
+  it 'should handle wacky inputs' do
+    search_fields = [:title, :description, :tags]
+    command_fields = {
+      has_child_id: Boolean,
+      title: String,
+      name: :title
+    }
+    CommandSearch.search($birds, '|desk', search_fields, command_fields).count.should == 4
+    CommandSearch.search($birds, 'desk|', search_fields, command_fields).count.should == 4
+    CommandSearch.search($birds, '|desk|', search_fields, command_fields).count.should == 4
+    CommandSearch.search(Bird, '|desk', search_fields, command_fields).count.should == 4
+    CommandSearch.search(Bird, 'desk|', search_fields, command_fields).count.should == 4
+    CommandSearch.search(Bird, '|desk|', search_fields, command_fields).count.should == 4
+  end
+
 end
