@@ -28,10 +28,10 @@ def search(query, list = $hats)
     cost: Numeric,
     fav_date: Time
   }
-  Searchable.search(list, query, search_fields, command_fields)
+  CommandSearch.search(list, query, search_fields, command_fields)
 end
 
-describe Memory do
+describe CommandSearch::Memory do
 
   it 'should be able to do an empty string query' do
     search('').count.should == $hats.count
@@ -337,6 +337,17 @@ describe Memory do
     search('?').count.should == 0
     search('(?)').count.should == 0
     search('(redgreenblue01?)').count.should == 0
+  end
+
+  it 'should be able to work with strings and symbols' do
+    CommandSearch.search([{foo: 3}], '2', ['foo']).count.should == 0
+    CommandSearch.search([{foo: 3}], '2', [:foo]).count.should == 0
+    CommandSearch.search([{foo: 3}], '3', ['foo']).count.should == 1
+    CommandSearch.search([{foo: 3}], '3', [:foo]).count.should == 1
+    CommandSearch.search([{'foo' => 3}], '2', ['foo']).count.should == 0
+    CommandSearch.search([{'foo' => 3}], '2', [:foo]).count.should == 0
+    CommandSearch.search([{'foo' => 3}], '3', ['foo']).count.should == 1
+    CommandSearch.search([{'foo' => 3}], '3', [:foo]).count.should == 1
   end
 
   # it 'should error gracefully' do

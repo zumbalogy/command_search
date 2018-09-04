@@ -1,5 +1,6 @@
-class Optimizer
-  class << self
+module CommandSearch
+  module Optimizer
+    module_function
 
     def ands_and_ors(ast)
       ast.uniq.map do |node|
@@ -7,10 +8,11 @@ class Optimizer
         next node if node[:nest_type] == :compare
         node[:value] = ands_and_ors(node[:value])
         node[:value] = node[:value].flat_map do |kid|
-          next kid unless kid[:nest_type]
-          kid[:value] = ands_and_ors(kid[:value])
           next kid[:value] if kid[:nest_type] == :pipe
           kid
+        end
+        if node[:nest_type] == :pipe && node[:value].length == 1
+          next node[:value].first
         end
         node
       end

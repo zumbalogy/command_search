@@ -1,40 +1,44 @@
 load(__dir__ + '/./spec_helper.rb')
 
-describe Lexer do
+def lex(input)
+  CommandSearch::Lexer.lex(input)
+end
+
+describe CommandSearch::Lexer do
 
   it 'should handle empty strings' do
-    Lexer.lex('').should == []
-    Lexer.lex(' ').should == []
-    Lexer.lex("    \n ").should == []
+    lex('').should == []
+    lex(' ').should == []
+    lex("    \n ").should == []
   end
 
   it 'should correctly categorize strings' do
-    Lexer.lex('foo').should == [{type: :str, value: "foo"}]
-    Lexer.lex('f1oo').should == [{type: :str, value: "f1oo"}]
-    Lexer.lex('ab_cd').should == [{type: :str, value: "ab_cd"}]
-    Lexer.lex('ab?cd').should == [{type: :str, value: "ab?cd"}]
-    Lexer.lex('F.O.O.').should == [{type: :str, value: "F.O.O."}]
-    Lexer.lex('Dr.Foo').should == [{type: :str, value: "Dr.Foo"}]
-    Lexer.lex('Dr.-Foo').should == [{type: :str, value: "Dr.-Foo"}]
-    Lexer.lex('Dr.=Foo').should == [{type: :str, value: "Dr.=Foo"}]
-    Lexer.lex('Dr=.Foo').should == [{type: :str, value: "Dr=.Foo"}]
-    Lexer.lex('Dr-.Foo').should == [{type: :str, value: "Dr-.Foo"}]
-    Lexer.lex('foo-bar-').should == [{type: :str, value: "foo-bar-"}]
-    Lexer.lex('foo=bar=').should == [{type: :str, value: "foo=bar="}]
-    Lexer.lex('a1-.2').should == [{type: :str, value: "a1-.2"}]
-    Lexer.lex('1-.2').should == [{type: :str, value: "1-.2"}]
-    Lexer.lex('1.-2').should == [{type: :str, value: "1.-2"}]
+    lex('foo').should == [{type: :str, value: "foo"}]
+    lex('f1oo').should == [{type: :str, value: "f1oo"}]
+    lex('ab_cd').should == [{type: :str, value: "ab_cd"}]
+    lex('ab?cd').should == [{type: :str, value: "ab?cd"}]
+    lex('F.O.O.').should == [{type: :str, value: "F.O.O."}]
+    lex('Dr.Foo').should == [{type: :str, value: "Dr.Foo"}]
+    lex('Dr.-Foo').should == [{type: :str, value: "Dr.-Foo"}]
+    lex('Dr.=Foo').should == [{type: :str, value: "Dr.=Foo"}]
+    lex('Dr=.Foo').should == [{type: :str, value: "Dr=.Foo"}]
+    lex('Dr-.Foo').should == [{type: :str, value: "Dr-.Foo"}]
+    lex('foo-bar-').should == [{type: :str, value: "foo-bar-"}]
+    lex('foo=bar=').should == [{type: :str, value: "foo=bar="}]
+    lex('a1-.2').should == [{type: :str, value: "a1-.2"}]
+    lex('1-.2').should == [{type: :str, value: "1-.2"}]
+    lex('1.-2').should == [{type: :str, value: "1.-2"}]
   end
 
   it 'should be able to split basic parts on spaces' do
-    Lexer.lex('a b c 1 foo').should == [
+    lex('a b c 1 foo').should == [
       {type: :str, value: "a"},
       {type: :str, value: "b"},
       {type: :str, value: "c"},
       {type: :number, value: "1"},
       {type: :str, value: "foo"}
     ]
-    Lexer.lex('1 1 1').should == [
+    lex('1 1 1').should == [
       {type: :number, value: "1"},
       {type: :number, value: "1"},
       {type: :number, value: "1"}
@@ -42,41 +46,41 @@ describe Lexer do
   end
 
   it 'should handle quotes, removing surrounding quotes' do
-    Lexer.lex('"foo"').should == [{type: :quoted_str, value: "foo"}]
-    Lexer.lex("'bar'").should == [{type: :quoted_str, value: "bar"}]
-    Lexer.lex("a 'b foo'").should == [
+    lex('"foo"').should == [{type: :quoted_str, value: "foo"}]
+    lex("'bar'").should == [{type: :quoted_str, value: "bar"}]
+    lex("a 'b foo'").should == [
       {type: :str, value: "a"},
       {type: :quoted_str, value: "b foo"}
     ]
-    Lexer.lex("foo 'a b' bar").should == [
+    lex("foo 'a b' bar").should == [
       {type: :str, value: "foo"},
       {type: :quoted_str, value: "a b"},
       {type: :str, value: "bar"}
     ]
-    Lexer.lex("-3 '-11 x'").should == [
+    lex("-3 '-11 x'").should == [
       {type: :number, value: "-3"},
       {type: :quoted_str, value: "-11 x"}
     ]
-    Lexer.lex('a b " c').should == [
+    lex('a b " c').should == [
       {type: :str, value: "a"},
       {type: :str, value: "b"},
       {type: :quote, value: "\""},
       {type: :str, value: "c"}
     ]
-    Lexer.lex("a 'b \" c'").should == [
+    lex("a 'b \" c'").should == [
       {type: :str, value: "a"},
       {type: :quoted_str, value: "b \" c"}
     ]
-    Lexer.lex('"a\'b"').should == [{type: :quoted_str, value: "a\'b"}]
-    Lexer.lex("'a\"b'").should == [{type: :quoted_str, value: "a\"b"}]
-    Lexer.lex("'a\"\"b'").should == [{type: :quoted_str, value: "a\"\"b"}]
-    Lexer.lex('"a\'\'b"').should == [{type: :quoted_str, value: "a\'\'b"}]
-    Lexer.lex("'red \"blue' \" green").should == [
+    lex('"a\'b"').should == [{type: :quoted_str, value: "a\'b"}]
+    lex("'a\"b'").should == [{type: :quoted_str, value: "a\"b"}]
+    lex("'a\"\"b'").should == [{type: :quoted_str, value: "a\"\"b"}]
+    lex('"a\'\'b"').should == [{type: :quoted_str, value: "a\'\'b"}]
+    lex("'red \"blue' \" green").should == [
       {type: :quoted_str, value: "red \"blue"},
       {type: :quote, value: '"'},
       {type: :str, value: "green"}
     ]
-    Lexer.lex('"red \'blue" \' green').should == [
+    lex('"red \'blue" \' green').should == [
       {type: :quoted_str, value: "red \'blue"},
       {type: :quote, value: "'"},
       {type: :str, value: "green"}
@@ -84,12 +88,12 @@ describe Lexer do
   end
 
   it 'should handle OR statements' do
-    Lexer.lex('a|b').should == [
+    lex('a|b').should == [
       {type: :str, value: "a"},
       {type: :pipe, value: "|"},
       {type: :str, value: "b"}
     ]
-    Lexer.lex('a|b c|d').should == [
+    lex('a|b c|d').should == [
       {type: :str, value: "a"},
       {type: :pipe, value: "|"},
       {type: :str, value: "b"},
@@ -97,7 +101,7 @@ describe Lexer do
       {type: :pipe, value: "|"},
       {type: :str, value: "d"}
     ]
-    Lexer.lex('a|b|c').should == [
+    lex('a|b|c').should == [
       {type: :str, value: "a"},
       {type: :pipe, value: "|"},
       {type: :str, value: "b"},
@@ -107,14 +111,14 @@ describe Lexer do
   end
 
   it 'should handle duplicate pipe operators' do
-    Lexer.lex('a||b|c').should == [
+    lex('a||b|c').should == [
       {type: :str, value: "a"},
       {type: :pipe, value: "||"},
       {type: :str, value: "b"},
       {type: :pipe, value: "|"},
       {type: :str, value: "c"}
     ]
-    Lexer.lex('a||b||||c').should == [
+    lex('a||b||||c').should == [
       {type: :str, value: "a"},
       {type: :pipe, value: "||"},
       {type: :str, value: "b"},
@@ -124,36 +128,36 @@ describe Lexer do
   end
 
   it 'should handle negating' do
-    Lexer.lex('-5').should == [{type: :number, value: "-5"}]
-    Lexer.lex('-0.23').should == [{type: :number, value: "-0.23"}]
-    Lexer.lex('-a').should == [
+    lex('-5').should == [{type: :number, value: "-5"}]
+    lex('-0.23').should == [{type: :number, value: "-0.23"}]
+    lex('-a').should == [
       {type: :minus, value: "-"},
       {type: :str, value: "a"}
     ]
-    Lexer.lex('-"foo bar"').should == [
+    lex('-"foo bar"').should == [
       {type: :minus, value: "-"},
       {type: :quoted_str, value: "foo bar"}
     ]
-    Lexer.lex('-"foo -bar" -x').should == [
+    lex('-"foo -bar" -x').should == [
       {type: :minus, value: "-"},
       {type: :quoted_str, value: "foo -bar"},
       {type: :minus, value: "-"},
       {type: :str, value: "x"}
     ]
-    Lexer.lex('ab-cd').should == [{type: :str, value: "ab-cd"}]
-    Lexer.lex('-ab-cd').should == [
+    lex('ab-cd').should == [{type: :str, value: "ab-cd"}]
+    lex('-ab-cd').should == [
       {type: :minus, value: "-"},
       {type: :str, value: "ab-cd"}
     ]
   end
 
   it 'should handle commands' do
-    Lexer.lex('foo:bar').should == [
+    lex('foo:bar').should == [
       {type: :str, value: "foo"},
       {type: :colon, value: ":"},
       {type: :str, value: "bar"}
     ]
-    Lexer.lex('a:b c:d e').should == [
+    lex('a:b c:d e').should == [
       {type: :str, value: "a"},
       {type: :colon, value: ":"},
       {type: :str, value: "b"},
@@ -162,7 +166,7 @@ describe Lexer do
       {type: :str, value: "d"},
       {type: :str, value: "e"}
     ]
-    Lexer.lex('-a:b c:-d').should == [
+    lex('-a:b c:-d').should == [
       {type: :minus, value: "-"},
       {type: :str, value: "a"},
       {type: :colon, value: ":"},
@@ -172,7 +176,7 @@ describe Lexer do
       {type: :minus, value: "-"},
       {type: :str, value: "d"}
     ]
-    Lexer.lex('1:"2"').should == [
+    lex('1:"2"').should == [
       {type: :number, value: "1"},
       {type: :colon, value: ":"},
       {type: :quoted_str, value: '2'}
@@ -180,17 +184,17 @@ describe Lexer do
   end
 
   it 'should handle comparisons' do
-    Lexer.lex('red>5').should == [
+    lex('red>5').should == [
       {type: :str, value: "red"},
       {type: :compare, value: ">"},
       {type: :number, value: "5"}
     ]
-    Lexer.lex('blue<=green').should == [
+    lex('blue<=green').should == [
       {type: :str, value: "blue"},
       {type: :compare, value: "<="},
       {type: :str, value: "green"}
     ]
-    Lexer.lex('a<b c>=-1').should == [
+    lex('a<b c>=-1').should == [
       {type: :str, value: "a"},
       {type: :compare, value: "<"},
       {type: :str, value: "b"},
@@ -198,7 +202,7 @@ describe Lexer do
       {type: :compare, value: ">="},
       {type: :number, value: "-1"}
     ]
-    Lexer.lex('a<=b<13').should == [
+    lex('a<=b<13').should == [
       {type: :str, value: "a"},
       {type: :compare, value: "<="},
       {type: :str, value: "b"},
@@ -208,24 +212,24 @@ describe Lexer do
   end
 
   it 'should handle spaces in comparisons' do
-    Lexer.lex('red>5').should == Lexer.lex('red > 5')
-    Lexer.lex('foo<=Monday').should == Lexer.lex('foo <= Monday')
-    Lexer.lex('foo<=Monday').should_not == Lexer.lex('foo < = Monday')
+    lex('red>5').should == lex('red > 5')
+    lex('foo<=Monday').should == lex('foo <= Monday')
+    lex('foo<=Monday').should_not == lex('foo < = Monday')
   end
 
   it 'should handle parens' do
-    Lexer.lex('(a)').should == [
+    lex('(a)').should == [
       {type: :paren, value: '('},
       {type: :str, value: 'a'},
       {type: :paren, value: ')'}
     ]
-    Lexer.lex('(a foo)').should == [
+    lex('(a foo)').should == [
       {type: :paren, value: '('},
       {type: :str, value: 'a'},
       {type: :str, value: 'foo'},
       {type: :paren, value: ')'}
     ]
-    Lexer.lex('(a (foo bar) b) c').should == [
+    lex('(a (foo bar) b) c').should == [
       {type: :paren, value: '('},
       {type: :str, value: 'a'},
       {type: :paren, value: '('},
@@ -239,7 +243,7 @@ describe Lexer do
   end
 
   it 'should handle OR and NOT with parens' do
-    Lexer.lex('(a -(foo bar))').should == [
+    lex('(a -(foo bar))').should == [
       {type: :paren, value: '('},
       {type: :str, value: 'a'},
       {type: :minus, value: '-'},
@@ -249,7 +253,7 @@ describe Lexer do
       {type: :paren, value: ')'},
       {type: :paren, value: ')'}
     ]
-    Lexer.lex('(a b) | (foo bar)').should == [
+    lex('(a b) | (foo bar)').should == [
       {type: :paren, value: '('},
       {type: :str, value: 'a'},
       {type: :str, value: 'b'},
@@ -263,11 +267,11 @@ describe Lexer do
   end
 
   it 'should handle wacky combinations' do
-    Lexer.lex('(-)').should == [
+    lex('(-)').should == [
       {type: :paren, value: '('},
       {type: :minus, value: '-'},
       {type: :paren, value: ')'}]
-    Lexer.lex('(|)').should == [
+    lex('(|)').should == [
       {type: :paren, value: '('},
       {type: :pipe, value: '|'},
       {type: :paren, value: ')'}]

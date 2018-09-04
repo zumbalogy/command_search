@@ -1,7 +1,8 @@
 require('chronic')
 
-class Memory
-  class << self
+module CommandSearch
+  module Memory
+    module_function
 
     def command_check(item, val, command_types)
       cmd = val[0][:value].to_sym
@@ -71,16 +72,16 @@ class Memory
     end
 
     def check(item, ast, fields, command_types)
-      field_vals = fields.map { |x| item[x] }.compact
+      field_vals = fields.map { |x| item[x] || item[x.to_s] || item[x.to_sym] }.compact
       ast_array = ast.kind_of?(Array) ? ast : [ast]
       ast_array.all? do |node|
         val = node[:value]
         case node[:nest_type]
         when nil
           if node[:type] == :quoted_str
-            field_vals.any? { |x| x[/\b#{Regexp.escape(val)}\b/]}
+            field_vals.any? { |x| x.to_s[/\b#{Regexp.escape(val)}\b/]}
           else
-            field_vals.any? { |x| x[/#{Regexp.escape(val)}/mi] }
+            field_vals.any? { |x| x.to_s[/#{Regexp.escape(val)}/mi] }
           end
         when :colon
           command_check(item, val, command_types)

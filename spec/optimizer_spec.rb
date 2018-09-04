@@ -23,18 +23,18 @@
 load(__dir__ + '/./spec_helper.rb')
 
 def parse(x)
-  tokens = Lexer.lex(x)
-  Parser.parse(tokens)
+  tokens = CommandSearch::Lexer.lex(x)
+  CommandSearch::Parser.parse(tokens)
 end
 
 def opt(x)
-  Optimizer.optimize(parse(x))
+  CommandSearch::Optimizer.optimize(parse(x))
 end
 
-describe Parser do
+describe CommandSearch::Parser do
 
   it 'should work and be a no-op in some cases' do
-    opt('foo 1 2 a b').should == Optimizer.optimize(opt('foo 1 2 a b'))
+    opt('foo 1 2 a b').should == CommandSearch::Optimizer.optimize(opt('foo 1 2 a b'))
     opt('red "blue green"').should == parse('red "blue green"')
     opt('foo 1 2').should == [
       {type: :str, value: "foo"},
@@ -207,15 +207,33 @@ describe Parser do
                   {type: :str, value: 'y'}]}]}]
   end
 
-  it 'should handle for empty or somewhat empty nonsense' do
+  it 'should handle for empty nonsense' do
     opt('').should == []
     opt('   ').should == []
     opt("   \n ").should == []
     opt('()').should == []
     opt(' ( ( ()) -(()  )) ').should == []
-    opt(' ( ( ()) -((-(()|(()|()))|(()|())-((-())))  )) ').should == []
-    opt('(-)').should == [{type: :str, value: '-'}]
-    opt('(|)').should == [{type: :str, value: '|'}]
+    opt(' ( ( ()) -((-(()||(()|()))|(()|())-((-())))  )) ').should == []
+  end
+
+  it 'should handle wacky null nonsense' do
+    opt('(-)').should == []
+    opt('(|)').should == []
+    opt('(:)').should == []
+    opt('(())').should == []
+    opt(':').should == []
+    opt('-').should == []
+    opt('|').should == []
+  end
+
+  it 'should handle single sides ORs' do
+    opt('|a').should == [{type: :str, value: 'a'}]
+    opt('a|').should == [{type: :str, value: 'a'}]
+    opt('||||a').should == [{type: :str, value: 'a'}]
+    opt('a||').should == [{type: :str, value: 'a'}]
+    opt('|a|').should == [{type: :str, value: 'a'}]
+    opt('||a|||').should == [{type: :str, value: 'a'}]
+    opt('||a|()||').should == [{type: :str, value: 'a'}]
   end
 
   it 'should handle negating' do

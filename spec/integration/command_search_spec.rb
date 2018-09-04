@@ -29,7 +29,7 @@ $birds = [
   { title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
 ]
 
-describe Searchable do
+describe CommandSearch do
 
   before do
     Mongoid.purge!
@@ -52,8 +52,8 @@ describe Searchable do
       name: :title
     }
     query = 'name:3|tags2'
-    Searchable.search(Bird, query, search_fields, command_fields).count.should == 2
-    Searchable.search($birds, query, search_fields, command_fields).count.should == 2
+    CommandSearch.search(Bird, query, search_fields, command_fields).count.should == 2
+    CommandSearch.search($birds, query, search_fields, command_fields).count.should == 2
   end
 
   it 'should be able to work without command fields' do
@@ -63,12 +63,11 @@ describe Searchable do
     ]
     search_fields = [:title, :description, :tags]
     query = '3|tags2'
-    Searchable.search(Bird, query, search_fields).count.should == 2
-    Searchable.search($birds, query, search_fields).count.should == 2
-    Searchable.search(birds2, 'bird:1', search_fields).count.should == 1
-    Searchable.search(birds2, 'title:2', search_fields).count.should == 1
+    CommandSearch.search(Bird, query, search_fields).count.should == 2
+    CommandSearch.search($birds, query, search_fields).count.should == 2
+    CommandSearch.search(birds2, 'bird:1', search_fields).count.should == 1
+    CommandSearch.search(birds2, 'title:2', search_fields).count.should == 1
   end
-
 
   it 'should be able to work without search fields' do
     command_fields = {
@@ -76,12 +75,27 @@ describe Searchable do
       title: String,
       name: :title
     }
-    Searchable.search(Bird, 'name:3', [], command_fields).count.should == 1
-    Searchable.search($birds, 'name:3', [], command_fields).count.should == 1
-    Searchable.search(Bird, '3', [], command_fields).count.should == 0
-    Searchable.search($birds, '3', [], command_fields).count.should == 0
-    Searchable.search($birds, 'feathers>4', [], command_fields).count.should == 0
-    Searchable.search(Bird, 'feathers>4', [], command_fields).count.should == 0
+    CommandSearch.search(Bird, 'name:3', [], command_fields).count.should == 1
+    CommandSearch.search($birds, 'name:3', [], command_fields).count.should == 1
+    CommandSearch.search(Bird, '3', [], command_fields).count.should == 0
+    CommandSearch.search($birds, '3', [], command_fields).count.should == 0
+    CommandSearch.search($birds, 'feathers>4', [], command_fields).count.should == 0
+    CommandSearch.search(Bird, 'feathers>4', [], command_fields).count.should == 0
+  end
+
+  it 'should handle wacky inputs' do
+    search_fields = [:title, :description, :tags]
+    command_fields = {
+      has_child_id: Boolean,
+      title: String,
+      name: :title
+    }
+    CommandSearch.search($birds, '|desk', search_fields, command_fields).count.should == 4
+    CommandSearch.search($birds, 'desk|', search_fields, command_fields).count.should == 4
+    CommandSearch.search($birds, '|desk|', search_fields, command_fields).count.should == 4
+    CommandSearch.search(Bird, '|desk', search_fields, command_fields).count.should == 4
+    CommandSearch.search(Bird, 'desk|', search_fields, command_fields).count.should == 4
+    CommandSearch.search(Bird, '|desk|', search_fields, command_fields).count.should == 4
   end
 
 end
