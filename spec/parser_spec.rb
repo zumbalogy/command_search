@@ -80,6 +80,7 @@ describe CommandSearch::Parser do
     parse(')(').should == []
     parse(')))').should == []
     parse('(foo').should == [{type: :str, value: 'foo'}]
+    parse(')bar))) ))((foo((').should == parse('bar foo')
   end
 
   it 'should handle OR statements' do
