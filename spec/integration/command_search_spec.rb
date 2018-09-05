@@ -68,7 +68,6 @@ describe CommandSearch do
     }
     query = 'name:3|tags2'
     CommandSearch.search($birds, query, search_fields, command_fields).count.should == 1
-    pending
     CommandSearch.search(Bird, query, search_fields, command_fields).count.should == 1
   end
 
@@ -114,4 +113,18 @@ describe CommandSearch do
     CommandSearch.search(Bird, '|desk|', search_fields, command_fields).count.should == 4
   end
 
+  it 'should handle long alias chains' do
+    search_fields = [:title, :description, :tags]
+    command_fields = {
+      has_child_id: Boolean,
+      title: String,
+      name: :title,
+      foo: :name,
+      bar: :name,
+      zzz: :bar
+    }
+    query = 'zzz:3|tags2'
+    CommandSearch.search(Bird, query, search_fields, command_fields).count.should == 2
+    CommandSearch.search($birds, query, search_fields, command_fields).count.should == 2
+  end
 end

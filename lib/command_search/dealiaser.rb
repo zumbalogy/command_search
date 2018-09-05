@@ -34,6 +34,8 @@ module CommandSearch
 
     def decompose_unaliasable(ast, aliases)
       ast.flat_map do |x|
+        next x unless x[:nest_type]
+        x[:value] = decompose_unaliasable(x[:value], aliases)
         next x unless [:colon, :compare].include?(x[:nest_type])
         unnest_unaliased(x, aliases)
       end
