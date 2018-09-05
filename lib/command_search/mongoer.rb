@@ -85,13 +85,15 @@ module CommandSearch
         else
           val = /#{Regexp.escape(raw_val)}/mi
         end
-      elsif type == Numeric # should maybe accept float and int seperatly too
+      elsif [Numeric, Integer].include?(type)
         if raw_val == raw_val.to_i.to_s
           val = raw_val.to_i
-        else
+        elsif raw_val.to_f != 0 || raw_val[/^[\.0]*0$/]
           val = raw_val.to_f
+        else
+          val = raw_val
         end
-      elsif type == Time # TODO: Should handle date too maybe?
+      elsif type == Time
         time_str = raw_val.tr('_.-', ' ')
         date = Chronic.parse(time_str, guess: nil)
         if field_node[:negate]

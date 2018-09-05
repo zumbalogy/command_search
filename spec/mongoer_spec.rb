@@ -89,12 +89,7 @@ describe CommandSearch::Mongoer do
     q2('num1:-230').should == {'num1'=>-230}
     q2('num1:-0.930').should == {'num1'=>-0.930}
     q2('num1:4.0').should == {'num1'=>4.0}
-    # TODO:
-    #   q('num1:red').should == error
-    #   consider the case of "num1:2 num1:3" and
-    #   "str1:foo str1:bar". latter is valid, as
-    #   regex match against substrings, but num1 one
-    #   is strange.
+    q2('num1:red').should == {'num1'=>'red'}
   end
 
   it 'should handle time commands' do

@@ -116,6 +116,36 @@ describe CommandSearch do
     CommandSearch.search(Bird, '4>=', [], command_fields).count.should == 0
   end
 
+  it 'should be able to handle a field declared as Numeric or Interger' do
+    command_fields = {
+      feathers: Numeric
+    }
+    CommandSearch.search(Bird, 'feathers>0', [], command_fields).count.should == 3
+    CommandSearch.search(Bird, 'feathers>0.0', [], command_fields).count.should == 3
+    CommandSearch.search(Bird, 'feathers>0.1', [], command_fields).count.should == 3
+    CommandSearch.search(Bird, 'feathers>4', [], command_fields).count.should == 2
+    CommandSearch.search(Bird, 'feathers>4.0', [], command_fields).count.should == 2
+    CommandSearch.search(Bird, 'feathers>4.2', [], command_fields).count.should == 2
+    CommandSearch.search($birds, 'feathers>4', [], command_fields).count.should == 2
+    CommandSearch.search($birds, 'feathers>4.0', [], command_fields).count.should == 2
+    CommandSearch.search($birds, 'feathers>4.2', [], command_fields).count.should == 2
+    command_fields2 = {
+      feathers: Integer
+    }
+    CommandSearch.search(Bird, 'feathers>0', [], command_fields2).count.should == 3
+    CommandSearch.search(Bird, 'feathers>0.0', [], command_fields2).count.should == 3
+    CommandSearch.search(Bird, 'feathers>0.1', [], command_fields2).count.should == 3
+    CommandSearch.search(Bird, 'feathers>4', [], command_fields2).count.should == 2
+    CommandSearch.search(Bird, 'feathers>4.0', [], command_fields2).count.should == 2
+    CommandSearch.search(Bird, 'feathers>4.2', [], command_fields2).count.should == 2
+    CommandSearch.search($birds, 'feathers>0', [], command_fields2).count.should == 3
+    CommandSearch.search($birds, 'feathers>0.0', [], command_fields2).count.should == 3
+    CommandSearch.search($birds, 'feathers>0.1', [], command_fields2).count.should == 3
+    CommandSearch.search($birds, 'feathers>4', [], command_fields2).count.should == 2
+    CommandSearch.search($birds, 'feathers>4.0', [], command_fields2).count.should == 2
+    CommandSearch.search($birds, 'feathers>4.2', [], command_fields2).count.should == 2
+  end
+
   it 'should handle wacky inputs' do
     search_fields = [:title, :description, :tags]
     command_fields = {
