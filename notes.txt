@@ -141,10 +141,4 @@ also it would be nice if "monday" matched any date on a monday, not just like th
 # it would make having negative values hard to look for.
 # split_parts("foo:-bar")
 
-# TODO: test negative numbers (with comparison).
 # TODO: maybe support a real regex type. using that could mean certain things are not needed.
-
-# sample funny (or previously problematic) syntax:
--5<x<-10
--(a b)
-a -(b c)
