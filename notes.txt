@@ -16,8 +16,6 @@ from other nest types (compare and command) in the ast, to avoid code like
 TODO: it could be nice to be able to have an alias where the proper
 name is off limits.
 
-TODO: proper error messages and such.
-
 Note: in example project, have a "sort by" example
 
 Note: it should also have a way to test presence of something that
