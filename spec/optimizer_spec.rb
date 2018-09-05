@@ -226,6 +226,16 @@ describe CommandSearch::Parser do
     opt(':').should == []
     opt('-').should == []
     opt('|').should == []
+    opt('>').should == []
+    opt('>>').should == []
+    opt('>=').should == []
+    opt('>=>').should == []
+    opt('<').should == []
+    opt('<=').should == []
+    opt('-<').should == []
+    opt('-<=').should == []
+    opt('|:)').should == []
+    opt('-<>=-()<>:|(>=-|:)').should == []
   end
 
   it 'should handle empty strings' do

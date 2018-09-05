@@ -1,7 +1,84 @@
+
+One potential future feature (besides more customizable syntax and all)
+would be to be able to specify a certain number of matches. like,
+this name field must have the string ":)" 3 times. having
+an option to pass though to real regexes might solve this.
+
+right now, there are likely issues with comparing dates.
+
+right now there will be issues with 'foo:-bar'.
+
+it might be good to have a way to tell "collection" types (paren, or, minus)
+from other nest types (compare and command) in the ast, to avoid code like
+
+     [:paren, :pipe, :minus].include?(x[:nest_type])
+
+TODO: it could be nice to be able to have an alias where the proper
+name is off limits.
+
+TODO: proper error messages and such.
+
+Note: in example project, have a "sort by" example
+
+Note: it should also have a way to test presence of something that
+is also searchable as a string. so, as an example, "error:'not found'|error:false"
+or some such could work.
+
+TODO: support arrays (and maybe other nesting/relations)
+
+Right now, a blindspot if you want to search 'foo:"tRue"' and have have tRue not
+be case sensitive. (since quotes are used to escape from true part if thats enabled
+but also used to preserve case)
+
+
+Search across fields
+ann
+ann orange
+
+Search specific values and fields
+"Ann"
+color:orange
+
+Use aliases
+favorite_color:orange
+color:red
+(maybe do points/score)
+
+Check booleans and existence
+admin:true
+score:false
+
+Match with logical ORs
+red|blue
+red|blue|bob
+
+Match with logical NOTs
+-red
+-(red|blue)
+(green admin) | john
+
+Search ranges and dates (via the Chronic Gem)
+score<=100
+born>today
+a<b<c
+
+----------
+
+chronic thinks that "2000" means 20:20 today, not year 2000.
+also it would be nice if "monday" matched any date on a monday, not just like this monday.
+ -- for command at least (maybe compare it makes less sense)
+
+--------------------------------
+--------------------------------
+
+
+--------------------------------
+--------------------------------
+
+
 "hello"
 {general_search: "hello"}
 {or => {foo => /hello/}, {bar => /hello/}}
-
 
 "-hello"
 {general_search: "hello", negate: true}
@@ -32,10 +109,8 @@
      {or => {foo => /D/}, {bar => /D/}}}S
 
 
-
 "(A|B)|(C|D)" -> "A|B|C|D"
 "(A B) (C D)" -> "A B C D"
-
 
 "(A B)|(C D)"
 {type: or, nest: [{type: and, nest: [{general_search: "A"}, {general_search: "B"}]},
@@ -48,12 +123,10 @@
      {or => {foo => /C/}, {bar => /C/}}
      {or => {foo => /D/}, {bar => /D/}}}}
 
-
 "hi|-lo red:red 'fo ba' re>=da"
 ["hi|-lo", "red:ded", "'fo ba'", "re>=da"]
 [["hi", "|", "-lo"], ["red:ded"], ["fo ba"], ["re", ">=", "da"]]
 [["hi", "|", ["-", "lo"]], ["red:ded"], ["fo ba"], ["re", ">=", "da"]]
-
 
 "hi|-lo red:red 'fo ba' re>=da"
 [{:type=>:or,
@@ -64,26 +137,14 @@
  {:type=>:general, :search=>"'fo ba'"},
  {:type=>:command, :search=>"re>=da"}]
 
-
 # this syntax is now not allowed as a negation.
 # it would make having negative values hard to look for.
 # split_parts("foo:-bar")
 
-# ("-5<x<-10")
-# will not be valid.
-# it would  have to be two statements, -5<x and x<-10. could allow chaining in future
-# it would also have to be x>=-5 if you want to use a negative number
-# chaining ORs is fine. if you want a negative number outside a comparison
-# you have to quote it.
-# could consider all -5 fine, and  - 5 to be "not five"
+# TODO: test negative numbers (with comparison).
+# TODO: maybe support a real regex type. using that could mean certain things are not needed.
 
-
-# TODO: test negative numbers.
-# TODO: test sending just : or - or => alone. like searches made on accident or in bad faith
-# TODO: maybe support a real regex type. using that could mean certian things are not needed.
-
-# sample funny (or previosuly problematic) syntax:
-|b
+# sample funny (or previously problematic) syntax:
 -5<x<-10
 -(a b)
 a -(b c)

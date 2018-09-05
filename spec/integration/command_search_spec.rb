@@ -98,6 +98,24 @@ describe CommandSearch do
     CommandSearch.search(Bird, 'feathers>4', [], command_fields).count.should == 0
   end
 
+  it 'should be able to handle unbalanced compares' do
+    command_fields = {
+      feathers: Numeric
+    }
+    CommandSearch.search($birds, 'feathers>', [], command_fields).count.should == 0
+    CommandSearch.search($birds, 'feathers>>', [], command_fields).count.should == 0
+    CommandSearch.search($birds, '=<feathers>>', [], command_fields).count.should == 0
+    CommandSearch.search($birds, '>4', [], command_fields).count.should == 0
+    CommandSearch.search($birds, '4<', [], command_fields).count.should == 0
+    CommandSearch.search($birds, '4>=', [], command_fields).count.should == 0
+    CommandSearch.search(Bird, 'feathers>', [], command_fields).count.should == 0
+    CommandSearch.search(Bird, 'feathers>>', [], command_fields).count.should == 0
+    CommandSearch.search(Bird, '=<feathers>>', [], command_fields).count.should == 0
+    CommandSearch.search(Bird, '>4', [], command_fields).count.should == 0
+    CommandSearch.search(Bird, '4<', [], command_fields).count.should == 0
+    CommandSearch.search(Bird, '4>=', [], command_fields).count.should == 0
+  end
+
   it 'should handle wacky inputs' do
     search_fields = [:title, :description, :tags]
     command_fields = {

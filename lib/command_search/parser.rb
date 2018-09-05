@@ -57,11 +57,14 @@ module CommandSearch
       end
     end
 
-    def clean_ununused_command_syntax(input)
+    def clean_ununused_syntax(input)
       out = input.map do |x|
         next if x[:type] == :paren && x[:value].is_a?(String)
-        next x unless x[:type] == :nest
-        x[:value] = clean_ununused_command_syntax(x[:value])
+        if x[:nest_type] == :compare && x[:value].length < 2
+          x = clean_ununused_syntax(x[:value]).first
+        end
+        next x unless x && x[:type] == :nest
+        x[:value] = clean_ununused_syntax(x[:value])
         x
       end
       out.compact
@@ -75,7 +78,7 @@ module CommandSearch
       out = cluster(:compare, out)
       out = cluster(:minus, out, :prefix)
       out = cluster(:pipe, out)
-      out = clean_ununused_command_syntax(out)
+      out = clean_ununused_syntax(out)
       out
     end
   end
