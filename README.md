@@ -1,5 +1,6 @@
 # Command Search
 [![CircleCI](https://circleci.com/gh/zumbalogy/command_search.svg?style=svg)](https://circleci.com/gh/zumbalogy/command_search)
+
 command_search is a Ruby gem to help users easily query collections.
 
 command_search should make it a breeze to make gmail-style search bars, where
