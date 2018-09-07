@@ -1,5 +1,4 @@
 # Command Search
-------------
 command_search is a Ruby gem to help users easily query collections.
 
 command_search should make it a breeze to make gmail-style search bars, where
@@ -9,7 +8,7 @@ as using negations, comparisons, ors, and ands.
 command_search does not require an engine and should be easy to set up.
 
 ### SYNTAX
-
+------------
 Normal queries like `friday dinner`, `shoelace`, or `treehouse` work normally,
 but a user can specify using quotation marks if they want a search `'ann'` to
 not match "anne" or `"bob"` to not match "bobby". Quoted searches are also
@@ -26,6 +25,7 @@ be used in combination.
 | Negate  | `-`                  | `-error`, `-(sat\|sun)`                |
 
 ### LIMITATIONS
+------------
 'Fuzzy' searching is not currently supported.
 
 The only currently supported collections to query are MongoDB [link] collections
@@ -33,6 +33,7 @@ and in-memory arrays of hashes.
 SQL support hopefully coming soon.
 
 ### DEPENDANCIES
+------------
 Mongoid [link] is assumed if using command_search to search MongoDB.
 
 Chronic [link] is currently used to parse user submitted dates, such as
@@ -40,6 +41,7 @@ Chronic [link] is currently used to parse user submitted dates, such as
 is not perfect, but is only used if 'Date' is declared as a field type in the config.
 
 ### INSTALL
+------------
 Command Line:
 ```
 gem install command_search
@@ -50,6 +52,8 @@ gem 'command_search'
 ```
 
 ### SETUP
+------------
 
 
 ### EXAMPLES
+------------
