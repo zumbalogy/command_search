@@ -1,4 +1,5 @@
 # Command Search
+[![CircleCI](https://circleci.com/gh/zumbalogy/command_search.svg?style=svg)](https://circleci.com/gh/zumbalogy/command_search)
 command_search is a Ruby gem to help users easily query collections.
 
 command_search should make it a breeze to make gmail-style search bars, where
@@ -24,6 +25,9 @@ be used in combination.
 | Negate  | `-`                  | `-error`, `-(sat\|sun)`                |
 
 ## Limitations
+Date/Time searches are only parsed into dates for command searches that
+specify (`:`) or compare (`<`, `>`, `<=`, `>=`).
+
 'Fuzzy' searching is not currently supported.
 
 The only currently supported collections to query are MongoDB [link] collections
@@ -34,7 +38,7 @@ SQL support hopefully coming soon.
 Mongoid [link] is assumed if using command_search to search MongoDB.
 
 Chronic [link] is currently used to parse user submitted dates, such as
-'tuesday' or '1/1/11'. Chronic's handling of timezones and leap years and such
+`tuesday` or `1/1/11`. Chronic's handling of timezones and leap years and such
 is not perfect, but is only used if 'Date' is declared as a field type in the config.
 
 ## Install
@@ -51,3 +55,5 @@ gem 'command_search'
 
 
 ## Examples
+
+## Technical Details
