@@ -7,7 +7,7 @@ as using negations, comparisons, ors, and ands.
 
 command_search does not require an engine and should be easy to set up.
 
-## SYNTAX
+## Syntax
 Normal queries like `friday dinner`, `shoelace`, or `treehouse` work normally,
 but a user can specify using quotation marks if they want a search `'ann'` to
 not match "anne" or `"bob"` to not match "bobby". Quoted searches are also
@@ -23,21 +23,21 @@ be used in combination.
 | Compare | `<`, `>`, `<=`, `>=` | `created_at<monday`, `100<=pokes`      |
 | Negate  | `-`                  | `-error`, `-(sat\|sun)`                |
 
-## LIMITATIONS
+## Limitations
 'Fuzzy' searching is not currently supported.
 
 The only currently supported collections to query are MongoDB [link] collections
 and in-memory arrays of hashes.
 SQL support hopefully coming soon.
 
-## DEPENDANCIES
+## Dependencies
 Mongoid [link] is assumed if using command_search to search MongoDB.
 
 Chronic [link] is currently used to parse user submitted dates, such as
 'tuesday' or '1/1/11'. Chronic's handling of timezones and leap years and such
 is not perfect, but is only used if 'Date' is declared as a field type in the config.
 
-## INSTALL
+## Install
 Command Line:
 ```
 gem install command_search
@@ -47,7 +47,7 @@ Gemfile:
 gem 'command_search'
 ```
 
-## SETUP
+## Setup
 
 
-## EXAMPLES
+## Examples
