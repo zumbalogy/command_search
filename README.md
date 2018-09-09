@@ -21,10 +21,8 @@ combination.
 
 | Command | Character            | Examples                               |
 | ----    | -----                | ----------                             |
-| Specify | `:`                  | `attachment:true`, `grade:A`
-(Note: command_search could alias grade to grade_letter. See [Setup](#setup) for details) |
-| And     | `(...)`              | `(error important)`, `liked poked`
-(Note: space is an implicit and) |
+| Specify | `:`                  | `attachment:true`, `grade:A` (Note: command_search could alias grade to grade_letter. See [Setup](#setup) for details) |
+| And     | `(...)`              | `(error important)`, `liked poked` (Note: space is an implicit and) |
 | Or      | `\|`                 | `color\|colour`, `red\|orange\|yellow` |
 | Compare | `<`, `>`, `<=`, `>=` | `created_at<monday`, `100<=pokes`      |
 | Negate  | `-`                  | `-error`, `-(sat\|sun)`                |
