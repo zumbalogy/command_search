@@ -68,7 +68,8 @@ gem 'command_search'
 
 To query collections, command_search provides the CommandSearch.search function,
 which takes a collection, a query, the general search fields and the command
-search fields.
+search fields. Providing an empty list for either the general or command search
+fields is OK.
 
 * Collection: Either an array of hashes or a class that is a
 Mongoid::Document.
@@ -126,3 +127,44 @@ end
 ## Examples
 
 ## Internal Details
+
+The lifecycle of a query is as follows: The query is lexed, parsed, de-aliased,
+cleaned, optimized, and then turned into a Ruby select function or a MongoDB
+compatible query.
+
+The lexer breaks a query into pieces.
+```ruby
+CommandSearch::Lexer.lex('(price<=200 discount)|price<=99.99')
+[{ type: :paren,   value: '(' },
+ { type: :str,     value: 'price' },
+ { type: :compare, value: '<=' },
+ { type: :number,  value: '200' },
+ { type: :str,     value: 'discount' },
+ { type: :paren,   value: ')' },
+ { type: :pipe,    value: '|' },
+ { type: :str,     value: 'price' },
+ { type: :compare, value: '<' },
+ { type: :number,  value: '99.99' }]
+```
+The parser then takes that and turns it into a tree.
+```ruby
+CommandSearch::Parser.parse(_)
+=> [{:type=>:nest,
+  :nest_type=>:pipe,
+  :nest_op=>"|",
+  :value=>
+   [{:type=>:nest,
+     :nest_type=>:paren,
+     :value=>
+      [{:type=>:nest,
+        :nest_type=>:compare,
+        :nest_op=>"<=",
+        :value=>
+         [{:type=>:str, :value=>"price"}, {:type=>:number, :value=>"200"}]},
+       {:type=>:str, :value=>"discount"}]},
+    {:type=>:nest,
+     :nest_type=>:compare,
+     :nest_op=>"<",
+     :value=>
+      [{:type=>:str, :value=>"price"}, {:type=>:number, :value=>"99.99"}]}]}]
+```
