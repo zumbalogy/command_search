@@ -21,8 +21,10 @@ combination.
 
 | Command | Character            | Examples                               |
 | ----    | -----                | ----------                             |
-| Specify | `:`                  | `attachment:true`, `grade:A`           |
-| And     | `(...)`              | `(error important)`, `liked poked` (Note: space is an implicit and) |
+| Specify | `:`                  | `attachment:true`, `grade:A`
+(Note: command_search could alias grade to grade_letter. See [Setup](#setup) for details) |
+| And     | `(...)`              | `(error important)`, `liked poked`
+(Note: space is an implicit and) |
 | Or      | `\|`                 | `color\|colour`, `red\|orange\|yellow` |
 | Compare | `<`, `>`, `<=`, `>=` | `created_at<monday`, `100<=pokes`      |
 | Negate  | `-`                  | `-error`, `-(sat\|sun)`                |
@@ -33,8 +35,10 @@ specify (`:`) or compare (`<`, `>`, `<=`, `>=`).
 
 'Fuzzy' searching is not currently supported.
 
-The only currently supported collections to query are MongoDB [link] collections
-and in-memory arrays of hashes.
+The only currently supported collections to query are
+[MongoDB](https://github.com/mongodb/mongo) collections and in-memory arrays of
+hashes.
+
 SQL support hopefully coming soon.
 
 ## Dependencies
@@ -48,7 +52,7 @@ as a field type in the config.
 
 ## Install
 Command Line:
-```
+```ruby
 gem install command_search
 ```
 Gemfile:
@@ -58,6 +62,42 @@ gem 'command_search'
 
 ## Setup
 
+todo
+describe the inputs and aliases
+
+Mongo:
+```ruby
+class Foo
+  include Mongoid::Document
+  field :title,       type: String
+  field :description, type: String
+  field :tags,        type: String
+  field :child_id,    type: String
+  field :feathers,    type: Integer
+  field :cost,        type: Integer
+  field :starred,     type: Boolean
+  field :fav_date,    type: Time
+
+  def self.search(query)
+    search_fields = [:title, :description, :tags]
+    command_fields = {
+      child_id: Boolean,
+      title: String,
+      name: :title,
+      description: String,
+      desc: :description,
+      starred: Boolean,
+      star: :starred,
+      tags: String,
+      tag: :tags,
+      feathers: [Numeric, :allow_existence_boolean],
+      cost: Numeric,
+      fav_date: Time
+    }
+    CommandSearch.search(Foo, query, search_fields, command_fields)
+  end
+end
+```
 
 ## Examples
 
