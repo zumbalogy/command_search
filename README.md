@@ -12,7 +12,8 @@ command_search also provides ways to alias keywords so that the search
 `grade>=97`, or `user:me` becomes `user:59guwJphUhqfd2A`, but with the actual
 id of the current user.
 
-command_search does not require an engine and should be easy to set up.
+command_search does not require an engine, is relatively free of magic, and
+should be easy to set up.
 
 ## Syntax
 Normal queries like `friday dinner`, `shoelace`, or `treehouse` work normally,
@@ -65,10 +66,30 @@ gem 'command_search'
 
 ## Setup
 
-todo
-describe the inputs and aliases
+To query collections, command_search provides the CommandSearch.search function,
+which takes a collection, a query, the general search fields and the command
+search fields.
 
-Mongo:
+* Collection: Either an array of hashes or a class that is a
+Mongoid::Document.
+
+* Query: The string query to use to search the collection, such as
+'user:me' or 'bee|wasp'.
+
+* General search fields: An array of Ruby symbols that name the fields that will
+be searched across when a field is not specified in a command.
+
+* Command search fields: A Ruby hash that maps symbols matching a field's name
+to its type, or to another symbol as an alias. Valid types are `String`,
+`Boolean`, `Numeric`, and `Time`.
+Fields specified as `Boolean` will check for existence of a value if the
+underlying data is not actually a boolean, so, for example `bookmarked:true`
+could work even if the bookmarked field is a timestamp. To be able to query
+the bookmarked field as both a timestamp and a boolean, the symbol
+`:allow_existence_boolean` can be added to the value for the key bookmarked,
+like so: `bookmarked: [Time, :allow_existence_boolean]`.
+
+An example setup for searching a Foo class in MongoDB:
 ```ruby
 class Foo
   include Mongoid::Document
