@@ -129,8 +129,8 @@ end
 ## Internal Details
 
 The lifecycle of a query is as follows: The query is lexed, parsed, de-aliased,
-cleaned, optimized, and then turned into a Ruby select function or a MongoDB
-compatible query.
+optimized, and then turned into a Ruby select function or a MongoDB compatible
+query.
 
 The lexer breaks a query into pieces.
 ```ruby
@@ -155,18 +155,35 @@ CommandSearch::Parser.parse(_)
    value: [
      { type: :nest,
        nest_type: :paren,
-       value: [
-        { type: :nest,
-          nest_type: :compare,
-          nest_op: '<=',
-          value: [
-            { type: :str, value: 'price' },
-            { type: :number, value: '200' }] },
-       { type: :str, value: 'discount' }] },
+       value: [{ type: :nest,
+                 nest_type: :compare,
+                 nest_op: '<=',
+                 value: [{ type: :str, value: 'price' },
+                         { type: :number, value: '200' }] },
+               { type: :str, value: 'discount' }] },
     { type: :nest,
       nest_type: :compare,
       nest_op: '<',
-      value: [
-        { type: :str, value: 'price' },
-        { type: :number, value: '99.99' }] }] }]
+      value: [{ type: :str, value: 'price' },
+              { type: :number, value: '99.99' }] }] }]
+```
+It will then aliased to the names given in the command_fields, and command like
+queries that don't match a specified command field will be turned into normal
+string searches.
+
+The optimizer will then tidy up some of the logic with rules such as:
+* '-(a)' => '-a'
+* '-(-a)' => 'a'
+* 'a a' => 'a'
+* 'a|a' => 'a'
+
+It will then be turned into a Ruby function to be used in a select, or a mongo
+compatible query.
+
+```ruby
+CommandSearch::Mongoer.build_query(_, [:name, :description], { price: Integer })
+{ '$or' => [{ '$and' => [{ 'price' => { '$lte' => '200' } },
+                         { '$or' => [{ name: /discount/mi },
+                                     { description: /discount/mi }] }] },
+            { 'price' => { '$lte' => '99.99' } }] }
 ```
