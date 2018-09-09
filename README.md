@@ -7,6 +7,11 @@ command_search should make it a breeze to make gmail-style search bars, where
 users can search for items that match `flamingos` or `author:herbert`, as well
 as using negations, comparisons, ors, and ands.
 
+command_search also provides ways to alias keywords so that the search
+`name:alice` actually searches for `username:alice`, the search `A+` becomes
+`grade>=97`, or `user:me` becomes `user:59guwJphUhqfd2A`, but with the actual
+id of the current user.
+
 command_search does not require an engine and should be easy to set up.
 
 ## Syntax
@@ -21,7 +26,7 @@ combination.
 
 | Command | Character            | Examples                               |
 | ----    | -----                | ----------                             |
-| Specify | `:`                  | `attachment:true`, `grade:A` (Note: command_search could alias grade to grade_letter. See [Setup](#setup) for details) |
+| Specify | `:`                  | `attachment:true`, `grade:A`           |
 | And     | `(...)`              | `(error important)`, `liked poked` (Note: space is an implicit and) |
 | Or      | `\|`                 | `color\|colour`, `red\|orange\|yellow` |
 | Compare | `<`, `>`, `<=`, `>=` | `created_at<monday`, `100<=pokes`      |
