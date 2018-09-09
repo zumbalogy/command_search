@@ -11,11 +11,13 @@ command_search does not require an engine and should be easy to set up.
 
 ## Syntax
 Normal queries like `friday dinner`, `shoelace`, or `treehouse` work normally,
-but a user can specify using quotation marks if they want a search `'ann'` to
-not match "anne" or `"bob"` to not match "bobby". Quoted searches are also
-case sensitive and can match whole phrases, like `"You had me at HELLO."`.
-Collections can also be queried in a few extra handy ways, all of which can
-be used in combination.
+and will perform case insensitive partial matching per space-delineated part of
+the query.
+A user can specify full-word and case sensitive query parts by using quotation
+marks, so the search `'ann'` will not match "anne" or `"bob"` to not match
+"bobby". Quoted searches can match whole phrases, like `"You had me at HELLO!"`.
+Collections can also be queried in a few extra ways, which can be used in
+combination.
 
 | Command | Character            | Examples                               |
 | ----    | -----                | ----------                             |
@@ -36,11 +38,13 @@ and in-memory arrays of hashes.
 SQL support hopefully coming soon.
 
 ## Dependencies
-Mongoid [link] is assumed if using command_search to search MongoDB.
+[Mongoid](https://github.com/mongodb/mongoid) is assumed if using command_search
+to search MongoDB.
 
-Chronic [link] is currently used to parse user submitted dates, such as
-`tuesday` or `1/1/11`. Chronic's handling of timezones and leap years and such
-is not perfect, but is only used if 'Date' is declared as a field type in the config.
+[Chronic](https://github.com/mojombo/chronic) is currently used to parse user
+submitted dates, such as `tuesday` or `1/1/11`. Chronic's handling of timezones
+and leap years and such is not perfect, but is only used if 'Date' is declared
+as a field type in the config.
 
 ## Install
 Command Line:
