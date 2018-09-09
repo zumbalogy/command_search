@@ -104,4 +104,4 @@ end
 
 ## Examples
 
-## Technical Details
+## Internal Details
