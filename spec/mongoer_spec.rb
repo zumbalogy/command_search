@@ -11,7 +11,7 @@ end
 
 def q(x, fields, command_types = {})
   parsed = opt(x)
-  dealiased = CommandSearch::Dealiaser.dealias(parsed, command_types)
+  dealiased = CommandSearch::Dealiaser.dealias_commands(parsed, command_types)
   CommandSearch::Mongoer.build_query(dealiased, fields, command_types)
 end
 

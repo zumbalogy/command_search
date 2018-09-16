@@ -13,8 +13,8 @@ module CommandSearch
   def search(source, query, fields, command_fields = {})
     tokens = Lexer.lex(query)
     parsed = Parser.parse(tokens)
-    dealiased = Dealiaser.dealias(parsed, command_fields)
-    cleaned = Dealiaser.decompose_unaliasable(dealiased, command_fields)
+    dealiased = Dealiaser.dealias_commands(parsed, command_fields)
+    cleaned = Dealiaser.decompose_unaliasable_commands(dealiased, command_fields)
     opted = Optimizer.optimize(cleaned)
     if source.respond_to?(:mongo_client) && source.queryable
       fields = [:__CommandSearch_mongo_fields_dummy_key__] if fields.empty?

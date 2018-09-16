@@ -6,8 +6,8 @@ def parse(x)
 end
 
 def dealias(x, aliases)
-  dealiased = CommandSearch::Dealiaser.dealias(parse(x), aliases)
-  CommandSearch::Dealiaser.decompose_unaliasable(dealiased, aliases)
+  dealiased = CommandSearch::Dealiaser.dealias_commands(parse(x), aliases)
+  CommandSearch::Dealiaser.decompose_unaliasable_commands(dealiased, aliases)
 end
 
 describe CommandSearch::Dealiaser do
