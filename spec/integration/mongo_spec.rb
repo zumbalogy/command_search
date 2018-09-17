@@ -16,22 +16,24 @@ class Hat
   field :fav_date,    type: Time
 
   def self.search(query)
-    search_fields = [:title, :description, :tags]
-    command_fields = {
-      child_id: Boolean,
-      title: String,
-      name: :title,
-      description: String,
-      desc: :description,
-      starred: Boolean,
-      star: :starred,
-      tags: String,
-      tag: :tags,
-      feathers: [Numeric, :allow_existence_boolean],
-      cost: Numeric,
-      fav_date: Time
+    options = {
+      fields: [:title, :description, :tags],
+      command_fields: {
+        child_id: Boolean,
+        title: String,
+        name: :title,
+        description: String,
+        desc: :description,
+        starred: Boolean,
+        star: :starred,
+        tags: String,
+        tag: :tags,
+        feathers: [Numeric, :allow_existence_boolean],
+        cost: Numeric,
+        fav_date: Time
+      }
     }
-    CommandSearch.search(Hat, query, search_fields, command_fields)
+    CommandSearch.search(Hat, query, options)
   end
 end
 

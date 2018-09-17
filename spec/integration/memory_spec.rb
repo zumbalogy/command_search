@@ -13,22 +13,24 @@ $hats = [
 ]
 
 def search(query, list = $hats)
-  search_fields = [:title, :description, :tags]
-  command_fields = {
-    has_child_id: Boolean,
-    title: String,
-    name: :title,
-    description: String,
-    desc: :description,
-    starred: Boolean,
-    star: :starred,
-    tags: String,
-    tag: :tags,
-    feathers: [Numeric, :allow_existence_boolean],
-    cost: Numeric,
-    fav_date: Time
+  options = {
+    fields: [:title, :description, :tags],
+    command_fields: {
+      has_child_id: Boolean,
+      title: String,
+      name: :title,
+      description: String,
+      desc: :description,
+      starred: Boolean,
+      star: :starred,
+      tags: String,
+      tag: :tags,
+      feathers: [Numeric, :allow_existence_boolean],
+      cost: Numeric,
+      fav_date: Time
+    }
   }
-  CommandSearch.search(list, query, search_fields, command_fields)
+  CommandSearch.search(list, query, options)
 end
 
 describe CommandSearch::Memory do
@@ -340,14 +342,14 @@ describe CommandSearch::Memory do
   end
 
   it 'should be able to work with strings and symbols' do
-    CommandSearch.search([{foo: 3}], '2', ['foo']).count.should == 0
-    CommandSearch.search([{foo: 3}], '2', [:foo]).count.should == 0
-    CommandSearch.search([{foo: 3}], '3', ['foo']).count.should == 1
-    CommandSearch.search([{foo: 3}], '3', [:foo]).count.should == 1
-    CommandSearch.search([{'foo' => 3}], '2', ['foo']).count.should == 0
-    CommandSearch.search([{'foo' => 3}], '2', [:foo]).count.should == 0
-    CommandSearch.search([{'foo' => 3}], '3', ['foo']).count.should == 1
-    CommandSearch.search([{'foo' => 3}], '3', [:foo]).count.should == 1
+    CommandSearch.search([{foo: 3}], '2', { fields: ['foo'] }).count.should == 0
+    CommandSearch.search([{foo: 3}], '2', { fields: [:foo] }).count.should == 0
+    CommandSearch.search([{foo: 3}], '3', { fields: ['foo'] }).count.should == 1
+    CommandSearch.search([{foo: 3}], '3', { fields: [:foo] }).count.should == 1
+    CommandSearch.search([{'foo' => 3}], '2', { fields: ['foo'] }).count.should == 0
+    CommandSearch.search([{'foo' => 3}], '2', { fields: [:foo] }).count.should == 0
+    CommandSearch.search([{'foo' => 3}], '3', { fields: ['foo'] }).count.should == 1
+    CommandSearch.search([{'foo' => 3}], '3', { fields: [:foo] }).count.should == 1
   end
 
   # it 'should error gracefully' do

@@ -18,9 +18,9 @@ def foo(input)
   CommandSearch::Foo.foo(input, foos)
 end
 
-describe CommandSearch::Foo do
+describe CommandSearch::Aliaser do
 
-  it 'should handle no foos' do
+  xit 'should handle no foos' do
     foo('', []).should == ''
     foo(' ', []).should == ' '
     foo('foo|bar -bat "" baz:zap', []).should == 'foo|bar -bat "" baz:zap'

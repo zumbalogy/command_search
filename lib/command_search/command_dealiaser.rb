@@ -1,5 +1,5 @@
 module CommandSearch
-  module Dealiaser
+  module CommandDealiaser
     module_function
 
     def dealias_key(key, aliases)
@@ -22,20 +22,20 @@ module CommandSearch
       { type: :str, value: str_values }
     end
 
-    def dealias_commands(ast, aliases)
+    def dealias(ast, aliases)
       ast.flat_map do |x|
         next x unless x[:nest_type]
-        x[:value] = dealias_commands(x[:value], aliases)
+        x[:value] = dealias(x[:value], aliases)
         next x unless [:colon, :compare].include?(x[:nest_type])
         x[:value] = dealias_values(x[:value], aliases)
         x
       end
     end
 
-    def decompose_unaliasable_commands(ast, aliases)
+    def decompose_unaliasable(ast, aliases)
       ast.flat_map do |x|
         next x unless x[:nest_type]
-        x[:value] = decompose_unaliasable_commands(x[:value], aliases)
+        x[:value] = decompose_unaliasable(x[:value], aliases)
         next x unless [:colon, :compare].include?(x[:nest_type])
         unnest_unaliased(x, aliases)
       end
