@@ -1,0 +1,10 @@
+look into how this handles apostrophes.
+
+so "bee's knee" does not think its an unbalanced quote or so.
+
+specs already have some good rest data for that
+
+{ title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
+
+
+what about "foo's unquoted bar's" unquoted should not be quoted

@@ -2,12 +2,12 @@ load(__dir__ + '/./spec_helper.rb')
 
 current_user_id = '59guwJphUhqfd2A'
 
-foos = [
+aliases = [
   'red' => 'blue',
   'hello world' => 'hello earth',
   'A+' => 'grade>=97',
-  'user:me' => -> (match, query) { "user:#{current_user_id}" },
-  /minutes:\d+/ => -> (match, query) { "seconds:#{match.split(':').last.to_i * 60}" }
+  'user:me' => -> (match) { "user:#{current_user_id}" },
+  /minutes:\d+/ => -> (match) { "seconds:#{match.split(':').last.to_i * 60}" }
 ]
 # 'top scores' => -> handle conditionally sorting the output by something?
 
@@ -15,12 +15,12 @@ foos = [
 # `grade>=97`, or `user:me`
 
 def foo(input)
-  CommandSearch::Foo.foo(input, foos)
+  CommandSearch::Aliaser.alias(input, aliases)
 end
 
 describe CommandSearch::Aliaser do
 
-  xit 'should handle no foos' do
+  it 'should handle no aliases' do
     foo('', []).should == ''
     foo(' ', []).should == ' '
     foo('foo|bar -bat "" baz:zap', []).should == 'foo|bar -bat "" baz:zap'
@@ -44,8 +44,8 @@ end
 # case sensitive (or if its not) and happens outside of quoted
 # parts of the query and how one can just do transformations
 # before sending it to commandSearch if wanting to live more
-# dangerously and all
-
+# dangerously and all. and how it deals with word boundry for strings,
+# and "bab" only matches "babab" once.
 
 # TODO: for sorting example:
 
