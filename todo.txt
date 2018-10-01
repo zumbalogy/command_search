@@ -1,3 +1,11 @@
+need to do something like this
+Regexp.new('\b' + Regexp.escape(str) + '\b', 'i')
+or
+Regexp.new(Regexp.escape(str), 'i')
+as opposed to the literals like
+/#{Regexp.escape(str)}/i
+to avoid building the wrong regexes when there is a special character (like 'A+')
+
 look into how this handles apostrophes.
 
 so "bee's knee" does not think its an unbalanced quote or so.
