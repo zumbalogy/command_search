@@ -78,13 +78,19 @@ describe CommandSearch::Aliaser do
     a('foo', { 'foo' => 'bar', 'bar' => 'baz' }).should == 'baz'
     a('me', { 'me' => 'current_user', 'user' => 'non_admin' }).should == 'current_user'
     a('you', { 'me' => 'self', 'you' => 'me' }).should == 'me'
+    a('cool', { /oo/ => 'ooooo' }).should == 'coooool'
     a('cool', { /oo/ => 'ooo', /ooo/ => '__' }).should == 'c__l'
   end
 
   it 'should handle function aliases with closures' do
-    skip 'TODO'
-  end
+    variable = 0
+    a('hit', { 'hit' => proc {|_| variable = 100; 101 }}).should == '101'
+    variable.should == 100
+    variable2 = ''
+    a('abc', { /./ => proc {|x| variable2 += x; x }}).should == 'abc'
+    variable2.should == 'cba'
 
+  end
 end
 
 # TODO: make sure it plays friendly with pagination and all for mongo and

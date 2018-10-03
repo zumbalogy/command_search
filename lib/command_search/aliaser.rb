@@ -33,7 +33,7 @@ module CommandSearch
         if alias_value.is_a?(String)
           replacement = alias_value
         elsif alias_value.is_a?(Proc)
-          replacement = alias_value.call(current_match)
+          replacement = alias_value.call(current_match).to_s
         end
       end
       head + replacement + tail
