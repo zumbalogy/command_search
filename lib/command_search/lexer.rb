@@ -10,9 +10,9 @@ module CommandSearch
 
     def char_type(char)
       case char
-      when /[\"\']/
+      when /["']/
         :quote
-      when /[\(\)]/
+      when /[()]/
         :paren
       when /[<>]/
         :compare
