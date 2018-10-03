@@ -156,14 +156,14 @@ describe CommandSearch do
       }
     }
     CommandSearch.search($birds, '|desk', options).count.should == 4
-    CommandSearch.search($birds, 'desk|', options).count.should == 4
+    CommandSearch.search($birds,  'desk|', options).count.should == 4
     CommandSearch.search($birds, '|desk|', options).count.should == 4
-    CommandSearch.search(Bird, '|desk', options).count.should == 4
-    CommandSearch.search(Bird, 'desk|', options).count.should == 4
-    CommandSearch.search(Bird, '|desk|', options).count.should == 4
+    CommandSearch.search(Bird,   '|desk', options).count.should == 4
+    CommandSearch.search(Bird,    'desk|', options).count.should == 4
+    CommandSearch.search(Bird,   '|desk|', options).count.should == 4
   end
 
-  it 'should handle long alias chains' do
+  it 'should handle long command alias chains' do
     options = {
       fields: [:title, :description, :tags],
       command_fields: {
@@ -178,5 +178,46 @@ describe CommandSearch do
     query = 'zzz:3|tags2'
     CommandSearch.search(Bird, query, options).count.should == 2
     CommandSearch.search($birds, query, options).count.should == 2
+  end
+
+  it 'should handle alaises' do
+    sort_type = nil
+    options = {
+      fields: [:title, :description, :tags],
+      command_fields: {
+        has_child_id: Boolean,
+        title: String,
+        name: :title
+      },
+      aliases: {
+        /\bsort:.+\b/ => proc { |match|
+          sort_type = match.sub('sort:', '')
+          ''
+        }
+      }
+    }
+    results = CommandSearch.search(Bird, 'name sort:title', options)
+    results = results.order_by(sort_type => :asc) if sort_type
+    results.map { |x| x[sort_type] }.should == [
+      'name name1 1',
+      'name name2 2',
+      'name name3 3',
+      'name name4 4',
+      'same_name',
+      'same_name'
+    ]
+    results2 = CommandSearch.search($birds, 'sort:title', options)
+    results2 = results2.sort_by { |x| x[sort_type.to_sym] || '' } if sort_type
+    results2.map { |x| x[sort_type.to_sym] }.should == [
+      nil,
+      nil,
+      'name name1 1',
+      'name name2 2',
+      'name name3 3',
+      'name name4 4',
+      'same_name',
+      'same_name',
+      'someone\'s iHat'
+    ]
   end
 end
