@@ -39,8 +39,8 @@ module CommandSearch
       { type: char_type(char), value: char }
     end
 
-    def value_indices(match, lst)
-      lst.each_index.select { |i| lst[i][:value] == match }
+    def value_indices(match, list)
+      list.each_index.select { |i| list[i][:value] == match }
     end
 
     def group_quoted_strings(input)
