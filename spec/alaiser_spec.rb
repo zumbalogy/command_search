@@ -89,7 +89,6 @@ describe CommandSearch::Aliaser do
     variable2 = ''
     a('abc', { /./ => proc {|x| variable2 += x; x }}).should == 'abc'
     variable2.should == 'cba'
-
   end
 end
 
