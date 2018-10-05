@@ -8,10 +8,11 @@ users can search for `flamingos` or `author:herbert`, as well
 as using negations, comparisons, ors, and ands.
 
 command_search also provides ways to alias keywords or regular expressions so that,
-if desired, the query `name:alice` actually searches for `username:alice`,
-the query `A+` becomes `grade>=97`, or `user:me` becomes `user:59guwJphUhqfd2A`,
-but with the actual id of the current user. The syntax for commands can also
-be aliased this way, for example, `hair=blue` could become `hair:blue`.
+if desired:
+* `name:alice` could become `username:alice`
+* `A+` could become `grade>=97`
+* `user:me` could become `user:59guwJphUhqfd2A` (but with the action ID)
+* `hair=blue` could become `hair:blue`
 
 command_search does not require an engine, is relatively free of magic, and
 should be easy to set up.
@@ -136,7 +137,7 @@ class Foo
       aliases: {
         'favorite' => 'starred:true',
         '=' => ':',
-        'me' => -> () { "name:#{current_user.name}" },
+        'me' => -> () { current_user.name },
         /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }
       }
     }
