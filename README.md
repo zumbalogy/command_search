@@ -23,9 +23,8 @@ and will perform case insensitive partial matching per space-delineated part of
 the query.
 A user can specify full-word and case sensitive query parts by using quotation
 marks, so the search `'ann'` will not match "anne" or `"bob"` to not match
-"bobby". Quoted searches can match whole phrases, like `"You had me at HELLO!"`.
-Collections can also be queried in a few extra ways, which can be used in
-combination.
+"bobby". Quoted query parts can search for whole phrases, such as `"You had me at HELLO!"`.
+Collections can also be queried with commands, which can be used in combination.
 
 | Command | Character            | Examples                               |
 | ----    | -----                | ----------                             |
