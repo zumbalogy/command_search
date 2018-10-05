@@ -10,7 +10,8 @@ as using negations, comparisons, ors, and ands.
 command_search also provides ways to alias keywords or regular expressions so that,
 if desired, the query `name:alice` actually searches for `username:alice`,
 the query `A+` becomes `grade>=97`, or `user:me` becomes `user:59guwJphUhqfd2A`,
-but with the actual id of the current user.
+but with the actual id of the current user. The syntax for commands can also
+be aliased this way, for example, `hair=blue` could become `hair:blue`.
 
 command_search does not require an engine, is relatively free of magic, and
 should be easy to set up.
@@ -96,8 +97,11 @@ CommandSearch will use the following keys, all of which are optional:
   will be called once per match with the value of the match and are free to have
   closures and side effects.
   This happens before any other parsing or searching steps.
-  Keys that are strings will be converted into a regex that is case insensitive
-  and respects word boundaries. Regex keys will be used as is.
+  Keys that are strings will be converted into a regex that is case insensitive,
+  respects word boundaries, and does not alias quoted sections of the query.
+  Regex keys will be used as is, but respect user quotations unless the regex
+  matches the quotes. A query can be altered before being passed to CommandSearch
+  to sidestep limitations.
 
 An example setup for searching a Foo class in MongoDB:
 ```ruby
@@ -131,6 +135,7 @@ class Foo
       },
       aliases: {
         'favorite' => 'starred:true',
+        '=' => ':',
         'me' => -> () { "name:#{current_user.name}" },
         /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }
       }
