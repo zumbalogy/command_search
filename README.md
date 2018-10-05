@@ -71,14 +71,12 @@ which takes a collection, a query, the general search fields and the command
 search fields. Providing an empty list for either the general or command search
 fields is OK.
 
-* Collection: Either an array of hashes or a class that is a
-Mongoid::Document.
+* Collection: Either an array of hashes or a class that is a Mongoid::Document.
 
-* Query: The string query to use to search the collection, such as
-'user:me' or 'bee|wasp'.
+* Query: The string to use to search the collection, such as 'user:me' or 'bee|wasp'.
 
 * Options: A hash that describes how to search the collection.
-CommandSearch will use the following keys:
+CommandSearch will use the following keys, all of which are optional:
 
   * fields: An array of the values to search in items of the collection.
 
