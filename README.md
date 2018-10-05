@@ -7,12 +7,12 @@ command_search should make it easy to create search inputs where
 users can search for `flamingos` or `author:herbert`, as well
 as using negations, comparisons, ors, and ands.
 
-command_search also provides ways to alias keywords or regular expressions so that,
-if desired:
-* `name:alice` could become `username:alice`
-* `A+` could become `grade>=97`
-* `user:me` could become `user:59guwJphUhqfd2A` (but with the action ID)
-* `hair=blue` could become `hair:blue`
+command_search also provides ways to alias keywords or regular expressions so that
+the following mapping examples are possible if desired:
+* `name:alice` to `user_name:alice`
+* `A+` to `grade>=97`
+* `user:me` to `user:59guwJphUhqfd2A` (but with the actual ID)
+* `hair=blue` to `hair:blue`
 
 command_search does not require an engine, is relatively free of magic, and
 should be easy to set up.
