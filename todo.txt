@@ -23,3 +23,5 @@ look at letting the search field take strings or symbols.
 make sorting example in readme. this one should have better boundary respecting regex.
 
 write tests with  /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }
+
+performance folder where some benchmarks are logged.

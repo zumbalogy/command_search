@@ -3,14 +3,14 @@
 
 command_search is a Ruby gem to help users easily query collections.
 
-command_search should make it a breeze to make gmail-style search bars, where
-users can search for items that match `flamingos` or `author:herbert`, as well
+command_search should make it easy to create search inputs where
+users can search for `flamingos` or `author:herbert`, as well
 as using negations, comparisons, ors, and ands.
 
-command_search also provides ways to alias keywords so that the search
-`name:alice` actually searches for `username:alice`, the search `A+` becomes
-`grade>=97`, or `user:me` becomes `user:59guwJphUhqfd2A`, but with the actual
-id of the current user.
+command_search also provides ways to alias keywords or regular expressions so that,
+if desired, the query `name:alice` actually searches for `username:alice`,
+the query `A+` becomes `grade>=97`, or `user:me` becomes `user:59guwJphUhqfd2A`,
+but with the actual id of the current user.
 
 command_search does not require an engine, is relatively free of magic, and
 should be easy to set up.
