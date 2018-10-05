@@ -1,7 +1,7 @@
 # Command Search
 [![CircleCI](https://circleci.com/gh/zumbalogy/command_search.svg?style=svg)](https://circleci.com/gh/zumbalogy/command_search)
 
-command_search is a Ruby gem to help users easily query collections.
+A Ruby gem to help users query collections.
 
 command_search should make it easy to create search inputs where
 users can search for `flamingos` or `author:herbert`, as well
