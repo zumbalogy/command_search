@@ -17,3 +17,9 @@ specs already have some good test data for that
 what about "foo's unquoted bar's" unquoted should not be quoted
 
 update readme to show that CommandSearch takes 3 arguments, the last being the options.
+
+look at letting the search field take strings or symbols.
+
+make sorting example in readme. this one should have better boundary respecting regex.
+
+write tests with  /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }

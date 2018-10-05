@@ -77,18 +77,29 @@ Mongoid::Document.
 * Query: The string query to use to search the collection, such as
 'user:me' or 'bee|wasp'.
 
-* General search fields: An array of Ruby symbols that name the fields that will
-be searched across when a field is not specified in a command.
+* Options: A hash that describes how to search the collection.
+CommandSearch will use the following keys:
 
-* Command search fields: A Ruby hash that maps symbols matching a field's name
-to its type, or to another symbol as an alias. Valid types are `String`,
-`Boolean`, `Numeric`, and `Time`.
-Fields specified as `Boolean` will check for existence of a value if the
-underlying data is not actually a boolean, so, for example `bookmarked:true`
-could work even if the bookmarked field is a timestamp. To be able to query
-the bookmarked field as both a timestamp and a boolean, the symbol
-`:allow_existence_boolean` can be added to the value for the key bookmarked,
-like so: `bookmarked: [Time, :allow_existence_boolean]`.
+  * fields: An array of the values to search in items of the collection.
+
+  * command_fields: A hash that maps symbols matching a field's name
+  to its type, or to another symbol as an alias. Valid types are `String`,
+  `Boolean`, `Numeric`, and `Time`.
+  Fields specified as `Boolean` will check for existence of a value if the
+  underlying data is not actually a boolean, so, for example `bookmarked:true`
+  could work even if the bookmarked field is a timestamp. To be able to query
+  the bookmarked field as both a timestamp and a boolean, the symbol
+  `:allow_existence_boolean` can be added to the value for the key bookmarked,
+  like so: `bookmarked: [Time, :allow_existence_boolean]`.
+
+  * aliases: A hash that maps strings or regex to strings or procs.
+  CommandSearch will iterate though the hash and substitute parts of the query
+  that match the key with the value or the returned value of the proc. The proc
+  will be called once per match with the value of the match and are free to have
+  closures and side effects.
+  This happens before any other parsing or searching steps.
+  Keys that are strings will be converted into a regex that is case insensitive
+  and respects word boundaries. Regex keys will be used as is.
 
 An example setup for searching a Foo class in MongoDB:
 ```ruby
@@ -104,22 +115,29 @@ class Foo
   field :fav_date,    type: Time
 
   def self.search(query)
-    search_fields = [:title, :description, :tags]
-    command_fields = {
-      child_id: Boolean,
-      title: String,
-      name: :title,
-      description: String,
-      desc: :description,
-      starred: Boolean,
-      star: :starred,
-      tags: String,
-      tag: :tags,
-      feathers: [Numeric, :allow_existence_boolean],
-      cost: Numeric,
-      fav_date: Time
+    options = {
+      search_fields: [:title, :description, :tags]
+      command_fields: {
+        child_id: Boolean,
+        title: String,
+        name: :title,
+        description: String,
+        desc: :description,
+        starred: Boolean,
+        star: :starred,
+        tags: String,
+        tag: :tags,
+        feathers: [Numeric, :allow_existence_boolean],
+        cost: Numeric,
+        fav_date: Time
+      },
+      aliases: {
+        'favorite' => 'starred:true',
+        'me' => -> () { "name:#{current_user.name}" },
+        /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }
+      }
     }
-    CommandSearch.search(Foo, query, search_fields, command_fields)
+    CommandSearch.search(Foo, query, options)
   end
 end
 ```
@@ -128,7 +146,7 @@ end
 
 ## Internal Details
 
-The lifecycle of a query is as follows: The query is lexed, parsed, de-aliased,
+The lifecycle of a query is as follows: The query is alaised, lexed, parsed, de-aliased,
 optimized, and then turned into a Ruby select function or a MongoDB compatible
 query.
 
