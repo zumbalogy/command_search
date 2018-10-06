@@ -190,13 +190,13 @@ describe CommandSearch do
         name: :title
       },
       aliases: {
-        /\bsort:.+\b/ => proc { |match|
+        /\bsort:\S+\b/ => proc { |match|
           sort_type = match.sub('sort:', '')
           ''
         }
       }
     }
-    results = CommandSearch.search(Bird, 'name sort:title', options)
+    results = CommandSearch.search(Bird, 'sort:title name', options)
     results = results.order_by(sort_type => :asc) if sort_type
     results.map { |x| x[sort_type] }.should == [
       'name name1 1',

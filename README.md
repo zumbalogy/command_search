@@ -135,7 +135,7 @@ class Foo
       },
       aliases: {
         'favorite' => 'starred:true',
-        '=' => ':',
+        /=/ => ':',
         'me' => -> () { current_user.name },
         /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }
       }
@@ -146,6 +146,36 @@ end
 ```
 
 ## Examples
+
+An example setup of using aliases to allow users to choose how a list is sorted:
+```ruby
+class SortableFoo
+  include Mongoid::Document
+  field :foo, type: String
+  field :bar, type: String
+
+  def self.search(query)
+    head_border = '(?<=^|\s|[|(-])'
+    tail_border = '(?=$|\s|[|)])'
+    sortable_field_names = ['foo', 'bar']
+    sort_field = nil
+    options = {
+      search_fields: [:foo, :bar]
+      command_fields: {},
+      aliases: {
+        /#{head_border}sort:\S+#{tail_border}/ => proc { |match|
+          match_sort = match.sub(/^sort:/, '')
+          sort_field = match_sort if sortable_field_names.include?(match_sort)
+          ''
+        }
+      }
+    }
+    results = CommandSearch.search(SortableFoo, query, options)
+    results = results.order_by(sort_field => :asc) if sort_field
+    return results
+  end
+end
+```
 
 ## Internal Details
 
