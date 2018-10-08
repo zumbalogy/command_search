@@ -10,7 +10,7 @@ module CommandSearch
       if ast_node[:type] == :quoted_str
         regex = /\b#{Regexp.escape(str)}\b/
       else
-        regex = /#{Regexp.escape(str)}/mi
+        regex = /#{Regexp.escape(str)}/i
       end
       if ast_node[:negate]
         forms = fields.map { |f| { f => { '$not' => regex } } }
@@ -83,7 +83,7 @@ module CommandSearch
         if search_type == :quoted_str
           val = /\b#{Regexp.escape(raw_val)}\b/
         else
-          val = /#{Regexp.escape(raw_val)}/mi
+          val = /#{Regexp.escape(raw_val)}/i
         end
       elsif [Numeric, Integer].include?(type)
         if raw_val == raw_val.to_i.to_s

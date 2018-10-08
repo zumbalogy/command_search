@@ -96,9 +96,9 @@ describe Hat do
   it 'should be able to find things from the description' do
     Hat.search('desk').selector.should == {
       '$or' => [
-        { 'title' => /desk/mi },
-        { 'description' => /desk/mi },
-        { 'tags' => /desk/mi }
+        { 'title' => /desk/i },
+        { 'description' => /desk/i },
+        { 'tags' => /desk/i }
       ]
     }
     Hat.search('desk').count.should == 4
@@ -112,8 +112,8 @@ describe Hat do
     Hat.search('multi tag').count.should == 1
     Hat.search('multi tag').selector.should == {
       '$and' => [
-        { '$or' => [{ 'title' => /multi/mi }, { 'description' => /multi/mi }, { 'tags' => /multi/mi }] },
-        { '$or' => [{ 'title' => /tag/mi }, { 'description' => /tag/mi }, { 'tags' => /tag/mi }] }
+        { '$or' => [{ 'title' => /multi/i }, { 'description' => /multi/i }, { 'tags' => /multi/i }] },
+        { '$or' => [{ 'title' => /tag/i }, { 'description' => /tag/i }, { 'tags' => /tag/i }] }
       ]
     }
     Hat.search("'quoted tag'").count.should == 1
@@ -177,7 +177,7 @@ describe Hat do
     Hat.search("multi 'quoted tag'").count.should == 1
     Hat.search("multi 'quoted tag'").selector.should == {
       '$and' => [
-        { '$or' => [{ 'title' => /multi/mi }, { 'description' => /multi/mi }, { 'tags' => /multi/mi }] },
+        { '$or' => [{ 'title' => /multi/i }, { 'description' => /multi/i }, { 'tags' => /multi/i }] },
         { '$or' => [
             { 'title' => /\bquoted\ tag\b/ },
             { 'description' => /\bquoted\ tag\b/ },
@@ -189,7 +189,7 @@ describe Hat do
 
   it 'should be able to find things with commands' do
     Hat.search('title:name1').count.should == 1
-    Hat.search('title:name1').selector.should == { 'title' => /name1/mi }
+    Hat.search('title:name1').selector.should == { 'title' => /name1/i }
     Hat.search('title:name500').count.should == 0
   end
 
@@ -201,15 +201,15 @@ describe Hat do
   # it 'should handle undefined commands' do
   #   Hat.search('nam:name1').count.should == 0
   #   Hat.search('nam:name1').selector.should == { '$or' => [
-  #                                                  { 'title' => /nam:foo/mi },
-  #                                                  { 'description' => /nam:foo/mi },
-  #                                                  { 'tags' => /nam:foo/mi }] }
+  #                                                  { 'title' => /nam:foo/i },
+  #                                                  { 'description' => /nam:foo/i },
+  #                                                  { 'tags' => /nam:foo/i }] }
   # end
 
   it 'should be able to find things with aliased commands' do
     Hat.search('tags:tags1').count.should == 1
     Hat.search('tag:tags1').count.should == 1
-    Hat.search('tag:tags1').selector.should == { 'tags' => /tags1/mi }
+    Hat.search('tag:tags1').selector.should == { 'tags' => /tags1/i }
   end
 
   it 'should be able to find things with quoted commands' do
@@ -221,7 +221,7 @@ describe Hat do
   it 'should be able to find things with multiple commands' do
     Hat.search('tags:tags2 title:name4').count.should == 1
     Hat.search('tags:tags2 title:name4').selector.should == {
-      '$and' => [{ 'tags' => /tags2/mi }, { 'title' => /name4/mi }]
+      '$and' => [{ 'tags' => /tags2/i }, { 'title' => /name4/i }]
     }
   end
 
@@ -231,11 +231,11 @@ describe Hat do
     Hat.search('name3 desc:desk2').selector.should == {
       '$and' => [
         { '$or' => [
-          { 'title' => /name3/mi },
-          { 'description' => /name3/mi },
-          { 'tags' => /name3/mi }
+          { 'title' => /name3/i },
+          { 'description' => /name3/i },
+          { 'tags' => /name3/i }
         ] },
-        { 'description' => /desk2/mi }
+        { 'description' => /desk2/i }
       ]
     }
   end
@@ -244,13 +244,13 @@ describe Hat do
     Hat.search('tag:tags1 title:name3 name desk').count.should == 1
     Hat.search('tag:tags1 title:name3 name desk').selector.should == {
       '$and' => [
-        { 'tags' => /tags1/mi },
-        { 'title' => /name3/mi },
+        { 'tags' => /tags1/i },
+        { 'title' => /name3/i },
         { '$or' =>
-          [{ 'title' => /name/mi }, { 'description' => /name/mi }, { 'tags' => /name/mi }]
+          [{ 'title' => /name/i }, { 'description' => /name/i }, { 'tags' => /name/i }]
         },
         { '$or' =>
-          [{ 'title' => /desk/mi }, { 'description' => /desk/mi }, { 'tags' => /desk/mi }]
+          [{ 'title' => /desk/i }, { 'description' => /desk/i }, { 'tags' => /desk/i }]
         }
       ]
     }
