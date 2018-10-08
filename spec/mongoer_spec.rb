@@ -11,7 +11,7 @@ end
 
 def q(x, fields, command_types = {})
   parsed = opt(x)
-  dealiased = CommandSearch::Dealiaser.dealias(parsed, command_types)
+  dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_types)
   CommandSearch::Mongoer.build_query(dealiased, fields, command_types)
 end
 
@@ -89,12 +89,7 @@ describe CommandSearch::Mongoer do
     q2('num1:-230').should == {'num1'=>-230}
     q2('num1:-0.930').should == {'num1'=>-0.930}
     q2('num1:4.0').should == {'num1'=>4.0}
-    # TODO:
-    #   q('num1:red').should == error
-    #   consider the case of "num1:2 num1:3" and
-    #   "str1:foo str1:bar". latter is valid, as
-    #   regex match against substrings, but num1 one
-    #   is strange.
+    q2('num1:red').should == {'num1'=>'red'}
   end
 
   it 'should handle time commands' do
@@ -107,6 +102,10 @@ describe CommandSearch::Mongoer do
       '$and'=>[
         {'created'=>{'$gte'=>Chronic.parse('2000-04-10 00:00:00')}},
         {'created'=>{'$lte'=>Chronic.parse('2000-04-11 00:00:00')}}]}
+    q2('-created:"april-10.2000"').should == {
+      '$or'=>[
+        {'created'=>{'$gt'=>Chronic.parse('2000-04-11 00:00:00')}},
+        {'created'=>{'$lt'=>Chronic.parse('2000-04-10 00:00:00')}}]}
   end
 
   it 'should handle boolean commands' do

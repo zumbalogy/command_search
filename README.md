@@ -1,103 +1,240 @@
+# Command Search
+[![CircleCI](https://circleci.com/gh/zumbalogy/command_search.svg?style=svg)](https://circleci.com/gh/zumbalogy/command_search)
 
-One potential future feature (besides more customizable syntax and all)
-would be to be able to specify a certain number of matches. like,
-this name field must have the string ":)" 3 times. having
-an option  to pass though to real regexes might solve this.
+A Ruby gem to help users query collections.
 
+command_search should make it easy to create search inputs where
+users can search for `flamingos` or `author:herbert`, as well
+as using negations, comparisons, ors, and ands.
 
-right now, there are likely issues with comparing dates.
+command_search also provides ways to alias keywords or regular expressions so that
+the following mapping examples are possible if desired:
+* `name:alice` to `user_name:alice`
+* `A+` to `grade>=97`
+* `user:me` to `user:59guwJphUhqfd2A` (but with the actual ID)
+* `hair=blue` to `hair:blue`
 
-right now there will be issues with 'foo:-bar'.
+command_search does not require an engine, is relatively free of magic, and
+should be easy to set up.
 
-right now "" is treated as a valid quoted string.
+## Syntax
+Normal queries like `friday dinner`, `shoelace`, or `treehouse` work normally,
+and will perform case insensitive partial matching per space-delineated part of
+the query.
+A user can specify full-word and case sensitive query parts by using quotation
+marks, so the search `'ann'` will not match "anne" or `"bob"` to not match
+"bobby". Quoted query parts can search for whole phrases, such as `"You had me at HELLO!"`.
+Collections can also be queried with commands, which can be used in combination.
 
-it might be good to have a way to tell "collection" types (paren, or, minus)
-from other nest types (compare and command) in the ast, to avoid code like
+| Command | Character            | Examples                               |
+| ----    | -----                | ----------                             |
+| Specify | `:`                  | `attachment:true`, `grade:A`           |
+| And     | `(...)`              | `(error important)`, `liked poked` (Note: space is an implicit and) |
+| Or      | `\|`                 | `color\|colour`, `red\|orange\|yellow` |
+| Compare | `<`, `>`, `<=`, `>=` | `created_at<monday`, `100<=pokes`      |
+| Negate  | `-`                  | `-error`, `-(sat\|sun)`                |
 
-     [:paren, :pipe, :minus].include?(x[:nest_type])
+## Limitations
+Date/Time searches are only parsed into dates for command searches that
+specify (`:`) or compare (`<`, `>`, `<=`, `>=`).
 
-TODO: it could be nice to be able to have an alias where the proper
-name is off limits.
+'Fuzzy' searching is not currently supported.
 
-TODO: integration specs with DB, test for error messages and such.
+The only currently supported collections to query are
+[MongoDB](https://github.com/mongodb/mongo) collections and in-memory arrays of
+hashes.
 
-TODO: handle strings vs symbols when doing command_types and such in systematic way.
+SQL support hopefully coming soon.
 
-TODO: write a validator step and a user-defined-preprocessing step. call it transformer or something.
---- hmm, any string pre-processing could just be handled by the user.
---- but maybe a helper function that can be passed a string or regex, and
---- the string would be converted to a sane regex that handled word boundaries
---- and casing and all. (and user could pass in own regex if they want to different
---- defaults).
+## Dependencies
+[Mongoid](https://github.com/mongodb/mongoid) is assumed if using command_search
+to search MongoDB.
 
-TODO: current commands are passed though as commands without validation.
+[Chronic](https://github.com/mojombo/chronic) is currently used to parse user
+submitted dates, such as `tuesday` or `1/1/11`. Chronic's handling of timezones
+and leap years and such is not perfect, but is only used if 'Date' is declared
+as a field type in the config.
 
-Note: in example project, have a "sort by" example
+## Install
+Command Line:
+```ruby
+gem install command_search
+```
+Gemfile:
+```ruby
+gem 'command_search'
+```
 
-Note: it should also have a way to test presence of something that
-is also searchable as a string. so, as an example, "error:'not found'|error:false"
-or some such could work.
+## Setup
 
+To query collections, command_search provides the CommandSearch.search function,
+which takes a collection, a query, the general search fields and the command
+search fields. Providing an empty list for either the general or command search
+fields is OK.
 
-TODO: support arrays (and maybe other nesting/relations)
+* Collection: Either an array of hashes or a class that is a Mongoid::Document.
 
+* Query: The string to use to search the collection, such as 'user:me' or 'bee|wasp'.
 
-TODO: consider adding support for 'backwards' compares like 50<grade instead of grade>50
- -- note that this would potentially be problematic for fields that share a name with
- -- something that chronic could parse as a date. but could  just default to left side
- -- is the field. but maybe less is more when it comes to magical behavior.
+* Options: A hash that describes how to search the collection.
+CommandSearch will use the following keys, all of which are optional:
 
+  * fields: An array of the values to search in items of the collection.
 
-Right now, a blindspot if you want to search 'foo:"tRue"' and have have tRue not
-be case sensitive. (since quotes are used to escape from true part if thats enabled
-but also used to preserve case)
+  * command_fields: A hash that maps symbols matching a field's name
+  to its type, or to another symbol as an alias. Valid types are `String`,
+  `Boolean`, `Numeric`, and `Time`.
+  Fields specified as `Boolean` will check for existence of a value if the
+  underlying data is not actually a boolean, so, for example `bookmarked:true`
+  could work even if the bookmarked field is a timestamp. To be able to query
+  the bookmarked field as both a timestamp and a boolean, the symbol
+  `:allow_existence_boolean` can be added to the value for the key bookmarked,
+  like so: `bookmarked: [Time, :allow_existence_boolean]`.
 
+  * aliases: A hash that maps strings or regex to strings or procs.
+  CommandSearch will iterate though the hash and substitute parts of the query
+  that match the key with the value or the returned value of the proc. The proc
+  will be called once per match with the value of the match and are free to have
+  closures and side effects.
+  This happens before any other parsing or searching steps.
+  Keys that are strings will be converted into a regex that is case insensitive,
+  respects word boundaries, and does not alias quoted sections of the query.
+  Regex keys will be used as is, but respect user quotations unless the regex
+  matches the quotes. A query can be altered before being passed to CommandSearch
+  to sidestep limitations.
 
-TODO: rubocop (add it to circleCI too)
+An example setup for searching a Foo class in MongoDB:
+```ruby
+class Foo
+  include Mongoid::Document
+  field :title,       type: String
+  field :description, type: String
+  field :tags,        type: String
+  field :child_id,    type: String
+  field :feathers,    type: Integer
+  field :cost,        type: Integer
+  field :starred,     type: Boolean
+  field :fav_date,    type: Time
 
+  def self.search(query)
+    options = {
+      fields: [:title, :description, :tags],
+      command_fields: {
+        child_id: Boolean,
+        title: String,
+        name: :title,
+        description: String,
+        desc: :description,
+        starred: Boolean,
+        star: :starred,
+        tags: String,
+        tag: :tags,
+        feathers: [Numeric, :allow_existence_boolean],
+        cost: Numeric,
+        fav_date: Time
+      },
+      aliases: {
+        'favorite' => 'starred:true',
+        /=/ => ':',
+        'me' => -> () { current_user.name },
+        /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }
+      }
+    }
+    CommandSearch.search(Foo, query, options)
+  end
+end
+```
 
-Search across fields
-ann
-ann orange
+## Examples
 
-Search specific values and fields
-"Ann"
-color:orange
+An example setup of using aliases to allow users to choose how a list is sorted:
+```ruby
+class SortableFoo
+  include Mongoid::Document
+  field :foo, type: String
+  field :bar, type: String
 
-Use aliases
-favorite_color:orange
-color:red
-(maybe do points/score)
+  def self.search(query)
+    head_border = '(?<=^|\s|[|(-])'
+    tail_border = '(?=$|\s|[|)])'
+    sortable_field_names = ['foo', 'bar']
+    sort_field = nil
+    options = {
+      fields: [:foo, :bar],
+      command_fields: {},
+      aliases: {
+        /#{head_border}sort:\S+#{tail_border}/ => proc { |match|
+          match_sort = match.sub(/^sort:/, '')
+          sort_field = match_sort if sortable_field_names.include?(match_sort)
+          ''
+        }
+      }
+    }
+    results = CommandSearch.search(SortableFoo, query, options)
+    results = results.order_by(sort_field => :asc) if sort_field
+    return results
+  end
+end
+```
 
-Check booleans and existence
-admin:true
-score:false
+## Internal Details
 
-Match with logical ORs
-red|blue
-red|blue|bob
+The lifecycle of a query is as follows: The query is alaised, lexed, parsed, de-aliased,
+optimized, and then turned into a Ruby select function or a MongoDB compatible
+query.
 
-Match with logical NOTs
--red
--(red|blue)
-(green admin) | john
+The lexer breaks a query into pieces.
+```ruby
+CommandSearch::Lexer.lex('(price<=200 discount)|price<=99.99')
+[{ type: :paren,   value: '(' },
+ { type: :str,     value: 'price' },
+ { type: :compare, value: '<=' },
+ { type: :number,  value: '200' },
+ { type: :str,     value: 'discount' },
+ { type: :paren,   value: ')' },
+ { type: :pipe,    value: '|' },
+ { type: :str,     value: 'price' },
+ { type: :compare, value: '<' },
+ { type: :number,  value: '99.99' }]
+```
+The parser then takes that and turns it into a tree.
+```ruby
+CommandSearch::Parser.parse(_)
+[{ type: :nest,
+   nest_type: :pipe,
+   nest_op: '|',
+   value: [
+     { type: :nest,
+       nest_type: :paren,
+       value: [{ type: :nest,
+                 nest_type: :compare,
+                 nest_op: '<=',
+                 value: [{ type: :str, value: 'price' },
+                         { type: :number, value: '200' }] },
+               { type: :str, value: 'discount' }] },
+    { type: :nest,
+      nest_type: :compare,
+      nest_op: '<',
+      value: [{ type: :str, value: 'price' },
+              { type: :number, value: '99.99' }] }] }]
+```
+It will then aliased to the names given in the command_fields, and command like
+queries that don't match a specified command field will be turned into normal
+string searches.
 
-Search ranges and dates (via the Chronic Gem)
-score<=100
-born>today
-a<b<c
+The optimizer will then tidy up some of the logic with rules such as:
+* '-(a)' => '-a'
+* '-(-a)' => 'a'
+* 'a a' => 'a'
+* 'a|a' => 'a'
 
-----------
-(foo?) causes error if attempted to be passed in URL, so maybe i should have warning
-for URL safe searches or so.
+It will then be turned into a Ruby function to be used in a select, or a mongo
+compatible query.
 
-chronic thinks that "2000" means 20:20 today, not year 2000.
-also it would be nice if "monday" matched any date on a monday, not just like this monday.
- -- for command at least (maybe compare it makes less sense)
-
--------------------------------
-
-def q1(s); q(s, [], { b: Boolean }); end
-  q1('b:false').should == {"$and"=>[{"b"=>{"$exists"=>true}}, {"b"=>{"$ne"=>true}}]}
-
-could maybe be optimized to return b=>false
+```ruby
+CommandSearch::Mongoer.build_query(_, [:name, :description], { price: Integer })
+{ '$or' => [{ '$and' => [{ 'price' => { '$lte' => '200' } },
+                         { '$or' => [{ name: /discount/mi },
+                                     { description: /discount/mi }] }] },
+            { 'price' => { '$lte' => '99.99' } }] }
+```

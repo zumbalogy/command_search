@@ -1,11 +1,9 @@
 module CommandSearch
-  module Dealiaser
+  module CommandDealiaser
     module_function
 
     def dealias_key(key, aliases)
-      while aliases[key.to_sym].is_a?(Symbol)
-        key = aliases[key.to_sym]
-      end
+      key = aliases[key.to_sym] while aliases[key.to_sym].is_a?(Symbol)
       key.to_s
     end
 
@@ -36,6 +34,8 @@ module CommandSearch
 
     def decompose_unaliasable(ast, aliases)
       ast.flat_map do |x|
+        next x unless x[:nest_type]
+        x[:value] = decompose_unaliasable(x[:value], aliases)
         next x unless [:colon, :compare].include?(x[:nest_type])
         unnest_unaliased(x, aliases)
       end

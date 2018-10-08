@@ -16,22 +16,37 @@ class Hat
   field :fav_date,    type: Time
 
   def self.search(query)
-    search_fields = [:title, :description, :tags]
-    command_fields = {
-      child_id: Boolean,
-      title: String,
-      name: :title,
-      description: String,
-      desc: :description,
-      starred: Boolean,
-      star: :starred,
-      tags: String,
-      tag: :tags,
-      feathers: [Numeric, :allow_existence_boolean],
-      cost: Numeric,
-      fav_date: Time
+    head_border = '(?<=^|\s|[|(-])'
+    tail_border = '(?=$|\s|[|)])'
+    sortable_field_names = ['title', 'description']
+    sort_field = nil
+    options = {
+      fields: [:title, :description, :tags],
+      command_fields: {
+        child_id: Boolean,
+        title: String,
+        name: :title,
+        description: String,
+        desc: :description,
+        starred: Boolean,
+        star: :starred,
+        tags: String,
+        tag: :tags,
+        feathers: [Numeric, :allow_existence_boolean],
+        cost: Numeric,
+        fav_date: Time
+      },
+      aliases: {
+        /#{head_border}sort:\S+#{tail_border}/ => proc { |match|
+          match_sort = match.sub(/^sort:/, '')
+          sort_field = match_sort if sortable_field_names.include?(match_sort)
+          nil
+        }
+      }
     }
-    CommandSearch.search(Hat, query, search_fields, command_fields)
+    results = CommandSearch.search(Hat, query, options)
+    results = results.order_by(sort_field => :asc) if sort_field
+    return results
   end
 end
 
@@ -398,6 +413,43 @@ describe Hat do
     Hat.search('?').count.should == 0
     Hat.search('(?)').count.should == 0
     Hat.search('(redgreenblue01?)').count.should == 0
+  end
+
+  it 'should be sortable via the alias' do
+    Hat.create(title: 'aa', description: 'aa')
+    Hat.create(title: 'zz', description: 'zz')
+    sorted_titles = [
+      nil,
+      nil,
+      'aa',
+      'name name1 1',
+      'name name2 2',
+      'name name3 3',
+      'name name4 4',
+      'same_name',
+      'same_name',
+      'someone\'s iHat',
+      'zz'
+    ]
+    sorted_desc = [
+      nil,
+      nil,
+      nil,
+      nil,
+      nil,
+      'aa',
+      'desk desk1 1',
+      'desk desk2 2',
+      'desk desk3 3',
+      "desk new \n line",
+      'zz'
+    ]
+    Hat.search('sort:title').map(&:title).should == sorted_titles
+    Hat.search('sort:bad_key_that_is_unsearchable').map(&:title).should_not == sorted_titles
+    Hat.search('').map(&:title).should_not == sorted_titles
+    Hat.search('sort:description').map(&:description).should == sorted_desc
+    Hat.search('sort:sdfluho').map(&:description).should_not == sorted_desc
+    Hat.search('').map(&:description).should_not == sorted_desc
   end
 
   # it 'should error gracefully' do

@@ -6,11 +6,11 @@ def parse(x)
 end
 
 def dealias(x, aliases)
-  dealiased = CommandSearch::Dealiaser.dealias(parse(x), aliases)
-  CommandSearch::Dealiaser.decompose_unaliasable(dealiased, aliases)
+  dealiased = CommandSearch::CommandDealiaser.dealias(parse(x), aliases)
+  CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, aliases)
 end
 
-describe CommandSearch::Dealiaser do
+describe CommandSearch::CommandDealiaser do
 
   it 'should not change general searches or unaliased commands' do
     aliases = { f00: :foo, foo: String, gray: :grey, grey: Numeric }

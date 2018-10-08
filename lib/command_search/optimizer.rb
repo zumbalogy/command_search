@@ -47,6 +47,16 @@ module CommandSearch
       end
     end
 
+    def remove_empty_strings(ast)
+      out = ast.flat_map do |node|
+        next if node[:type] == :quoted_str && node[:value] == ''
+        next node unless node[:nest_type]
+        node[:value] = remove_empty_strings(node[:value])
+        node
+      end
+      out.compact
+    end
+
     def optimization_pass(ast)
       # '(a b)|(c d)' is the  only current
       # situation where parens are needed.
@@ -57,6 +67,7 @@ module CommandSearch
       out = denest_parens(out)
       out = negate_negate(out)
       out = ands_and_ors(out)
+      out = remove_empty_strings(out)
       out
     end
 

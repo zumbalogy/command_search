@@ -156,6 +156,17 @@ describe CommandSearch::Parser do
 it 'should handle negating' do
     parse('ab-dc').should == [{type: :str, value: 'ab-dc'}]
     parse('-12.023').should == [{type: :number, value: '-12.023'}]
+    parse('a -(c b)').should == [
+      {type: :str, value: 'a'},
+      {type: :nest,
+        nest_type: :minus,
+        nest_op: '-',
+        value:
+        [{type: :nest,
+          nest_type: :paren,
+          value: [
+            {type: :str, value: 'c'},
+            {type: :str, value: 'b'}]}]}]
     parse('- -1').should == [
       {type: :nest,
        nest_type: :minus,
@@ -277,6 +288,17 @@ it 'should handle negating' do
   end
 
   it 'should handle chained comparisons' do
+    parse('-5<x<-10').should == [
+      {type: :nest,
+       nest_type: :compare,
+       nest_op: '<',
+       value: [{type: :number, value: '-5'},
+               {type: :str, value: 'x'}]},
+      {type: :nest,
+       nest_type: :compare,
+       nest_op: '<',
+       value: [{type: :str, value: 'x'},
+               {type: :number, value: '-10'}]}]
     parse('0<red<5').should == [
       {type: :nest,
        nest_type: :compare,

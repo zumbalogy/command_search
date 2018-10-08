@@ -26,9 +26,8 @@ module CommandSearch
       out = input
       out = out[:value] while out.is_a?(Hash)
       out.compact!
-      i = nil
       # rindex (vs index) important for nested prefixes
-      while i = out.rindex { |x| x[:type] == type }
+      while (i = out.rindex { |x| x[:type] == type })
         val = [out[i + 1]]
         val.unshift(out[i - 1]) if binary && i > 0
         front_offset = 0
@@ -52,19 +51,20 @@ module CommandSearch
         front = input.dig(i, :type)
         mid = input.dig(i + 1, :type)
         back = input.dig(i + 2, :type)
-        if (front == type && mid != type && back == type)
+        if front == type && mid != type && back == type
           input.insert(i + 1, input[i + 1])
         end
       end
     end
 
-    def clean_ununused_command_syntax(input)
+    def clean_ununused_syntax(input)
       out = input.map do |x|
-        if x[:type] == :paren && x[:value].is_a?(String)
-          next
+        next if x[:type] == :paren && x[:value].is_a?(String)
+        if x[:nest_type] == :compare && x[:value].length < 2
+          x = clean_ununused_syntax(x[:value]).first
         end
-        next x unless x[:type] == :nest
-        x[:value] = clean_ununused_command_syntax(x[:value])
+        next x unless x && x[:type] == :nest
+        x[:value] = clean_ununused_syntax(x[:value])
         x
       end
       out.compact
@@ -78,7 +78,7 @@ module CommandSearch
       out = cluster(:compare, out)
       out = cluster(:minus, out, :prefix)
       out = cluster(:pipe, out)
-      out = clean_ununused_command_syntax(out)
+      out = clean_ununused_syntax(out)
       out
     end
   end
