@@ -100,7 +100,7 @@ CommandSearch will use the following keys, all of which are optional:
   Keys that are strings will be converted into a regex that is case insensitive,
   respects word boundaries, and does not alias quoted sections of the query. Note
   that, for aliasing purposes, specifying and comparing query parts are treated as
-  whole words, so `{ 'foo' => 'bar' }` will not effect the query `baz:foo`.
+  whole words, so `'foo' => 'bar'` will not effect the query `baz:foo`.
   Regex keys will be used as is, but respect user quotations unless the regex
   matches the quotes. A query can be altered before being passed to CommandSearch
   to sidestep any limitation.
