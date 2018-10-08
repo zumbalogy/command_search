@@ -79,6 +79,43 @@ describe Hat do
     Hat.search('"nne"').count.should == 1
   end
 
+  it 'should be able to handle special characters' do
+    Hat.create(title: '+')
+    Hat.create(title: 'a+')
+    Hat.create(title: 'a++')
+    Hat.create(title: '+a')
+    Hat.create(title: '+a+')
+    Hat.create(title: 'a+a')
+    Hat.create(title: '.a+.')
+    Hat.create(title: '(b+)')
+    Hat.create(title: 'c?')
+    Hat.search('+').count.should == 8
+    Hat.search('+a').count.should == 3
+    Hat.search('"a+"').count.should == 2
+    Hat.search('"b+"').count.should == 1
+    Hat.search('"c"').count.should == 1
+    Hat.search('"c?"').count.should == 1
+  end
+
+  it 'should be able to handle special characters in commands' do
+    skip 'todo'
+    # Hat.create(title: '+')
+    # Hat.create(title: 'a+')
+    # Hat.create(title: 'a++')
+    # Hat.create(title: '+a')
+    # Hat.create(title: '+a+')
+    # Hat.create(title: 'a+a')
+    # Hat.create(title: '.a+.')
+    # Hat.create(title: '(b+)')
+    # Hat.create(title: 'c?')
+    # Hat.search('+').count.should == 8
+    # Hat.search('+a').count.should == 3
+    # Hat.search('"a+"').count.should == 2
+    # Hat.search('"b+"').count.should == 1
+    # Hat.search('"c"').count.should == 1
+    # Hat.search('"c?"').count.should == 1
+  end
+
   it 'should be able to search for a boolean' do
     Hat.create(title: 'foo', starred: true)
     Hat.create(title: 'bar', starred: true)

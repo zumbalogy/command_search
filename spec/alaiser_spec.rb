@@ -42,10 +42,12 @@ describe CommandSearch::Aliaser do
     a('greeting:hello world').should == 'greeting:hello world'
     a('house:red').should == 'house:red' # TODO: if this the desired way to handle colons, should then be noted somewhere/
     a('house:red', { /:red\b/ => ':abc' }).should == 'house:abc'
+    a('red,red,red').should == 'blue,blue,blue'
     a('-red').should == '-blue'
     a('(red)').should == '(blue)'
     a('(-red)').should == '(-blue)'
     a('A+').should == 'grade>=97'
+    a('yo A+ 123').should == 'yo grade>=97 123'
     a('(A+)').should == '(grade>=97)'
     a('-A+').should == '-grade>=97'
     a('A+|F-').should == 'grade>=97|F-'

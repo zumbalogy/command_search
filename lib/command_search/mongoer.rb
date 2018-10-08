@@ -9,6 +9,11 @@ module CommandSearch
       fields = [fields] unless fields.is_a?(Array)
       if ast_node[:type] == :quoted_str
         regex = /\b#{Regexp.escape(str)}\b/
+        if str.first[/\W/] || str.last[/\W/]
+          head_border = '(?<=^|[^:+\w])'
+          tail_border = '(?=$|[^:+\w])'
+          regex = Regexp.new(head_border + Regexp.escape(str) + tail_border)
+        end
       else
         regex = /#{Regexp.escape(str)}/i
       end
