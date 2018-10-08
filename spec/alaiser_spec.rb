@@ -10,7 +10,6 @@ $aliases = {
   /coo+l/ => 'ice cold',
   /minutes:\d+/ => -> (match) { "seconds:#{match.split(':').last.to_i * 60}" }
 }
-# 'top scores' => -> handle conditionally sorting the output by something?
 
 def a(input, input_aliases = $aliases)
   CommandSearch::Aliaser.alias(input, input_aliases)
@@ -90,31 +89,16 @@ describe CommandSearch::Aliaser do
     a('abc', { /./ => proc {|x| variable2 += x; x }}).should == 'abc'
     variable2.should == 'cba'
   end
+
+  it 'should handle having multiple matches in one query' do
+    a('red red red').should == 'blue blue blue'
+    a('cool cooool cooooool hot cool').should == 'ice cold ice cold ice cold hot ice cold'
+    a('hello hello hello', { 'hello hello' => 'bye hello' }).should == 'bye hello hello'
+    a('hello hello hello hello', { 'hello hello' => 'bye hello' }).should == 'bye hello bye hello'
+  end
 end
 
 # TODO: make sure it plays friendly with pagination and all for mongo and
 # in memory. pretty sure it should and all, (for in memory it could just be they stream
 # things into commandSearch in chunks until they hit a quota or run out) but maybe it would
 # be best to have an example in the readme
-
-# TODO: note that the query passed to the next alias proc be the modyfied query
-
-# TODO: make sure to test having multiple matches in one query
-
-# TODO: put a note in the readme about how this is all
-# case sensitive (or if its not) and happens outside of quoted
-# parts of the query and how one can just do transformations
-# before sending it to commandSearch if wanting to live more
-# dangerously and all. and how it deals with word boundry for strings,
-# and "bab" only matches "babab" once.
-
-# TODO: for sorting example:
-
-# hats = [{foo: 1, bar: 20}, {foo: 10, bar: 15}, {foo: 100, bar: 10}]
-#
-# def self.search(query)
-#   sorter = 'foo' # maybe needs to be global var
-#   sortFn = -> (match, _q) { sorter = match.split(':').last; return '' }
-#   found_hats = CommandSearch.search(hats, query, {foo: [/sort:\w+/ => sortFn]})
-#   hats.sort_by {|x| x[:sorter]}
-# end
