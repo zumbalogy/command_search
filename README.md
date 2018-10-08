@@ -118,7 +118,7 @@ class Foo
 
   def self.search(query)
     options = {
-      search_fields: [:title, :description, :tags]
+      fields: [:title, :description, :tags],
       command_fields: {
         child_id: Boolean,
         title: String,
@@ -160,7 +160,7 @@ class SortableFoo
     sortable_field_names = ['foo', 'bar']
     sort_field = nil
     options = {
-      search_fields: [:foo, :bar]
+      fields: [:foo, :bar],
       command_fields: {},
       aliases: {
         /#{head_border}sort:\S+#{tail_border}/ => proc { |match|
