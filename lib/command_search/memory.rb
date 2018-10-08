@@ -26,11 +26,11 @@ module CommandSearch
       elsif !item.key?(cmd)
         return false
       elsif val[1][:type] == :str
-        item[cmd][/#{Regexp.escape(cmd_search)}/mi]
+        item[cmd][/#{Regexp.escape(cmd_search)}/i]
       elsif val[1][:type] == :quoted_str
         item[cmd][/\b#{Regexp.escape(cmd_search)}\b/]
       else
-        item[cmd].to_s[/#{Regexp.escape(cmd_search)}/mi]
+        item[cmd].to_s[/#{Regexp.escape(cmd_search)}/i]
       end
     end
 
@@ -79,7 +79,7 @@ module CommandSearch
           if node[:type] == :quoted_str
             field_vals.any? { |x| x.to_s[/\b#{Regexp.escape(val)}\b/] }
           else
-            field_vals.any? { |x| x.to_s[/#{Regexp.escape(val)}/mi] }
+            field_vals.any? { |x| x.to_s[/#{Regexp.escape(val)}/i] }
           end
         when :colon
           command_check(item, val, command_types)
