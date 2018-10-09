@@ -347,7 +347,6 @@ describe Hat do
   end
 
   it 'should handle ORs with quotes' do
-    # q.alias_fields[/^string$/i] = 'desk2'
     Hat.search('desk1|desk2').count.should == 2
     Hat.search('desk1|"desk2"').count.should == 2
     Hat.search("desk1|'desk2'").count.should == 2
@@ -359,19 +358,6 @@ describe Hat do
     Hat.search('"desk1"|desk2|"someone\'s iHat"').count.should == 3
     Hat.search('"desk1"|\'desk2\'|"someone\'s iHat"').count.should == 3
   end
-
-  # it 'should handle regex aliases' do
-  #   # q.alias_fields[/^string$/i] = 'desk2'
-  #   Hat.search('desk1|string').count.should == 2
-  #   Hat.search('desk1|"string"').count.should == 2
-  #   Hat.search("desk1|'string'").count.should == 2
-  #   Hat.search("'desk1'|'string'").count.should == 2
-  #   Hat.search('"desk1"|"string"').count.should == 2
-  #   Hat.search("'desk1'|string").count.should == 2
-  #   Hat.search('"desk1"|string').count.should == 2
-  #   Hat.search('"desk1"|string|"someone\'s iHat"').count.should == 3
-  #   Hat.search('"desk1"|\'string\'|"someone\'s iHat"').count.should == 3
-  # end
 
   it 'it should handle negative searches' do
     check = 9
@@ -493,12 +479,6 @@ describe Hat do
   #   lopsided parens
   #   Hat.search('(-sdf:sdfdf>sd\'s":f-').count.should == 0
   #   Hat.search('""sdfdsfhellosdf|dsfsdf::>>><><').count.should == 0
-  # end
-
-  # it 'should handle aliases' do
-  #   Hat.search('proc').count.should == 2
-  #   Hat.search('string').count.should == 1
-  #   Hat.search('hash').count.should == 1
   # end
 
   # it 'should handle searching ones that are not specified and also wierd hash ones' do
