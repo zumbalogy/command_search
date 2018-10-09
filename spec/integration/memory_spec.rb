@@ -107,6 +107,34 @@ describe CommandSearch::Memory do
     search('title:"fqq"', foo).count.should == 0
   end
 
+  it 'should be able to handle special syntax' do
+    foo = [
+      { title: '+' },
+      { title: 'a+' },
+      { title: 'a++' },
+      { title: '+a' },
+      { title: '+a+' },
+      { title: 'a+a' },
+      { title: '.a+.' },
+      { title: '(b+)' },
+      { title: 'c?' }
+    ]
+    search('title:+', foo).count.should == 8
+    search('+', foo).count.should == 8
+    search('title:+a', foo).count.should == 3
+    search('+a', foo).count.should == 3
+    search('title:a+', foo).count.should == 5
+    search('a+', foo).count.should == 5
+    search('title:"a+"', foo).count.should == 2
+    search('"a+"', foo).count.should == 2
+    search('title:"b+"', foo).count.should == 1
+    search('"b+"', foo).count.should == 1
+    search('title:"c"', foo).count.should == 1
+    search('"c"', foo).count.should == 1
+    search('title:"c?"', foo).count.should == 1
+    search('"c?"', foo).count.should == 1
+  end
+
   it 'should be able to find things across fields' do
     search('name3 tags1').count.should == 1
     search('name2 desk1').count.should == 1
@@ -230,7 +258,6 @@ describe CommandSearch::Memory do
   end
 
   it 'should handle ORs with quotes' do
-    # q.alias_fields[/^string$/i] = 'desk2'
     search('desk1|desk2').count.should == 2
     search('desk1|"desk2"').count.should == 2
     search("desk1|'desk2'").count.should == 2
@@ -242,19 +269,6 @@ describe CommandSearch::Memory do
     search('"desk1"|desk2|"someone\'s iHat"').count.should == 3
     search('"desk1"|\'desk2\'|"someone\'s iHat"').count.should == 3
   end
-
-  # it 'should handle regex aliases' do
-  #   # q.alias_fields[/^string$/i] = 'desk2'
-  #   search('desk1|string').count.should == 2
-  #   search('desk1|"string"').count.should == 2
-  #   search("desk1|'string'").count.should == 2
-  #   search("'desk1'|'string'").count.should == 2
-  #   search('"desk1"|"string"').count.should == 2
-  #   search("'desk1'|string").count.should == 2
-  #   search('"desk1"|string').count.should == 2
-  #   search('"desk1"|string|"someone\'s iHat"').count.should == 3
-  #   search('"desk1"|\'string\'|"someone\'s iHat"').count.should == 3
-  # end
 
   it 'it should handle negative searches' do
     check = 9
@@ -356,12 +370,6 @@ describe CommandSearch::Memory do
   #   lopsided parens
   #   search('(-sdf:sdfdf>sd\'s":f-').count.should == 0
   #   search('""sdfdsfhellosdf|dsfsdf::>>><><').count.should == 0
-  # end
-
-  # it 'should handle aliases' do
-  #   search('proc').count.should == 2
-  #   search('string').count.should == 1
-  #   search('hash').count.should == 1
   # end
 
   # it 'should handle searching ones that are not specified and also wierd hash ones' do

@@ -28,7 +28,13 @@ module CommandSearch
       elsif val[1][:type] == :str
         item[cmd][/#{Regexp.escape(cmd_search)}/i]
       elsif val[1][:type] == :quoted_str
-        item[cmd][/\b#{Regexp.escape(cmd_search)}\b/]
+        regex = /\b#{Regexp.escape(cmd_search)}\b/
+        if cmd_search.first[/\W/] || cmd_search.last[/\W/]
+          head_border = '(?<=^|[^:+\w])'
+          tail_border = '(?=$|[^:+\w])'
+          regex = Regexp.new(head_border + Regexp.escape(cmd_search) + tail_border)
+        end
+        item[cmd][regex]
       else
         item[cmd].to_s[/#{Regexp.escape(cmd_search)}/i]
       end
@@ -77,7 +83,13 @@ module CommandSearch
         case node[:nest_type]
         when nil
           if node[:type] == :quoted_str
-            field_vals.any? { |x| x.to_s[/\b#{Regexp.escape(val)}\b/] }
+            regex = /\b#{Regexp.escape(val)}\b/
+            if val.first[/\W/] || val.last[/\W/]
+              head_border = '(?<=^|[^:+\w])'
+              tail_border = '(?=$|[^:+\w])'
+              regex = Regexp.new(head_border + Regexp.escape(val) + tail_border)
+            end
+            field_vals.any? { |x| x.to_s[regex] }
           else
             field_vals.any? { |x| x.to_s[/#{Regexp.escape(val)}/i] }
           end
