@@ -21,5 +21,3 @@ look at letting the search field take strings or symbols.
 write tests with  /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }
 
 performance folder where some benchmarks are logged.
-
-test my lookahead regexes for commas

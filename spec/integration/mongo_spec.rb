@@ -89,6 +89,7 @@ describe Hat do
     Hat.create(title: '.a+.')
     Hat.create(title: '(b+)')
     Hat.create(title: 'c?')
+    Hat.create(title: 'x,y,z')
     Hat.search('title:+').count.should == 8
     Hat.search('+').count.should == 8
     Hat.search('title:+a').count.should == 3
@@ -103,6 +104,15 @@ describe Hat do
     Hat.search('"c"').count.should == 1
     Hat.search('title:"c?"').count.should == 1
     Hat.search('"c?"').count.should == 1
+
+    Hat.search('"x"').count.should == 1
+    Hat.search('y').count.should == 1
+    Hat.search('"y"').count.should == 1
+    Hat.search('"z"').count.should == 1
+    Hat.search('title:y').count.should == 1
+    Hat.search('title:"y"').count.should == 1
+    Hat.search('title:"z"').count.should == 1
+    Hat.search('title:"y,z"').count.should == 1
   end
 
   it 'should be able to search for a boolean' do

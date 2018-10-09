@@ -117,7 +117,8 @@ describe CommandSearch::Memory do
       { title: 'a+a' },
       { title: '.a+.' },
       { title: '(b+)' },
-      { title: 'c?' }
+      { title: 'c?' },
+      { title: 'x,y,z' }
     ]
     search('title:+', foo).count.should == 8
     search('+', foo).count.should == 8
@@ -133,6 +134,9 @@ describe CommandSearch::Memory do
     search('"c"', foo).count.should == 1
     search('title:"c?"', foo).count.should == 1
     search('"c?"', foo).count.should == 1
+    search('y', foo).count.should == 1
+    search('y z', foo).count.should == 1
+    search('title:"z"', foo).count.should == 1
   end
 
   it 'should be able to find things across fields' do
