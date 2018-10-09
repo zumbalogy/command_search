@@ -87,6 +87,11 @@ module CommandSearch
       elsif type == String
         if search_type == :quoted_str
           val = /\b#{Regexp.escape(raw_val)}\b/
+          if raw_val.first[/\W/] || raw_val.last[/\W/]
+            head_border = '(?<=^|[^:+\w])'
+            tail_border = '(?=$|[^:+\w])'
+            val = Regexp.new(head_border + Regexp.escape(raw_val) + tail_border)
+          end
         else
           val = /#{Regexp.escape(raw_val)}/i
         end
@@ -115,10 +120,6 @@ module CommandSearch
           key = '$and'
         end
       end
-
-      # regex (case insensitive probably best default, and let
-      # proper regex and alias support allow developers to have
-      # case sensitive if they want maybe.)
 
       if field_node[:negate] && (type == Numeric || type == String)
         { key => { '$not' => val } }
