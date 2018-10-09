@@ -3,8 +3,8 @@ module CommandSearch
     module_function
 
     def build_regex(str)
-      head_border = '(?<=^|\s|[|(-])'
-      tail_border = '(?=$|\s|[|)])'
+      head_border = '(?<=^|[^:\w])'
+      tail_border = '(?=$|\W)'
       Regexp.new(head_border + Regexp.escape(str) + tail_border, 'i')
     end
 

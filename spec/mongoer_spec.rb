@@ -19,35 +19,36 @@ describe CommandSearch::Mongoer do
 
   it 'should work for basic string searches' do
     fields = ['f1']
-    q('foo', fields).should == { "f1"=>/foo/mi }
-    q('red "blue green"', fields).should == { '$and' => [{'f1'=>/red/mi},
+    q('foo', fields).should == { "f1"=>/foo/i }
+    q('red "blue green"', fields).should == { '$and' => [{'f1'=>/red/i},
                                                          {'f1'=>/\bblue\ green\b/}]}
-    q('foo 1 2', fields).should == {'$and'=>[{'f1'=>/foo/mi},
-                                             {'f1'=>/1/mi},
-                                             {'f1'=>/2/mi}]}
+    q('foo 1 2', fields).should == {'$and'=>[{'f1'=>/foo/i},
+                                             {'f1'=>/1/i},
+                                             {'f1'=>/2/i}]}
     fields = ['f1', 'f2']
-    q('red', fields).should == {'$or'=>[{'f1'=>/red/mi},
-                                        {'f2'=>/red/mi}]}
+    q('red', fields).should == {'$or'=>[{'f1'=>/red/i},
+                                        {'f2'=>/red/i}]}
     q('"red"', fields).should == {'$or'=>[{'f1'=>/\bred\b/},
                                           {'f2'=>/\bred\b/}]}
     q('foo "blue green"', fields).should == {
-      '$and'=>[{'$or'=>[{'f1'=>/foo/mi},
-                        {'f2'=>/foo/mi}]},
+      '$and'=>[{'$or'=>[{'f1'=>/foo/i},
+                        {'f2'=>/foo/i}]},
                {'$or'=>[{'f1'=>/\bblue\ green\b/},
                         {'f2'=>/\bblue\ green\b/}]}]}
     q('foo 1 2', fields).should == {
-      '$and'=>[{'$or'=>[{'f1'=>/foo/mi},
-                        {'f2'=>/foo/mi}]},
-               {'$or'=>[{'f1'=>/1/mi},
-                        {'f2'=>/1/mi}]},
-               {'$or'=>[{'f1'=>/2/mi},
-                        {'f2'=>/2/mi}]}]}
+      '$and'=>[{'$or'=>[{'f1'=>/foo/i},
+                        {'f2'=>/foo/i}]},
+               {'$or'=>[{'f1'=>/1/i},
+                        {'f2'=>/1/i}]},
+               {'$or'=>[{'f1'=>/2/i},
+                        {'f2'=>/2/i}]}]}
   end
 
   it 'should sanitize inputs' do
     def q2(s); q(s, ['f1'], { str1: String }); end
     q2('"a b"').should == {"f1"=>/\ba\ b\b/}
     q2("str1:'a-b'").should == {"str1"=>/\ba\-b\b/}
+    q2("str1:'a+'").should == {"str1"=>/(?<=^|[^:+\w])a\+(?=$|[^:+\w])/}
   end
 
   it 'should handle ORs' do
@@ -55,19 +56,19 @@ describe CommandSearch::Mongoer do
     q('a|b|(c|d) foo|bar', fields).should == {
       '$and'=>[
         {'$or'=>[
-           {'f1'=>/a/mi},
-           {'f2'=>/a/mi},
-           {'f1'=>/b/mi},
-           {'f2'=>/b/mi},
-           {'f1'=>/c/mi},
-           {'f2'=>/c/mi},
-           {'f1'=>/d/mi},
-           {'f2'=>/d/mi}]},
+           {'f1'=>/a/i},
+           {'f2'=>/a/i},
+           {'f1'=>/b/i},
+           {'f2'=>/b/i},
+           {'f1'=>/c/i},
+           {'f2'=>/c/i},
+           {'f1'=>/d/i},
+           {'f2'=>/d/i}]},
         {'$or'=>[
-           {'f1'=>/foo/mi},
-           {'f2'=>/foo/mi},
-           {'f1'=>/bar/mi},
-           {'f2'=>/bar/mi}]}]}
+           {'f1'=>/foo/i},
+           {'f2'=>/foo/i},
+           {'f1'=>/bar/i},
+           {'f2'=>/bar/i}]}]}
   end
 
   it 'should denest parens' do
@@ -75,17 +76,17 @@ describe CommandSearch::Mongoer do
     q('(a b) | (c d)', fields).should == {
       '$or'=>[
         {'$and'=>[
-           {'$or'=>[{'f1'=>/a/mi}, {'f2'=>/a/mi}]},
-           {'$or'=>[{'f1'=>/b/mi}, {'f2'=>/b/mi}]}]},
+           {'$or'=>[{'f1'=>/a/i}, {'f2'=>/a/i}]},
+           {'$or'=>[{'f1'=>/b/i}, {'f2'=>/b/i}]}]},
         {'$and'=>[
-           {'$or'=>[{'f1'=>/c/mi}, {'f2'=>/c/mi}]},
-           {'$or'=>[{'f1'=>/d/mi}, {'f2'=>/d/mi}]}]}]}
+           {'$or'=>[{'f1'=>/c/i}, {'f2'=>/c/i}]},
+           {'$or'=>[{'f1'=>/d/i}, {'f2'=>/d/i}]}]}]}
   end
 
   it 'should handle basic commands' do
     def q2(s); q(s, ['f1'], { str1: String, num1: Numeric }); end
-    q2('str1:red').should == {'str1'=>/red/mi}
-    q2('str1:12.2').should == {'str1'=>/12\.2/mi}
+    q2('str1:red').should == {'str1'=>/red/i}
+    q2('str1:12.2').should == {'str1'=>/12\.2/i}
     q2('num1:-230').should == {'num1'=>-230}
     q2('num1:-0.930').should == {'num1'=>-0.930}
     q2('num1:4.0').should == {'num1'=>4.0}
@@ -120,7 +121,7 @@ describe CommandSearch::Mongoer do
     q3('foo:false').should == {'foo'=>{'$exists'=>false}}
     q3('foo:true').should == {'$and'=>[{'foo'=>{'$exists'=>true}}, {'foo'=>{'$ne'=>false}}]}
     q3('foo:false|foo:error').should == {'$or'=>[{'foo'=>{'$exists'=>false}},
-                                                 {'foo'=>/error/mi}]}
+                                                 {'foo'=>/error/i}]}
   end
 
   it 'should handle compares' do
@@ -143,16 +144,16 @@ describe CommandSearch::Mongoer do
 
   it 'should handle negating' do
     def q2(s); q(s, [:foo, :bar], { red: Numeric }); end
-    q2('- -a').should == {'$or'=>[{:foo=>/a/mi}, {:bar=>/a/mi}]}
-    q2('-a').should == {'$and'=>[{:foo=>{'$not'=>/a/mi}}, {:bar=>{'$not'=>/a/mi}}]}
+    q2('- -a').should == {'$or'=>[{:foo=>/a/i}, {:bar=>/a/i}]}
+    q2('-a').should == {'$and'=>[{:foo=>{'$not'=>/a/i}}, {:bar=>{'$not'=>/a/i}}]}
     q2('-red:-1').should == {'red'=>{'$not'=>-1}}
     q2('-(-1 2 -abc)').should == {
-      '$and'=>[{'$and'=>[{:foo=>{'$not'=>/\-1/mi}},
-                         {:bar=>{'$not'=>/\-1/mi}}]},
-               {'$and'=>[{:foo=>{'$not'=>/2/mi}},
-                         {:bar=>{'$not'=>/2/mi}}]},
-               {'$or'=>[{:foo=>/abc/mi},
-                        {:bar=>/abc/mi}]}]}
+      '$and'=>[{'$and'=>[{:foo=>{'$not'=>/\-1/i}},
+                         {:bar=>{'$not'=>/\-1/i}}]},
+               {'$and'=>[{:foo=>{'$not'=>/2/i}},
+                         {:bar=>{'$not'=>/2/i}}]},
+               {'$or'=>[{:foo=>/abc/i},
+                        {:bar=>/abc/i}]}]}
   end
 
   it 'should return [] for empty nonsense' do

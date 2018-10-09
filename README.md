@@ -8,7 +8,7 @@ users can search for `flamingos` or `author:herbert`, as well
 as using negations, comparisons, ors, and ands.
 
 command_search also provides ways to alias keywords or regular expressions so that
-the following mapping examples are possible if desired:
+the following substitutions are possible if desired:
 * `name:alice` to `user_name:alice`
 * `A+` to `grade>=97`
 * `user:me` to `user:59guwJphUhqfd2A` (but with the actual ID)
@@ -98,10 +98,12 @@ CommandSearch will use the following keys, all of which are optional:
   closures and side effects.
   This happens before any other parsing or searching steps.
   Keys that are strings will be converted into a regex that is case insensitive,
-  respects word boundaries, and does not alias quoted sections of the query.
+  respects word boundaries, and does not alias quoted sections of the query. Note
+  that, for aliasing purposes, specifying and comparing query parts are treated as
+  whole words, so `'foo' => 'bar'` will not effect the query `baz:foo`.
   Regex keys will be used as is, but respect user quotations unless the regex
   matches the quotes. A query can be altered before being passed to CommandSearch
-  to sidestep limitations.
+  to sidestep any limitation.
 
 An example setup for searching a Foo class in MongoDB:
 ```ruby
@@ -234,7 +236,7 @@ compatible query.
 ```ruby
 CommandSearch::Mongoer.build_query(_, [:name, :description], { price: Integer })
 { '$or' => [{ '$and' => [{ 'price' => { '$lte' => '200' } },
-                         { '$or' => [{ name: /discount/mi },
-                                     { description: /discount/mi }] }] },
+                         { '$or' => [{ name: /discount/i },
+                                     { description: /discount/i }] }] },
             { 'price' => { '$lte' => '99.99' } }] }
 ```

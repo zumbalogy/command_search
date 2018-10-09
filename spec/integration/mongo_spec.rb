@@ -79,6 +79,42 @@ describe Hat do
     Hat.search('"nne"').count.should == 1
   end
 
+  it 'should be able to handle special characters' do
+    Hat.create(title: '+')
+    Hat.create(title: 'a+')
+    Hat.create(title: 'a++')
+    Hat.create(title: '+a')
+    Hat.create(title: '+a+')
+    Hat.create(title: 'a+a')
+    Hat.create(title: '.a+.')
+    Hat.create(title: '(b+)')
+    Hat.create(title: 'c?')
+    Hat.create(title: 'x,y,z')
+    Hat.search('title:+').count.should == 8
+    Hat.search('+').count.should == 8
+    Hat.search('title:+a').count.should == 3
+    Hat.search('+a').count.should == 3
+    Hat.search('title:a+').count.should == 5
+    Hat.search('a+').count.should == 5
+    Hat.search('title:"a+"').count.should == 2
+    Hat.search('"a+"').count.should == 2
+    Hat.search('title:"b+"').count.should == 1
+    Hat.search('"b+"').count.should == 1
+    Hat.search('title:"c"').count.should == 1
+    Hat.search('"c"').count.should == 1
+    Hat.search('title:"c?"').count.should == 1
+    Hat.search('"c?"').count.should == 1
+
+    Hat.search('"x"').count.should == 1
+    Hat.search('y').count.should == 1
+    Hat.search('"y"').count.should == 1
+    Hat.search('"z"').count.should == 1
+    Hat.search('title:y').count.should == 1
+    Hat.search('title:"y"').count.should == 1
+    Hat.search('title:"z"').count.should == 1
+    Hat.search('title:"y,z"').count.should == 1
+  end
+
   it 'should be able to search for a boolean' do
     Hat.create(title: 'foo', starred: true)
     Hat.create(title: 'bar', starred: true)
@@ -96,9 +132,9 @@ describe Hat do
   it 'should be able to find things from the description' do
     Hat.search('desk').selector.should == {
       '$or' => [
-        { 'title' => /desk/mi },
-        { 'description' => /desk/mi },
-        { 'tags' => /desk/mi }
+        { 'title' => /desk/i },
+        { 'description' => /desk/i },
+        { 'tags' => /desk/i }
       ]
     }
     Hat.search('desk').count.should == 4
@@ -112,8 +148,8 @@ describe Hat do
     Hat.search('multi tag').count.should == 1
     Hat.search('multi tag').selector.should == {
       '$and' => [
-        { '$or' => [{ 'title' => /multi/mi }, { 'description' => /multi/mi }, { 'tags' => /multi/mi }] },
-        { '$or' => [{ 'title' => /tag/mi }, { 'description' => /tag/mi }, { 'tags' => /tag/mi }] }
+        { '$or' => [{ 'title' => /multi/i }, { 'description' => /multi/i }, { 'tags' => /multi/i }] },
+        { '$or' => [{ 'title' => /tag/i }, { 'description' => /tag/i }, { 'tags' => /tag/i }] }
       ]
     }
     Hat.search("'quoted tag'").count.should == 1
@@ -177,7 +213,7 @@ describe Hat do
     Hat.search("multi 'quoted tag'").count.should == 1
     Hat.search("multi 'quoted tag'").selector.should == {
       '$and' => [
-        { '$or' => [{ 'title' => /multi/mi }, { 'description' => /multi/mi }, { 'tags' => /multi/mi }] },
+        { '$or' => [{ 'title' => /multi/i }, { 'description' => /multi/i }, { 'tags' => /multi/i }] },
         { '$or' => [
             { 'title' => /\bquoted\ tag\b/ },
             { 'description' => /\bquoted\ tag\b/ },
@@ -189,7 +225,7 @@ describe Hat do
 
   it 'should be able to find things with commands' do
     Hat.search('title:name1').count.should == 1
-    Hat.search('title:name1').selector.should == { 'title' => /name1/mi }
+    Hat.search('title:name1').selector.should == { 'title' => /name1/i }
     Hat.search('title:name500').count.should == 0
   end
 
@@ -201,27 +237,26 @@ describe Hat do
   # it 'should handle undefined commands' do
   #   Hat.search('nam:name1').count.should == 0
   #   Hat.search('nam:name1').selector.should == { '$or' => [
-  #                                                  { 'title' => /nam:foo/mi },
-  #                                                  { 'description' => /nam:foo/mi },
-  #                                                  { 'tags' => /nam:foo/mi }] }
+  #                                                  { 'title' => /nam:foo/i },
+  #                                                  { 'description' => /nam:foo/i },
+  #                                                  { 'tags' => /nam:foo/i }] }
   # end
 
   it 'should be able to find things with aliased commands' do
     Hat.search('tags:tags1').count.should == 1
     Hat.search('tag:tags1').count.should == 1
-    Hat.search('tag:tags1').selector.should == { 'tags' => /tags1/mi }
+    Hat.search('tag:tags1').selector.should == { 'tags' => /tags1/i }
   end
 
   it 'should be able to find things with quoted commands' do
     Hat.search("tag:'quoted tag'").count.should == 1
     Hat.search("tags:'quoted tag'").count.should == 1
-    Hat.search("tags:'quoted tag'").selector.should == { 'tags' => /\bquoted\ tag\b/ }
   end
 
   it 'should be able to find things with multiple commands' do
     Hat.search('tags:tags2 title:name4').count.should == 1
     Hat.search('tags:tags2 title:name4').selector.should == {
-      '$and' => [{ 'tags' => /tags2/mi }, { 'title' => /name4/mi }]
+      '$and' => [{ 'tags' => /tags2/i }, { 'title' => /name4/i }]
     }
   end
 
@@ -231,11 +266,11 @@ describe Hat do
     Hat.search('name3 desc:desk2').selector.should == {
       '$and' => [
         { '$or' => [
-          { 'title' => /name3/mi },
-          { 'description' => /name3/mi },
-          { 'tags' => /name3/mi }
+          { 'title' => /name3/i },
+          { 'description' => /name3/i },
+          { 'tags' => /name3/i }
         ] },
-        { 'description' => /desk2/mi }
+        { 'description' => /desk2/i }
       ]
     }
   end
@@ -244,13 +279,13 @@ describe Hat do
     Hat.search('tag:tags1 title:name3 name desk').count.should == 1
     Hat.search('tag:tags1 title:name3 name desk').selector.should == {
       '$and' => [
-        { 'tags' => /tags1/mi },
-        { 'title' => /name3/mi },
+        { 'tags' => /tags1/i },
+        { 'title' => /name3/i },
         { '$or' =>
-          [{ 'title' => /name/mi }, { 'description' => /name/mi }, { 'tags' => /name/mi }]
+          [{ 'title' => /name/i }, { 'description' => /name/i }, { 'tags' => /name/i }]
         },
         { '$or' =>
-          [{ 'title' => /desk/mi }, { 'description' => /desk/mi }, { 'tags' => /desk/mi }]
+          [{ 'title' => /desk/i }, { 'description' => /desk/i }, { 'tags' => /desk/i }]
         }
       ]
     }
@@ -310,7 +345,6 @@ describe Hat do
   end
 
   it 'should handle ORs with quotes' do
-    # q.alias_fields[/^string$/i] = 'desk2'
     Hat.search('desk1|desk2').count.should == 2
     Hat.search('desk1|"desk2"').count.should == 2
     Hat.search("desk1|'desk2'").count.should == 2
@@ -322,19 +356,6 @@ describe Hat do
     Hat.search('"desk1"|desk2|"someone\'s iHat"').count.should == 3
     Hat.search('"desk1"|\'desk2\'|"someone\'s iHat"').count.should == 3
   end
-
-  # it 'should handle regex aliases' do
-  #   # q.alias_fields[/^string$/i] = 'desk2'
-  #   Hat.search('desk1|string').count.should == 2
-  #   Hat.search('desk1|"string"').count.should == 2
-  #   Hat.search("desk1|'string'").count.should == 2
-  #   Hat.search("'desk1'|'string'").count.should == 2
-  #   Hat.search('"desk1"|"string"').count.should == 2
-  #   Hat.search("'desk1'|string").count.should == 2
-  #   Hat.search('"desk1"|string').count.should == 2
-  #   Hat.search('"desk1"|string|"someone\'s iHat"').count.should == 3
-  #   Hat.search('"desk1"|\'string\'|"someone\'s iHat"').count.should == 3
-  # end
 
   it 'it should handle negative searches' do
     check = 9
@@ -456,12 +477,6 @@ describe Hat do
   #   lopsided parens
   #   Hat.search('(-sdf:sdfdf>sd\'s":f-').count.should == 0
   #   Hat.search('""sdfdsfhellosdf|dsfsdf::>>><><').count.should == 0
-  # end
-
-  # it 'should handle aliases' do
-  #   Hat.search('proc').count.should == 2
-  #   Hat.search('string').count.should == 1
-  #   Hat.search('hash').count.should == 1
   # end
 
   # it 'should handle searching ones that are not specified and also wierd hash ones' do
