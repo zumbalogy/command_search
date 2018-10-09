@@ -236,7 +236,7 @@ compatible query.
 ```ruby
 CommandSearch::Mongoer.build_query(_, [:name, :description], { price: Integer })
 { '$or' => [{ '$and' => [{ 'price' => { '$lte' => '200' } },
-                         { '$or' => [{ name: /discount/mi },
-                                     { description: /discount/mi }] }] },
+                         { '$or' => [{ name: /discount/i },
+                                     { description: /discount/i }] }] },
             { 'price' => { '$lte' => '99.99' } }] }
 ```
