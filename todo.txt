@@ -21,3 +21,14 @@ look at letting the search field take strings or symbols.
 write tests with  /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }
 
 performance folder where some benchmarks are logged.
+
+
+look into the following line in the lexer:
+`out = group_pattern(out, :number,  [:number,  :period, :number])`
+^ can that allow multiple periods in one number?
+
+
+show example using aliases to support commas in numbers
+/#{word_break}[,\d]+#{word_break}/ => -> (match) { match.tr(',', '') }
+or something. that does not validate commas being every 3. maybe:
+/(?<=\d),\d\d\d/

@@ -2,11 +2,8 @@ module CommandSearch
   module Lexer
     module_function
 
-    # This class takes a string and returns it tokenized into
-    # atoms/words, along with their type. It is coupled to the
-    # parser in names of char_types and output data structure.
-
-    # This currently does not support numbers with commas in them
+    # This class takes a string and returns a list of tokenized
+    # atoms/words, along with their type.
 
     def char_type(char)
       case char
