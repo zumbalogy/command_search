@@ -2,9 +2,6 @@ module CommandSearch
   module Lexer
     module_function
 
-    # This class takes a string and returns a list of tokenized
-    # atoms/words, along with their type.
-
     def char_type(char)
       case char
       when /["']/
