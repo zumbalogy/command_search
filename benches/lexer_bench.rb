@@ -27,22 +27,14 @@ Benchmark.bmbm() do |bm|
   lex('ab1 ' * 12)
   lex('"foo" \'ba\'' * 8)
   lex('"foo" \'ba\'' * 10)
-  lex('"foo" \'ba\'' * 12)
+  lex('"fo" \'ba\'' * 12)
 end
 
 __END__
 
-user     system      total        real
-Lex: ""                                                   0.014160   0.000007   0.014167 (  0.014187)
-Lex: "foo"                                                0.045356   0.000106   0.045462 (  0.045582)
-Lex: "foo bar"                                            0.087040   0.000174   0.087214 (  0.087276)
-Lex: "abcedefhijklmnopqrstuvwxyz"                         0.327115   0.000400   0.327515 (  0.327917)
-Lex: "AbCeDeFhIjKlMnOpQrStUvWxYz"                         0.319012   0.000274   0.319286 (  0.319522)
-Lex: "abcedefhijklmnopqrstuvwxyz0123456789"               0.571238   0.000387   0.571625 (  0.571839)
-Lex: "0123456789"                                         0.118445   0.000313   0.118758 (  0.119026)
-Lex: "a b c e d e f h i j k l 3 4 5 6 7 8 9"              0.275065   0.000279   0.275344 (  0.275610)
-Lex: "foo:bar apple|bannana cost<=100"                    0.410757   0.000251   0.411008 (  0.411129)
-Lex: "ab12ab12ab12ab12ab12ab12ab12ab12"                   0.467645   0.000531   0.468176 (  0.468347)
-Lex: "ab12ab12ab12ab12ab12ab12ab12ab12ab12ab12"           0.635891   0.000377   0.636268 (  0.636482)
-Lex: "ab12ab12ab12ab12ab12ab12ab12ab12ab12ab12ab12ab12"   0.789148   0.000559   0.789707 (  0.790078)
-Lex: "ab1 ab1 ab1 ab1 ab1 ab1 ab1 ab1 ab1 ab1 ab1 ab1 "   0.690651   0.000377   0.691028 (  0.691234)
+Lex: "\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'"
+0.707551   0.003829   0.711380 (  0.715947)
+Lex: "\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'\"foo\" 'ba'"
+0.947813   0.003143   0.950956 (  0.954802)
+Lex: "\"fo\" 'ba'\"fo\" 'ba'\"fo\" 'ba'\"fo\" 'ba'\"fo\" 'ba'\"fo\" 'ba'\"fo\" 'ba'\"fo\" 'ba'\"fo\" 'ba'\"fo\" 'ba'\"fo\" 'ba'\"fo\" 'ba'"
+1.162016   0.004802   1.166818 (  1.172862)

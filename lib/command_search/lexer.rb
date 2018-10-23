@@ -37,27 +37,41 @@ module CommandSearch
       list.each_index.select { |i| list[i][:value] == match }
     end
 
-    def group_quoted_strings(input)
-      out = input
-      while value_indices("'", out).length >= 2 || value_indices('"', out).length >= 2
-        (a, b) = value_indices("'", out).first(2)
-        (c, d) = value_indices('"', out).first(2)
-        if a && b && (c.nil? || (a < c))
-          (x, y) = [a, b]
-        else
-          (x, y) = [c, d]
+    # def group_quoted_strings!(input)
+    #   while value_indices("'", input).count >= 2 || value_indices('"', input).count >= 2
+    #     (a, b) = value_indices("'", input).first(2)
+    #     (c, d) = value_indices('"', input).first(2)
+    #     if a && b && (c.nil? || (a < c))
+    #       (x, y) = [a, b]
+    #     else
+    #       (x, y) = [c, d]
+    #     end
+    #     vals = input[x..y].map { |i| i[:value] }
+    #     trimmed_vals = vals.take(vals.count - 1).drop(1)
+    #     input[x..y] = { type: :quoted_str, value: trimmed_vals.join }
+    #   end
+    # end
+
+    def group_quoted_strings!(input)
+      i = 0
+      while i < input.count
+        mark = input[i][:value]
+        if mark == '"' || mark == "'"
+          next_mark_offset = input[i + 1..-1].index { |x| x[:value] == mark }
+          if next_mark_offset
+            next_idx = i + next_mark_offset + 1
+            vals = input[i + 1..next_idx - 1].map { |x| x[:value] }
+            input[i..next_idx] = { type: :quoted_str, value: vals.join }
+          end
         end
-        vals = out[x..y].map { |i| i[:value] }
-        trimmed_vals = vals.take(vals.length - 1).drop(1)
-        out[x..y] = { type: :quoted_str, value: trimmed_vals.join }
+        i += 1
       end
-      out
     end
 
     def group_pattern!(input, group_type, pattern)
       len = pattern.count
       i = 0
-      while i < input.length
+      while i < input.count
         span = i..(i + len - 1)
         if pattern == input[span].map { |x| x[:type] }
           val = input[span].map { |x| x[:value] }.join()
@@ -71,7 +85,7 @@ module CommandSearch
     def full_tokens(char_token_list)
       out = char_token_list.clone
 
-      out = group_quoted_strings(out)
+      group_quoted_strings!(out)
 
       group_pattern!(out, :pipe,    [:pipe,    :pipe])
       group_pattern!(out, :compare, [:compare, :equal])
