@@ -57,15 +57,18 @@ module CommandSearch
       out
     end
 
-    def group_pattern(input, group_type, pattern)
-      out = input
+    def group_pattern!(input, group_type, pattern)
       len = pattern.count
-      while i = (out.map { |x| x[:type] }).each_cons(len).find_index(pattern)
+      i = 0
+      while i < input.length
         span = i..(i + len - 1)
-        val = out[span].map { |x| x[:value] }.join()
-        out[span] = { type: group_type, value: val }
+        if pattern == input[span].map { |x| x[:type] }
+          val = input[span].map { |x| x[:value] }.join()
+          input[span] = { type: group_type, value: val }
+        else
+          i += 1
+        end
       end
-      out
     end
 
     def full_tokens(char_token_list)
@@ -73,20 +76,20 @@ module CommandSearch
 
       out = group_quoted_strings(out)
 
-      out = group_pattern(out, :pipe,    [:pipe,    :pipe])
-      out = group_pattern(out, :compare, [:compare, :equal])
+      group_pattern!(out, :pipe,    [:pipe,    :pipe])
+      group_pattern!(out, :compare, [:compare, :equal])
 
-      out = group_pattern(out, :number,  [:number,  :period, :number])
-      out = group_pattern(out, :number,  [:number,  :number])
-      out = group_pattern(out, :number,  [:minus,   :number])
+      group_pattern!(out, :number,  [:number,  :period, :number])
+      group_pattern!(out, :number,  [:number,  :number])
+      group_pattern!(out, :number,  [:minus,   :number])
 
-      out = group_pattern(out, :str,     [:equal])
-      out = group_pattern(out, :str,     [:period])
-      out = group_pattern(out, :str,     [:number,  :str])
-      out = group_pattern(out, :str,     [:number,  :minus])
-      out = group_pattern(out, :str,     [:str,     :number])
-      out = group_pattern(out, :str,     [:str,     :minus])
-      out = group_pattern(out, :str,     [:str,     :str])
+      group_pattern!(out, :str,     [:equal])
+      group_pattern!(out, :str,     [:period])
+      group_pattern!(out, :str,     [:number,  :str])
+      group_pattern!(out, :str,     [:number,  :minus])
+      group_pattern!(out, :str,     [:str,     :number])
+      group_pattern!(out, :str,     [:str,     :minus])
+      group_pattern!(out, :str,     [:str,     :str])
 
       out = out.reject { |x| x[:type] == :space }
       out
