@@ -37,21 +37,6 @@ module CommandSearch
       list.each_index.select { |i| list[i][:value] == match }
     end
 
-    # def group_quoted_strings!(input)
-    #   while value_indices("'", input).count >= 2 || value_indices('"', input).count >= 2
-    #     (a, b) = value_indices("'", input).first(2)
-    #     (c, d) = value_indices('"', input).first(2)
-    #     if a && b && (c.nil? || (a < c))
-    #       (x, y) = [a, b]
-    #     else
-    #       (x, y) = [c, d]
-    #     end
-    #     vals = input[x..y].map { |i| i[:value] }
-    #     trimmed_vals = vals.take(vals.count - 1).drop(1)
-    #     input[x..y] = { type: :quoted_str, value: trimmed_vals.join }
-    #   end
-    # end
-
     def group_quoted_strings!(input)
       i = 0
       while i < input.count
