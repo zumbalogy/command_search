@@ -24,3 +24,7 @@ Benchmark.bmbm() do |bm|
   dealias('fo:bar ' * 10, { foo: :abc, abc: :xyz, xyz: String })
   dealias('fo:bar ' * 10, { })
 end
+
+
+# TODO: bench decomposing.
+# cleaned = CommandDealiaser.decompose_unaliasable(dealiased, command_fields)

@@ -32,3 +32,10 @@ show example using aliases to support commas in numbers
 /#{word_break}[,\d]+#{word_break}/ => -> (match) { match.tr(',', '') }
 or something. that does not validate commas being every 3. maybe:
 /(?<=\d),\d\d\d/
+
+
+look into
+# # TODO: Even with existance boolean, this should maybe check that the existing value is not false.
+in mongoer.rb, memory.rb might need that too.
+
+rewrite lexer.rb to just go though the input string once with a state machine.
