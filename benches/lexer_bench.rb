@@ -15,6 +15,7 @@ Benchmark.bmbm() do |bm|
   lex('')
   lex('foo')
   lex('foo bar')
+  lex('name title:name')
   lex('abcedefhijklmnopqrstuvwxyz')
   lex('AbCeDeFhIjKlMnOpQrStUvWxYz')
   lex('abcedefhijklmnopqrstuvwxyz0123456789')
