@@ -1,5 +1,4 @@
 require('chronic')
-require('pry')
 
 module CommandSearch
   module Mongoer
@@ -16,8 +15,9 @@ module CommandSearch
           regex = Regexp.new(head_border + Regexp.escape(str) + tail_border)
         end
       else
-        binding.pry
-        regex = /#{Regexp.escape(str)}/i
+        # TODO: This OR check is only needed due to mutable objects between subclasses of command_search,
+        # and is only needed for outside use or benchmarking.
+        regex = /#{Regexp.escape(str || '')}/i
       end
       if ast_node[:negate]
         forms = fields.map { |f| { f => { '$not' => regex } } }

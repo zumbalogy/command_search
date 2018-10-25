@@ -473,6 +473,10 @@ describe Hat do
     Hat.search('').map(&:description).should_not == sorted_desc
   end
 
+  it 'should handle wacky things' do
+    Hat.search('-(zzz)|"b"').count.should == 9
+  end
+
   # it 'should error gracefully' do
   #   lopsided parens
   #   Hat.search('(-sdf:sdfdf>sd\'s":f-').count.should == 0

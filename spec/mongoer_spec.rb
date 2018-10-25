@@ -3,9 +3,10 @@ load(__dir__ + '/./spec_helper.rb')
 def q(x, fields, command_types = {})
   tokens = CommandSearch::Lexer.lex(x)
   parsed = CommandSearch::Parser.parse(tokens)
-  opted = CommandSearch::Optimizer.optimize(parsed)
-  dealiased = CommandSearch::CommandDealiaser.dealias(opted, command_types)
-  CommandSearch::Mongoer.build_query(dealiased, fields, command_types)
+  dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_types)
+  cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_types)
+  opted = CommandSearch::Optimizer.optimize(cleaned)
+  CommandSearch::Mongoer.build_query(opted, fields, command_types)
 end
 
 describe CommandSearch::Mongoer do
@@ -165,5 +166,6 @@ describe CommandSearch::Mongoer do
     q('(|)', fields).should == {}
     q(':', fields).should == {}
     q('name:foo tile -(foo bar)|"hello world" foo>1.2', fields).should_not == {}
+    q('-(a)|"b"', fields).should == {"$or"=>[{"hello"=>{"$not"=>/a/i}}, {"hello"=>/\bb\b/}]}
   end
 end

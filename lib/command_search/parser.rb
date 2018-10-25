@@ -60,6 +60,7 @@ module CommandSearch
     def clean_ununused_syntax(input)
       out = input.map do |x|
         next if x[:type] == :paren && x[:value].is_a?(String)
+        next if x[:nest_type] == :colon && x[:value].empty?
         if x[:nest_type] == :compare && x[:value].length < 2
           x = clean_ununused_syntax(x[:value]).first
         end

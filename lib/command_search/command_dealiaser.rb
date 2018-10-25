@@ -7,10 +7,10 @@ module CommandSearch
       key.to_s
     end
 
-    def dealias_values((key_node, seach_node), aliases)
+    def dealias_values((key_node, search_node), aliases)
       new_key = dealias_key(key_node[:value], aliases)
       key_node[:value] = new_key
-      [key_node, seach_node]
+      [key_node, search_node]
     end
 
     def unnest_unaliased(node, aliases)

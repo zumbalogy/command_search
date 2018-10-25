@@ -39,3 +39,9 @@ look into
 in mongoer.rb, memory.rb might need that too.
 
 rewrite lexer.rb to just go though the input string once with a state machine.
+the parser can just make one pass too, folding things up into a tree (lr parser)
+
+consider things like:
+opt(':').should == [{ type: :str, value: ':' }]
+so people can search emoji without quotes.
+(clean_ununused_syntax in parser.rb)

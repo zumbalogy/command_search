@@ -25,9 +25,10 @@ Benchmark.bmbm() do |bm|
 
   fields = [:title, :description, :tags]
   command_fields = { has_child_id: Boolean, title: String, name: :title }
-  # mongo('', [], {})
-  # mongo('', fields, command_fields)
-  # mongo('foo bar', fields, command_fields)
-  # mongo('name:foo tile -(foo bar)', fields, command_fields)
+  mongo('', [], {})
+  mongo('', fields, command_fields)
+  mongo('foo bar', fields, command_fields)
+  mongo('name:foo tile -(foo bar)', fields, command_fields)
   mongo('name:foo tile -(foo bar)|"hello world" foo>1.2', fields, command_fields)
+  mongo('-(a)|"b"', fields, command_fields)
 end
