@@ -30,9 +30,14 @@ $birds = [
   { title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
 ]
 
+Bird.destroy_all
+
 1000.times do |i|
-  Bird.create({ title: i.to_s, description: i.to_s, cost: rand, feathers: i })
-  $birds.push({ title: i.to_s, description: i.to_s, cost: rand, feathers: i })
+  Bird.create({ title: 'name ' + i.to_s, description: i.to_s, cost: rand, feathers: i })
+end
+
+1000.times do |i|
+  $birds.push({ title: 'name ' + i.to_s, description: i.to_s, cost: rand, feathers: i })
 end
 
 $iterations = 100
@@ -42,12 +47,12 @@ Benchmark.bmbm() do |bm|
 
   def mem(query, options)
     title = "Mem: #{query.inspect} #{options.to_s.tr('=>', ' ')}"
-    $bm.report(title) { $iterations.times { CommandSearch.search($birds, query, options) } }
+    $bm.report(title) { $iterations.times { CommandSearch.search($birds, query, options).count } }
   end
 
   def mongo(query, options)
     title = "Mongo: #{query.inspect} #{options.to_s.tr('=>', ' ')}"
-    $bm.report(title) { $iterations.times { CommandSearch.search(Bird, query, options) } }
+    $bm.report(title) { $iterations.times { CommandSearch.search(Bird, query, options).count } }
   end
 
   mem('', {})
@@ -68,6 +73,10 @@ Benchmark.bmbm() do |bm|
     fields: [:title, :description, :tags],
     command_fields: { has_child_id: Boolean, title: String, name: :title }
   })
+  mem('name title:name', {
+    fields: [:title, :description, :tags, :foo, :bar, :baz, :a, :b, :c],
+    command_fields: { has_child_id: Boolean, title: String, name: :title }
+  })
 
   mongo('', {})
   mongo('', { fields: [] })
@@ -85,6 +94,10 @@ Benchmark.bmbm() do |bm|
   })
   mongo('name title:name', {
     fields: [:title, :description, :tags],
+    command_fields: { has_child_id: Boolean, title: String, name: :title }
+  })
+  mongo('name title:name', {
+    fields: [:title, :description, :tags, :foo, :bar, :baz, :a, :b, :c],
     command_fields: { has_child_id: Boolean, title: String, name: :title }
   })
 end

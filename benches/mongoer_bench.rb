@@ -14,13 +14,24 @@ Benchmark.bmbm() do |bm|
   $bm = bm
 
   def mongo(input, fields, command_fields)
-    title = "Mongo: #{input.inspect}"
-    lexed = CommandSearch::Lexer.lex(input)
-    parsed = CommandSearch::Parser.parse(lexed)
-    dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields)
-    cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
-    opted = CommandSearch::Optimizer.optimize(cleaned)
-    $bm.report(title) { $iterations.times { CommandSearch::Mongoer.build_query(opted, fields, command_fields) } }
+    $bm.report("Lex: #{input.inspect}") { $iterations.times {
+      $lexed = CommandSearch::Lexer.lex(input)
+    }}
+    $bm.report('P') { $iterations.times {
+      $parsed = CommandSearch::Parser.parse($lexed)
+    }}
+    $bm.report('D') { $iterations.times {
+      $dealiased = CommandSearch::CommandDealiaser.dealias($parsed, command_fields)
+    }}
+    $bm.report('U') { $iterations.times {
+      $cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable($dealiased, command_fields)
+    }}
+    $bm.report('O') { $iterations.times {
+      $opted = CommandSearch::Optimizer.optimize($cleaned)
+    }}
+    $bm.report('M') { $iterations.times {
+      CommandSearch::Mongoer.build_query($opted, fields, command_fields)
+    }}
   end
 
   fields = [:title, :description, :tags]
@@ -28,7 +39,7 @@ Benchmark.bmbm() do |bm|
   mongo('', [], {})
   mongo('', fields, command_fields)
   mongo('foo bar', fields, command_fields)
+  mongo('-(a)|"b"', fields, command_fields)
   mongo('name:foo tile -(foo bar)', fields, command_fields)
   mongo('name:foo tile -(foo bar)|"hello world" foo>1.2', fields, command_fields)
-  mongo('-(a)|"b"', fields, command_fields)
 end
