@@ -1,18 +1,12 @@
 load(__dir__ + '/./spec_helper.rb')
 
-def parse(x)
-  tokens = CommandSearch::Lexer.lex(x)
-  CommandSearch::Parser.parse(tokens)
-end
-
-def opt(x)
-  CommandSearch::Optimizer.optimize(parse(x))
-end
-
 def q(x, fields, command_types = {})
-  parsed = opt(x)
+  tokens = CommandSearch::Lexer.lex(x)
+  parsed = CommandSearch::Parser.parse(tokens)
   dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_types)
-  CommandSearch::Mongoer.build_query(dealiased, fields, command_types)
+  cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_types)
+  opted = CommandSearch::Optimizer.optimize(cleaned)
+  CommandSearch::Mongoer.build_query(opted, fields, command_types)
 end
 
 describe CommandSearch::Mongoer do
@@ -113,9 +107,10 @@ describe CommandSearch::Mongoer do
     def q1(s); q(s, [], { b: Boolean }); end
     q1('b:true').should == {'$and'=>[{'b'=>{'$exists'=>true}}, {'b'=>{'$ne'=>false}}]}
     q1('b:false').should == {'$and'=>[{'b'=>{'$exists'=>true}}, {'b'=>{'$ne'=>true}}]}
-    def q2(s); q(s, [], { paid: :paid_at, paid_at: [Date, :allow_existence_boolean] }); end
+    # # TODO: Even with existance boolean, this should maybe check that the existing value is not false.
+    # def q2(s); q(s, [], { paid: :paid_at, paid_at: [Date, :allow_existence_boolean] }); end
     # q2('paid:true').should == {'paid_at'=>{'$exists'=>true}}
-    # q2('paid:false').should == {'paid_at'=>{'$exists'=>false}}
+    # q2('paid:false').should == [{"paid_at"=>{"$exists"=>true}}, {"paid_at"=>{"$ne"=>false}}]
     def q3(s); q(s, [], { foo: [String, :allow_existence_boolean] }); end
     q3('foo:"true"').should == {'foo'=>/\btrue\b/}
     q3('foo:false').should == {'foo'=>{'$exists'=>false}}
@@ -170,6 +165,7 @@ describe CommandSearch::Mongoer do
     q('(-)', fields).should == {}
     q('(|)', fields).should == {}
     q(':', fields).should == {}
+    q('name:foo tile -(foo bar)|"hello world" foo>1.2', fields).should_not == {}
+    q('-(a)|"b"', fields).should == {"$or"=>[{"hello"=>{"$not"=>/a/i}}, {"hello"=>/\bb\b/}]}
   end
-
 end

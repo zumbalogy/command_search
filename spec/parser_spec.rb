@@ -329,7 +329,7 @@ it 'should handle negating' do
   end
 
   it 'should handle wacky combinations' do
-    parse(':').should == [{type: :nest, nest_type: :colon, nest_op: ':', value: []}]
+    parse(':').should == []
     parse('|').should == [{type: :nest, nest_type: :pipe, nest_op: '|', value: []}]
     parse('(-)').should == [
       {type: :nest,

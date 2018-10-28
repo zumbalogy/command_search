@@ -217,7 +217,7 @@ describe CommandSearch::Parser do
     opt(' ( ( ()) -((-(()||(()|()))|(()|())-((-())))  )) ').should == []
   end
 
-  it 'should handle wacky null nonsense' do
+  it 'should handle wacky nonsense' do
     opt('(-)').should == []
     opt('(|)').should == []
     opt('(:)').should == []
