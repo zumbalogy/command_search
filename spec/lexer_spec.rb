@@ -108,6 +108,21 @@ describe CommandSearch::Lexer do
       {type: :pipe, value: "|"},
       {type: :str, value: "c"}
     ]
+    lex("'desk1'|'desk2'").should == [
+      {type: :quoted_str, value: "desk1"},
+      {type: :pipe, value: "|"},
+      {type: :quoted_str, value: "desk2"}
+    ]
+    lex('"desk1"|"desk2"').should == [
+      {type: :quoted_str, value: "desk1"},
+      {type: :pipe, value: "|"},
+      {type: :quoted_str, value: "desk2"}
+    ]
+    lex("\"desk1\"|'desk2'").should == [
+      {type: :quoted_str, value: "desk1"},
+      {type: :pipe, value: "|"},
+      {type: :quoted_str, value: "desk2"}
+    ]
   end
 
   it 'should handle duplicate pipe operators' do
@@ -209,6 +224,13 @@ describe CommandSearch::Lexer do
       {type: :compare, value: "<"},
       {type: :number, value: "13"}
     ]
+    lex('-5<x<-10').should == [
+      {type: :number, value: '-5'},
+      {type: :compare, value: '<'},
+      {type: :str, value: 'x'},
+      {type: :compare, value: '<'},
+      {type: :number, value: '-10'}
+    ]
   end
 
   it 'should handle spaces in comparisons' do
@@ -239,6 +261,11 @@ describe CommandSearch::Lexer do
       {type: :str, value: 'b'},
       {type: :paren, value: ')'},
       {type: :str, value: 'c'}
+    ]
+    lex('(2)').should == [
+      {type: :paren, value: '('},
+      {type: :number, value: '2'},
+      {type: :paren, value: ')'}
     ]
   end
 

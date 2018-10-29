@@ -97,11 +97,11 @@ module CommandSearch
       i = 0
       while i < input.length
         case input[i..-1]
-        when /^"(.*)"/
+        when /^"(.*?)"/
           match = Regexp.last_match[1]
           out.push(type: :quoted_str, value: match)
           i += match.length + 2
-        when /^'(.*)'/
+        when /^'(.*?)'/
           match = Regexp.last_match[1]
           out.push(type: :quoted_str, value: match)
           i += match.length + 2
@@ -112,7 +112,7 @@ module CommandSearch
           match = Regexp.last_match[0]
           out.push(type: :pipe, value: match)
           i += match.length
-        when /^(\-?\d+(\.\d+)?)($|[$\s|"':])/
+        when /^(\-?\d+(\.\d+)?)($|[\s|"':)<>])/
           match = Regexp.last_match[1]
           out.push(type: :number, value: match)
           i += match.length
@@ -132,7 +132,7 @@ module CommandSearch
           match = Regexp.last_match[0]
           out.push(type: :compare, value: match)
           i += match.length
-        when /^\d*[^\d\s"':][^\s("'|:<>)]*/
+        when /^\d*[^\d\s"':)][^\s"'|:<>)(]*/
           match = Regexp.last_match[0]
           out.push(type: :str, value: match)
           i += match.length
