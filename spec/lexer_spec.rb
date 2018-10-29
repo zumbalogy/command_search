@@ -64,7 +64,7 @@ describe CommandSearch::Lexer do
     lex('a b " c').should == [
       {type: :str, value: "a"},
       {type: :str, value: "b"},
-      {type: :quote, value: "\""},
+      {type: :str, value: "\""},
       {type: :str, value: "c"}
     ]
     lex("a 'b \" c'").should == [
@@ -77,12 +77,12 @@ describe CommandSearch::Lexer do
     lex('"a\'\'b"').should == [{type: :quoted_str, value: "a\'\'b"}]
     lex("'red \"blue' \" green").should == [
       {type: :quoted_str, value: "red \"blue"},
-      {type: :quote, value: '"'},
+      {type: :str, value: '"'},
       {type: :str, value: "green"}
     ]
     lex('"red \'blue" \' green').should == [
       {type: :quoted_str, value: "red \'blue"},
-      {type: :quote, value: "'"},
+      {type: :str, value: "'"},
       {type: :str, value: "green"}
     ]
   end
