@@ -6,50 +6,37 @@ module CommandSearch
       out = []
       i = 0
       while i < input.length
+        match = nil
         case input[i..-1]
+        when /^\s+/
+          i += Regexp.last_match[0].length
+          next
         when /^"(.*?)"/
           match = Regexp.last_match[1]
-          out.push(type: :quoted_str, value: match)
-          i += match.length + 2
+          type = :quoted_str
         when /^'(.*?)'/
           match = Regexp.last_match[1]
-          out.push(type: :quoted_str, value: match)
-          i += match.length + 2
-        when /^\s+/
-          match = Regexp.last_match[0]
-          i += match.length
+          type = :quoted_str
+        when /^\-?\d+(\.\d+)?(?=$|[\s"':|<>)(])/
+          type = :number
         when /^\|+/
-          match = Regexp.last_match[0]
-          out.push(type: :pipe, value: match)
-          i += match.length
-        when /^(\-?\d+(\.\d+)?)($|[\s|"':)<>])/
-          match = Regexp.last_match[1]
-          out.push(type: :number, value: match)
-          i += match.length
+          type = :pipe
         when /^-/
-          match = Regexp.last_match[0]
-          out.push(type: :minus, value: match)
-          i += match.length
+          type = :minus
         when /^:/
-          match = Regexp.last_match[0]
-          out.push(type: :colon, value: match)
-          i += match.length
+          type = :colon
         when /^[()]/
-          match = Regexp.last_match[0]
-          out.push(type: :paren, value: match)
-          i += match.length
+          type = :paren
         when /^[<>]=?/
-          match = Regexp.last_match[0]
-          out.push(type: :compare, value: match)
-          i += match.length
-        when /^\d*[^\d\s"':)][^\s"'|:<>)(]*/
-          match = Regexp.last_match[0]
-          out.push(type: :str, value: match)
-          i += match.length
-        else
-          out.push(type: :str, value: input[i])
-          i += 1
+          type = :compare
+        when /^\d*[^\d\s:)][^\s"'|:<>)(]*/
+          type = :str
+        when /^./
+          type = :str
         end
+        match = match || Regexp.last_match[0]
+        out.push(type: type, value: match)
+        i += Regexp.last_match[0].length
       end
       out
     end
