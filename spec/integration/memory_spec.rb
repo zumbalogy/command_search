@@ -370,6 +370,24 @@ describe CommandSearch::Memory do
     CommandSearch.search([{'foo' => 3}], '3', { fields: [:foo] }).count.should == 1
   end
 
+  it 'should handle unicode' do
+      fields = { fields: [:a] }
+      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '💯', fields).count.should == 1
+      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨', fields).count.should == 1
+      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🔥♨', fields).count.should == 0
+      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🌺🌿 🔒 😀', fields).count.should == 1
+      CommandSearch.search([{ a: 'こんにちは世界' }], '世界', fields).count.should == 1
+      CommandSearch.search([{ a: 'こんにちは世界' }], '月', fields).count.should == 0
+      CommandSearch.search([{ a: 'こんにちは世界' }], 'world', fields).count.should == 0
+      CommandSearch.search([{ a: 'こんにちは世界' }], 'moon', fields).count.should == 0
+      CommandSearch.search([{ a: 'හෙලෝ වර්ල්ඩ්' }], 'වර්ල්ඩ්', fields).count.should == 1
+      CommandSearch.search([{ a: 'හෙලෝ වර්ල්ඩ්' }], 'හඳ', fields).count.should == 0
+      CommandSearch.search([{ a: 'សួស្តី​ពិភពលោក' }], 'ពិភពលោក', fields).count.should == 1
+      CommandSearch.search([{ a: 'សួស្តី​ពិភពលោក' }], 'ព្រះ​ច័ន្ទ', fields).count.should == 0
+      CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ໂລກ', fields).count.should == 1
+      CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ເດືອນ', fields).count.should == 0
+  end
+
   # it 'should error gracefully' do
   #   lopsided parens
   #   search('(-sdf:sdfdf>sd\'s":f-').count.should == 0

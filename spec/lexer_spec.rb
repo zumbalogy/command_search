@@ -293,7 +293,53 @@ describe CommandSearch::Lexer do
     ]
   end
 
-  it 'should handle wacky combinations' do
+  it 'should handle unicode' do
+    def testStr(input)
+        lexed = lex(input)
+        lexed.each { |x| x[:type].should == :str }
+        lexed.map { |x| x[:value] }.join(' ').should == input
+    end
+    testStr('Hello World')
+    testStr('Hello Wêreld')
+    testStr('Ndewo Ụwa')
+    testStr('Ahoj světe')
+    testStr('salam dünya')
+    testStr('Chào thế giới')
+    testStr('Përshendetje Botë')
+    testStr('Прывітанне Сусвет')
+    testStr('Γειά σου Κόσμε')
+    testStr('こんにちは世界')
+    testStr('你好，世界')
+    testStr('안녕 세상')
+    testStr('שלום עולם')
+    testStr('העלא וועלט')
+    testStr('ہیلو دنیا نړی')
+    testStr('مرحبا بالعالم')
+    testStr('هيلو دنيا')
+    testStr('سلام دنیا')
+    testStr('سلام نړی')
+    testStr('ওহে বিশ্ব')
+    testStr('नमस्ते दुनिया')
+    testStr('नमस्ते जग')
+    testStr('नमस्कार संसार')
+    testStr('ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ ਦੁਨਿਆ')
+    testStr('Բարեւ աշխարհ')
+    testStr('ሰላም ልዑል')
+    testStr('გამარჯობა მსოფლიო')
+    testStr('હેલ્લો વિશ્વ')
+    testStr('ಹಲೋ ವರ್ಲ್ಡ್')
+    testStr('សួស្តី​ពិភពលោក')
+    testStr('ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ')
+    testStr('ഹലോ വേൾഡ്')
+    testStr('ஹலோ உலகம்')
+    testStr('မင်္ဂလာပါကမ္ဘာလောက')
+    testStr('හෙලෝ වර්ල්ඩ්')
+    testStr('สวัสดีชาวโลก')
+    testStr('హలో వరల్డ్')
+    testStr('😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔')
+  end
+
+  it 'should handle illogical combinations of logical operators' do
     lex('(-)').should == [
       {type: :paren, value: '('},
       {type: :minus, value: '-'},
