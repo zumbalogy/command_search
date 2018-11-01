@@ -376,6 +376,14 @@ describe CommandSearch::Memory do
       CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨', fields).count.should == 1
       CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🔥♨', fields).count.should == 0
       CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🌺🌿 🔒 😀', fields).count.should == 1
+      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello', fields).count.should == 1
+      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋', fields).count.should == 1
+      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋👋', fields).count.should == 1
+      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋👋👋', fields).count.should == 1
+      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋👋👋', fields).count.should == 0
+      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋👋', fields).count.should == 1
+      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋', fields).count.should == 1
+      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋', fields).count.should == 1
       CommandSearch.search([{ a: 'こんにちは世界' }], '世界', fields).count.should == 1
       CommandSearch.search([{ a: 'こんにちは世界' }], '月', fields).count.should == 0
       CommandSearch.search([{ a: 'こんにちは世界' }], 'world', fields).count.should == 0
