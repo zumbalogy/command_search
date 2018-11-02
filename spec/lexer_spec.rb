@@ -295,9 +295,9 @@ describe CommandSearch::Lexer do
 
   it 'should handle unicode' do
     def testStr(input)
-        lexed = lex(input)
-        lexed.each { |x| x[:type].should == :str }
-        lexed.map { |x| x[:value] }.join(' ').should == input
+      lexed = lex(input)
+      lexed.each { |x| x[:type].should == :str }
+      lexed.map { |x| x[:value] }.join(' ').should == input
     end
     testStr('Hello World')
     testStr('Hello Wêreld')
