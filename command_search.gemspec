@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'command_search'
-  s.version     = '0.1.2'
+  s.version     = '0.1.3'
   s.summary     = 'A friendly search gem for users and developers.'
   s.description = 'Query collections with ease and without an engine like Elasticsearch.'
   s.authors     = ['zumbalogy']

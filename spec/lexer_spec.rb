@@ -64,7 +64,7 @@ describe CommandSearch::Lexer do
     lex('a b " c').should == [
       {type: :str, value: "a"},
       {type: :str, value: "b"},
-      {type: :quote, value: "\""},
+      {type: :str, value: "\""},
       {type: :str, value: "c"}
     ]
     lex("a 'b \" c'").should == [
@@ -77,12 +77,12 @@ describe CommandSearch::Lexer do
     lex('"a\'\'b"').should == [{type: :quoted_str, value: "a\'\'b"}]
     lex("'red \"blue' \" green").should == [
       {type: :quoted_str, value: "red \"blue"},
-      {type: :quote, value: '"'},
+      {type: :str, value: '"'},
       {type: :str, value: "green"}
     ]
     lex('"red \'blue" \' green').should == [
       {type: :quoted_str, value: "red \'blue"},
-      {type: :quote, value: "'"},
+      {type: :str, value: "'"},
       {type: :str, value: "green"}
     ]
   end
@@ -107,6 +107,21 @@ describe CommandSearch::Lexer do
       {type: :str, value: "b"},
       {type: :pipe, value: "|"},
       {type: :str, value: "c"}
+    ]
+    lex("'desk1'|'desk2'").should == [
+      {type: :quoted_str, value: "desk1"},
+      {type: :pipe, value: "|"},
+      {type: :quoted_str, value: "desk2"}
+    ]
+    lex('"desk1"|"desk2"').should == [
+      {type: :quoted_str, value: "desk1"},
+      {type: :pipe, value: "|"},
+      {type: :quoted_str, value: "desk2"}
+    ]
+    lex("\"desk1\"|'desk2'").should == [
+      {type: :quoted_str, value: "desk1"},
+      {type: :pipe, value: "|"},
+      {type: :quoted_str, value: "desk2"}
     ]
   end
 
@@ -209,6 +224,13 @@ describe CommandSearch::Lexer do
       {type: :compare, value: "<"},
       {type: :number, value: "13"}
     ]
+    lex('-5<x<-10').should == [
+      {type: :number, value: '-5'},
+      {type: :compare, value: '<'},
+      {type: :str, value: 'x'},
+      {type: :compare, value: '<'},
+      {type: :number, value: '-10'}
+    ]
   end
 
   it 'should handle spaces in comparisons' do
@@ -240,6 +262,11 @@ describe CommandSearch::Lexer do
       {type: :paren, value: ')'},
       {type: :str, value: 'c'}
     ]
+    lex('(2)').should == [
+      {type: :paren, value: '('},
+      {type: :number, value: '2'},
+      {type: :paren, value: ')'}
+    ]
   end
 
   it 'should handle OR and NOT with parens' do
@@ -266,7 +293,53 @@ describe CommandSearch::Lexer do
     ]
   end
 
-  it 'should handle wacky combinations' do
+  it 'should handle unicode' do
+    def testStr(input)
+      lexed = lex(input)
+      lexed.each { |x| x[:type].should == :str }
+      lexed.map { |x| x[:value] }.join(' ').should == input
+    end
+    testStr('Hello World')
+    testStr('Hello Wêreld')
+    testStr('Ndewo Ụwa')
+    testStr('Ahoj světe')
+    testStr('salam dünya')
+    testStr('Chào thế giới')
+    testStr('Përshendetje Botë')
+    testStr('Прывітанне Сусвет')
+    testStr('Γειά σου Κόσμε')
+    testStr('こんにちは世界')
+    testStr('你好，世界')
+    testStr('안녕 세상')
+    testStr('שלום עולם')
+    testStr('העלא וועלט')
+    testStr('ہیلو دنیا نړی')
+    testStr('مرحبا بالعالم')
+    testStr('هيلو دنيا')
+    testStr('سلام دنیا')
+    testStr('سلام نړی')
+    testStr('ওহে বিশ্ব')
+    testStr('नमस्ते दुनिया')
+    testStr('नमस्ते जग')
+    testStr('नमस्कार संसार')
+    testStr('ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ ਦੁਨਿਆ')
+    testStr('Բարեւ աշխարհ')
+    testStr('ሰላም ልዑል')
+    testStr('გამარჯობა მსოფლიო')
+    testStr('હેલ્લો વિશ્વ')
+    testStr('ಹಲೋ ವರ್ಲ್ಡ್')
+    testStr('សួស្តី​ពិភពលោក')
+    testStr('ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ')
+    testStr('ഹലോ വേൾഡ്')
+    testStr('ஹலோ உலகம்')
+    testStr('မင်္ဂလာပါကမ္ဘာလောက')
+    testStr('හෙලෝ වර්ල්ඩ්')
+    testStr('สวัสดีชาวโลก')
+    testStr('హలో వరల్డ్')
+    testStr('😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔')
+  end
+
+  it 'should handle illogical combinations of logical operators' do
     lex('(-)').should == [
       {type: :paren, value: '('},
       {type: :minus, value: '-'},
