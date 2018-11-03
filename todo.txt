@@ -45,7 +45,3 @@ consider things like:
 opt(':').should == [{ type: :str, value: ':' }]
 so people can search emoji without quotes.
 (clean_ununused_syntax in parser.rb)
-
-
-add to https://rubygems.org/gems/command_search/versions/0.1.3
-and/or github that 2.2 is the min version of ruby that is supported/tested
