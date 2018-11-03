@@ -74,7 +74,7 @@ module CommandSearch
     def parse(input)
       out = input
       out = group_parens(out)
-      cluster!(:colon, out)
+      cluster!(:command, out)
       unchain!(:compare, out)
       cluster!(:compare, out)
       cluster!(:minus, out, :prefix)

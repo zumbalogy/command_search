@@ -2,6 +2,8 @@ module CommandSearch
   module Lexer
     module_function
 
+    WORD = '[^\s"|<>()]+'
+
     def lex(input)
       out = []
       i = 0
@@ -25,9 +27,10 @@ module CommandSearch
           type = :minus
         when /^[()]/
           type = :paren
-        when /^[<>]=?/
+        when /^[<>]=?(#{WORD})/
+          match = Regexp.last_match[1]
           type = :compare
-        when /^([^\s"|<>()]+):/
+        when /^:(#{WORD})/
           match = Regexp.last_match[1]
           type = :command
         when /^[^\s"|<>()]+/
