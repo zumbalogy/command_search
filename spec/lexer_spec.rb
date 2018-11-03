@@ -88,10 +88,15 @@ describe CommandSearch::Lexer do
   end
 
   it 'should handle OR statements' do
-    lex('a|b').should == [
-      {type: :str, value: "a"},
+    lex('a+|b').should == [
+      {type: :str, value: "a+"},
       {type: :pipe, value: "|"},
       {type: :str, value: "b"}
+    ]
+    lex('a+z|+b').should == [
+      {type: :str, value: "a+z"},
+      {type: :pipe, value: "|"},
+      {type: :str, value: "+b"}
     ]
     lex('a|b c|d').should == [
       {type: :str, value: "a"},
