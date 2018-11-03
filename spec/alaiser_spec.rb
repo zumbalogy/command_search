@@ -40,7 +40,7 @@ describe CommandSearch::Aliaser do
   it 'should handle aliases with command syntax' do
     a('hello world').should == 'hello earth'
     a('greeting:hello world').should == 'greeting:hello world'
-    a('house:red').should == 'house:red' # TODO: if this the desired way to handle colons, should then be noted somewhere/
+    a('house:red').should == 'house:red'
     a('house:red', { /:red\b/ => ':abc' }).should == 'house:abc'
     a('red,red,red').should == 'blue,blue,blue'
     a('-red').should == '-blue'
@@ -99,8 +99,3 @@ describe CommandSearch::Aliaser do
     a('hello hello hello hello', { 'hello hello' => 'bye hello' }).should == 'bye hello bye hello'
   end
 end
-
-# TODO: make sure it plays friendly with pagination and all for mongo and
-# in memory. pretty sure it should and all, (for in memory it could just be they stream
-# things into commandSearch in chunks until they hit a quota or run out) but maybe it would
-# be best to have an example in the readme

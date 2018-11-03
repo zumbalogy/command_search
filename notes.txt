@@ -138,5 +138,3 @@ also it would be nice if "monday" matched any date on a monday, not just like th
 # this syntax is now not allowed as a negation.
 # it would make having negative values hard to look for.
 # split_parts("foo:-bar")
-
-# TODO: maybe support a real regex type. using that could mean certain things are not needed.

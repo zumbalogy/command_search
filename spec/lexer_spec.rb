@@ -87,11 +87,35 @@ describe CommandSearch::Lexer do
     ]
   end
 
+  it 'should be able to handle apostrophes' do
+    lex("bee's knees").should == [
+      {type: :str, value: "bee's"},
+      {type: :str, value: "knees"}
+    ]
+    lex("foo's unquoted bar's").should == [
+      {type: :str, value: "foo's"},
+      {type: :str, value: "unquoted"},
+      {type: :str, value: "bar's"}
+    ]
+    lex("\"foo's unquoted bar's\"").should == [
+      {type: :quoted_str, value: "foo's unquoted bar's"}
+    ]
+    lex("foo's \"quoted bar's\"").should == [
+      {type: :str, value: "foo's"},
+      {type: :quoted_str, value: "quoted bar's"}
+    ]
+  end
+
   it 'should handle OR statements' do
-    lex('a|b').should == [
-      {type: :str, value: "a"},
+    lex('a+|b').should == [
+      {type: :str, value: "a+"},
       {type: :pipe, value: "|"},
       {type: :str, value: "b"}
+    ]
+    lex('a+z|+b').should == [
+      {type: :str, value: "a+z"},
+      {type: :pipe, value: "|"},
+      {type: :str, value: "+b"}
     ]
     lex('a|b c|d').should == [
       {type: :str, value: "a"},

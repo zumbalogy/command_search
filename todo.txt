@@ -1,47 +1,27 @@
-need to do something like this
-Regexp.new('\b' + Regexp.escape(str) + '\b', 'i')
-or
-Regexp.new(Regexp.escape(str), 'i')
-as opposed to the literals like
-/#{Regexp.escape(str)}/i
-to avoid building the wrong regexes when there is a special character (like 'A+')
-
-look into how this handles apostrophes.
-
-so "bee's knee" does not think its an unbalanced quote or so.
-
-specs already have some good test data for that
-
-{ title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
-
-what about "foo's unquoted bar's" unquoted should not be quoted
-
 look at letting the search field take strings or symbols.
-
-write tests with  /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }
-
-performance folder where some benchmarks are logged.
-
-
-look into the following line in the lexer:
-`out = group_pattern(out, :number,  [:number,  :period, :number])`
-^ can that allow multiple periods in one number?
-
 
 show example using aliases to support commas in numbers
 /#{word_break}[,\d]+#{word_break}/ => -> (match) { match.tr(',', '') }
 or something. that does not validate commas being every 3. maybe:
 /(?<=\d),\d\d\d/
 
-
 look into
-# # TODO: Even with existance boolean, this should maybe check that the existing value is not false.
+Even with existence boolean, this should maybe check that the existing value is not false.
 in mongoer.rb, memory.rb might need that too.
-
-rewrite lexer.rb to just go though the input string once with a state machine.
-the parser can just make one pass too, folding things up into a tree (lr parser)
 
 consider things like:
 opt(':').should == [{ type: :str, value: ':' }]
 so people can search emoji without quotes.
 (clean_ununused_syntax in parser.rb)
+
+Make sure the aliaser (and rest of command search) plays friendly with pagination for mongo and in memory.
+
+Aliaser, currently string alaises wont match halves of command. should be thought about and noted somewhere.
+'red' => 'blue',
+a('house:red').should == 'house:red'
+
+maybe support a real regex type. using that could mean certain things are not needed.
+
+the query "foo:-bar" errors out, should lex "foo:" as a command itself,
+then wont need ':' lexer or avoiding ':' in str lexer.
+- there are specs for this that are commented out in parser and command_search_spec.rb

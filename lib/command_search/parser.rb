@@ -21,7 +21,7 @@ module CommandSearch
       out
     end
 
-    def cluster(type, input, cluster_type = :binary)
+    def cluster!(type, input, cluster_type = :binary)
       binary = (cluster_type == :binary)
       out = input
       out = out[:value] while out.is_a?(Hash)
@@ -39,18 +39,18 @@ module CommandSearch
           value: val
         }
       end
-      out.map do |x|
+      out.map! do |x|
         next x unless x[:type] == :nest
-        x[:value] = cluster(type, x[:value], cluster_type)
+        x[:value] = cluster!(type, x[:value], cluster_type)
         x
       end
     end
 
-    def unchain(type, input)
-      input.each_index do |i|
-        front = input.dig(i, :type)
-        mid = input.dig(i + 1, :type)
-        back = input.dig(i + 2, :type)
+    def unchain!(type, input)
+      (input.length - 2).times do |i|
+        front = input[i][:type]
+        mid = input[i + 1][:type]
+        back = input[i + 2][:type]
         if front == type && mid != type && back == type
           input.insert(i + 1, input[i + 1])
         end
@@ -74,11 +74,11 @@ module CommandSearch
     def parse(input)
       out = input
       out = group_parens(out)
-      out = cluster(:colon, out)
-      out = unchain(:compare, out)
-      out = cluster(:compare, out)
-      out = cluster(:minus, out, :prefix)
-      out = cluster(:pipe, out)
+      cluster!(:colon, out)
+      unchain!(:compare, out)
+      cluster!(:compare, out)
+      cluster!(:minus, out, :prefix)
+      cluster!(:pipe, out)
       out = clean_ununused_syntax(out)
       out
     end
