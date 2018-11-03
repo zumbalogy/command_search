@@ -17,22 +17,20 @@ module CommandSearch
         when /^'(.*?)'/
           match = Regexp.last_match[1]
           type = :quoted_str
-        when /^\-?\d+(\.\d+)?(?=$|[\s"':|<>)(])/
+        when /^\-?\d+(\.\d+)?(?=$|[\s"'|<>()])/
           type = :number
         when /^\|+/
           type = :pipe
         when /^-/
           type = :minus
-        when /^:/
-          type = :colon
         when /^[()]/
           type = :paren
         when /^[<>]=?/
           type = :compare
-        # when /^([^\s"|<>()]+):/
-        #   match = Regexp.last_match[1]
-        #   type = :command
-        when /^[^\s:"|<>()]+/
+        when /^([^\s"|<>()]+):/
+          match = Regexp.last_match[1]
+          type = :command
+        when /^[^\s"|<>()]+/
           type = :str
         when /^./
           type = :str
