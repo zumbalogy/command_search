@@ -29,7 +29,7 @@ module CommandSearch
           type = :paren
         when /^[<>]=?/
           type = :compare
-        when /^\d*[^\d\s:)][^\s"'|:<>)(]*/
+        when /^[^\s:"|<>()]+/
           type = :str
         when /^./
           type = :str
