@@ -29,6 +29,9 @@ module CommandSearch
           type = :paren
         when /^[<>]=?/
           type = :compare
+        # when /^([^\s"|<>()]+):/
+        #   match = Regexp.last_match[1]
+        #   type = :command
         when /^[^\s:"|<>()]+/
           type = :str
         when /^./

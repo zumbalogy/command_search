@@ -1,17 +1,24 @@
 look at letting the search field take strings or symbols.
 
-write tests with  /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }
-
 show example using aliases to support commas in numbers
 /#{word_break}[,\d]+#{word_break}/ => -> (match) { match.tr(',', '') }
 or something. that does not validate commas being every 3. maybe:
 /(?<=\d),\d\d\d/
 
 look into
-# # TODO: Even with existence boolean, this should maybe check that the existing value is not false.
+Even with existence boolean, this should maybe check that the existing value is not false.
 in mongoer.rb, memory.rb might need that too.
 
 consider things like:
 opt(':').should == [{ type: :str, value: ':' }]
 so people can search emoji without quotes.
 (clean_ununused_syntax in parser.rb)
+
+Make sure the aliaser (and rest of command search) plays friendly with pagination for mongo and in memory.
+
+Aliaser, currently string alaises wont match halves of command. should be thought about and noted somewhere.
+'red' => 'blue',
+a('house:red').should == 'house:red'
+
+
+maybe support a real regex type. using that could mean certain things are not needed.

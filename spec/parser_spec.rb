@@ -328,6 +328,29 @@ it 'should handle negating' do
                {type: :number, value: '-34'}]}]
   end
 
+  it 'should handle command syntax mid-command' do
+    # parse('foo:-bar').should == [
+    #   { type: :nest,
+    #     nest_type: :colon,
+    #     nest_op: ':',
+    #     value: [
+    #       { type: :str, value: 'foo' },
+    #       { type: :nest,
+    #         nest_type: :minus,
+    #         nest_op: '-',
+    #         value: [{ type: :str, value: 'bar' }]}]}]
+    # parse('foo:(bar)').should == [
+    #   { type: :nest,
+    #     nest_type: :colon,
+    #     nest_op: ':',
+    #     value: [
+    #       { type: :str, value: 'foo' },
+    #       { type: :nest,
+    #         nest_type: :minus,
+    #         nest_op: '-',
+    #         value: [{ type: :str, value: 'bar' }]}]}]
+  end
+
   it 'should handle wacky combinations' do
     parse(':').should == []
     parse('|').should == [{type: :nest, nest_type: :pipe, nest_op: '|', value: []}]
