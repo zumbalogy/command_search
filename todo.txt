@@ -24,3 +24,4 @@ maybe support a real regex type. using that could mean certain things are not ne
 
 the query "foo:-bar" errors out, should lex "foo:" as a command itself,
 then wont need ':' lexer or avoiding ':' in str lexer.
+- there are specs for this that are commented out in parser and command_search_spec.rb
