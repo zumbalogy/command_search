@@ -192,26 +192,32 @@ describe CommandSearch::Lexer do
 
   it 'should handle commands' do
     lex('foo:bar').should == [
-      {type: :command, value: "foo"},
+      {type: :str, value: "foo"},
+      {type: :colon, value: ":"},
       {type: :str, value: "bar"}
     ]
     lex('a:b c:d e').should == [
-      {type: :command, value: "a"},
+      {type: :str, value: "a"},
+      {type: :colon, value: ":"},
       {type: :str, value: "b"},
-      {type: :command, value: "c"},
+      {type: :str, value: "c"},
+      {type: :colon, value: ":"},
       {type: :str, value: "d"},
       {type: :str, value: "e"}
     ]
     lex('-a:b c:-d').should == [
       {type: :minus, value: "-"},
-      {type: :command, value: "a"},
+      {type: :str, value: "a"},
+      {type: :colon, value: ":"},
       {type: :str, value: "b"},
-      {type: :command, value: "c"},
+      {type: :str, value: "c"},
+      {type: :colon, value: ":"},
       {type: :minus, value: "-"},
       {type: :str, value: "d"}
     ]
     lex('1:"2"').should == [
-      {type: :command, value: "1"},
+      {type: :number, value: "1"},
+      {type: :colon, value: ":"},
       {type: :quoted_str, value: '2'}
     ]
   end
