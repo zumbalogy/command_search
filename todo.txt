@@ -20,5 +20,7 @@ Aliaser, currently string alaises wont match halves of command. should be though
 'red' => 'blue',
 a('house:red').should == 'house:red'
 
-
 maybe support a real regex type. using that could mean certain things are not needed.
+
+the query "foo:-bar" errors out, should lex "foo:" as a command itself,
+then wont need ':' lexer or avoiding ':' in str lexer.
