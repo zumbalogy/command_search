@@ -345,6 +345,49 @@ it 'should handle negating' do
                {type: :number, value: '-34'}]}]
   end
 
+  it 'should handle chained commands and compares' do
+    abc = [
+      { type: :nest,
+        nest_type: :colon,
+        nest_op: ':',
+        value: [
+          { type: :str, value: 'a' },
+          { type: :str, value: 'b' }]},
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [
+          { type: :str, value: 'b' },
+          { type: :str, value: 'c' }]}]
+    parse('a:b<c').should == abc
+    parse('(a:b<c)').should == [{ type: :nest, nest_type: :paren, value: abc }]
+    parse('a<b<c:d<e').should == [
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [
+          { type: :str, value: 'a' },
+          { type: :str, value: 'b' }]},
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [
+          { type: :str, value: 'b' },
+          { type: :str, value: 'c' }]},
+      { type: :nest,
+        nest_type: :colon,
+        nest_op: ':',
+        value: [
+          { type: :str, value: 'c' },
+          { type: :str, value: 'd' }]},
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [
+          { type: :str, value: 'd' },
+          { type: :str, value: 'e' }]}]
+  end
+
   it 'should handle command syntax mid-command' do
     parse('foo:-bar').should == [
       { type: :nest,
@@ -374,5 +417,12 @@ it 'should handle negating' do
     parse('foo -').should == [
       { type: :str, value: 'foo' },
       { type: :str, value: '-' }]
+    parse('<|a').should == [
+      { type: :nest,
+        nest_type: :pipe,
+        nest_op: '|',
+        value: [
+          { type: :str, value: '<' },
+          { type: :str, value: 'a' }]}]
   end
 end

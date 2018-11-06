@@ -227,14 +227,11 @@ describe CommandSearch::Optimizer do
     opt(':').should == [{type: :str, value: ':'}]
     opt('(:)').should == [{type: :str, value: ':'}]
     opt('-').should == [{type: :str, value: '-'}]
-    opt('>').should == [{type: :str, value: ">"}]
-
-    # User will currently have to use quotations
-    opt('>>').should == [{type: :str, value: '>'}]
-    opt('>:').should == [{type: :str, value: '>'}, {type: :str, value: ':'}]
-
+    opt('>').should == [{type: :str, value: '>'}]
+    opt('>>').should == [{type: :str, value: '>>'}]
+    opt('>:').should == [{type: :str, value: '>:'}]
     opt('>=').should == [{type: :str, value: '>='}]
-    opt('>=>').should == [{type: :str, value: '>='}, {type: :str, value: '>'}]
+    opt('>=>').should == [{type: :str, value: '>=>'}]
     opt('<').should == [{type: :str, value: '<'}]
     opt('<=').should == [{type: :str, value: '<='}]
     opt('-<').should == [
@@ -261,7 +258,7 @@ describe CommandSearch::Optimizer do
             { type: :nest,
                nest_type: :paren,
                value: [
-                { type: :str, value: '>=' }, 
+                { type: :str, value: '>=' },
                 { type: :str, value: ':' }]}]}]
   end
 

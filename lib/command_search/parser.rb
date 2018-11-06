@@ -46,14 +46,16 @@ module CommandSearch
       end
     end
 
-    def unchain!(type, input)
-      (input.length - 2).times do |i|
+    def unchain!(types, input)
+      i = 0
+      while i < input.length - 2
         front = input[i][:type]
         mid = input[i + 1][:type]
         back = input[i + 2][:type]
-        if front == type && mid != type && back == type
+        if types.include?(front) && !types.include?(mid) && types.include?(back)
           input.insert(i + 1, input[i + 1])
         end
+        i += 1
       end
     end
 
@@ -65,7 +67,7 @@ module CommandSearch
           values = input[0..1].map { |x| x[:value] }
           input[0..1] = { type: :str, value: values.join() }
         else
-          input[0][:type] == :str
+          input[0][:type] = :str
         end
       end
       if input[-1][:type] == :colon || input[-1][:type] == :compare
@@ -73,7 +75,7 @@ module CommandSearch
           values = input[-2..-1].map { |x| x[:value] }
           input[-2..-1] = { type: :str, value: values.join() }
         else
-          input[-1][:type] == :str
+          input[-1][:type] = :str
         end
       end
 
@@ -81,8 +83,8 @@ module CommandSearch
       i = 0
       while i < input.length
         if input[i][:type] == :minus
-          if input[i - 1][:type] == :compare || input[i - 1][:type] == :colon
-            if input[i + 1][:type] == :str
+          if i > 0 && input[i - 1][:type] == :compare || input[i - 1][:type] == :colon
+            if input[i + 1] && input[i + 1][:type] == :str
               values = input[i..i + 1].map { |x| x[:value] }
               input[i..i + 1] = { type: :str, value: values.join() }
             else
@@ -97,7 +99,7 @@ module CommandSearch
       i = 0
       while i < input.length
         if input[i][:type] == :colon || input[i][:type] == :compare
-          if input[i - 1] && ![:str, :number, :quoted_str].include?(input[i - 1][:type])
+          if i > 0 && input[i - 1] && ![:str, :number, :quoted_str].include?(input[i - 1][:type])
             if input[i + 1] && input[i + 1][:type] == :str
               values = input[i..i + 1].map { |x| x[:value] }
               input[i..i + 1] = { type: :str, value: values.join() }
@@ -106,7 +108,7 @@ module CommandSearch
               input[i][:type] = :str
             end
           end
-          if input[i + 1] && ![:str, :number, :quoted_str].include?(input[i + 1][:type])
+          if i > 0 && input[i + 1] && ![:str, :number, :quoted_str].include?(input[i + 1][:type])
             if input[i - 1][:type] == :str
               values = input[i - 1..i].map { |x| x[:value] }
               input[i - 1..i] = { type: :str, value: values.join() }
@@ -141,13 +143,13 @@ module CommandSearch
     def parse(input)
       out = input
       clean_ununusable!(out)
+      unchain!([:colon, :compare], out)
       out = group_parens(out)
       cluster!(:colon, out)
-      unchain!(:compare, out)
       cluster!(:compare, out)
       cluster!(:minus, out, :prefix)
       cluster!(:pipe, out)
-      out = clean_ununused!(out)
+      clean_ununused!(out)
       out
     end
   end

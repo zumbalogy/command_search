@@ -87,10 +87,10 @@ describe CommandSearch::Mongoer do
     q2('num1:red').should == {'num1'=>'red'}
   end
 
-  it 'should handle bad commands' do
+  it 'should handle chained commands' do
     def q2(s); q(s, ['f1'], { str1: String, num1: Numeric }); end
     q2('str1:b').should == {'str1'=>/b/i}
-    q2('str1:b:c').should == {'str1'=>/b:c/i}
+    q2('str1:b:c').should == {'$and' => [{'str1'=>/b/i}, {'f1'=>/b:c/i}]}
   end
 
   it 'should handle time commands' do

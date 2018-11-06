@@ -396,6 +396,26 @@ describe CommandSearch::Memory do
       CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ເດືອນ', fields).count.should == 0
   end
 
+  it 'should not throw errors' do
+    CommandSearch.search([{}], "Q)'(':{Mc&hO    T)r", { fields: [:foo] })
+    # CommandSearch.search([{}], "m3(_:;_[P4ZV<]w)t", { fields: [:foo] })
+    # CommandSearch.search([{}], " d<1-Tw?.�ey<1.E4:e>cb]", { fields: [:foo] })
+    # CommandSearch.search([{}], "=4Ts2em(5sZ ]]&x<-", { fields: [:foo] })
+    # CommandSearch.search([{}], "<|SOUv~Y74+Fm+Yva`64", { fields: [:foo] })
+    # CommandSearch.search([{}], "4:O0E%~Z<@?O]e'h@<'k^", { fields: [:foo] })
+    check = true
+    # 1000000.times do |i|
+    #   str = (0...24).map { (rand(130)).chr }.join
+    #   begin
+    #     CommandSearch.search([{}], str, { fields: [:foo] })
+    #   rescue
+    #     puts str
+    #     check = false
+    #   end
+    # end
+    check.should == true
+  end
+
   # it 'should error gracefully' do
   #   lopsided parens
   #   search('(-sdf:sdfdf>sd\'s":f-').count.should == 0
