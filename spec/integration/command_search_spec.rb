@@ -58,8 +58,8 @@ describe CommandSearch do
     CommandSearch.search($birds, query, options).count.should == 2
     CommandSearch.search(Bird, 'name:name4', options).count.should == 1
     CommandSearch.search($birds, 'name:name4', options).count.should == 1
-    # CommandSearch.search(Bird, 'name:-name4', options).count.should == 1
-    # CommandSearch.search($birds, 'name:-name4', options).count.should == 1
+    CommandSearch.search(Bird, 'name:-name4', options).count.should == 0
+    CommandSearch.search($birds, 'name:-name4', options).count.should == 0
     CommandSearch.search(Bird, 'badKey:foo', options).count.should == 0
     CommandSearch.search($birds, 'badKey:foo', options).count.should == 0
   end

@@ -1,7 +1,7 @@
 load(__dir__ + '/./spec_helper.rb')
 
 def lex(input)
-  CommandSearch::Lexer.lex(input)
+  CommandSearch::Lexer.lex(input).select { |x| x[:type] != :space }
 end
 
 describe CommandSearch::Lexer do
@@ -104,6 +104,7 @@ describe CommandSearch::Lexer do
       {type: :str, value: "foo's"},
       {type: :quoted_str, value: "quoted bar's"}
     ]
+    lex("fo'o'bar'").should == [{type: :str, value: "fo'o'bar'"}]
   end
 
   it 'should handle OR statements' do

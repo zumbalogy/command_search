@@ -57,29 +57,97 @@ module CommandSearch
       end
     end
 
-    def clean_ununused_syntax(input)
-      out = input.map do |x|
+    def clean_ununusable!(input)
+      return unless input.any?
+      # if colon or comprare in the front or back, merge it with neighboring string or delete it
+      if input[0][:type] == :colon || input[0][:type] == :compare
+        if input[1] && input[1][:type] == :str
+          values = input[0..1].map { |x| x[:value] }
+          input[0..1] = { type: :str, value: values.join() }
+        else
+          input[0][:type] == :str
+        end
+      end
+      if input[-1][:type] == :colon || input[-1][:type] == :compare
+        if input[-2] && input[-2][:type] == :str
+          values = input[-2..-1].map { |x| x[:value] }
+          input[-2..-1] = { type: :str, value: values.join() }
+        else
+          input[-1][:type] == :str
+        end
+      end
+
+      # if minus is after compare or colon, merge it with following string if there is one
+      i = 0
+      while i < input.length
+        if input[i][:type] == :minus
+          if input[i - 1][:type] == :compare || input[i - 1][:type] == :colon
+            if input[i + 1][:type] == :str
+              values = input[i..i + 1].map { |x| x[:value] }
+              input[i..i + 1] = { type: :str, value: values.join() }
+            else
+              input[i][:type] == :str
+            end
+          end
+        end
+        i += 1
+      end
+
+      # if colon or compare dont have a string after them, turn to string
+      i = 0
+      while i < input.length
+        if input[i][:type] == :colon || input[i][:type] == :compare
+          if input[i - 1] && ![:str, :number, :quoted_str].include?(input[i - 1][:type])
+            if input[i + 1] && input[i + 1][:type] == :str
+              values = input[i..i + 1].map { |x| x[:value] }
+              input[i..i + 1] = { type: :str, value: values.join() }
+              i -= 1
+            else
+              input[i][:type] = :str
+            end
+          end
+          if input[i + 1] && ![:str, :number, :quoted_str].include?(input[i + 1][:type])
+            if input[i - 1][:type] == :str
+              values = input[i - 1..i].map { |x| x[:value] }
+              input[i - 1..i] = { type: :str, value: values.join() }
+              i -= 1
+            else
+              input[i][:type] = :str
+            end
+          end
+          input[i][:type] = :str unless input[i + 1]
+        end
+        i += 1
+      end
+      input.select! { |x| x[:type] != :space }
+      input[-1][:type] = :str if input[-1] && input[-1][:type] == :minus
+    end
+
+    def clean_ununused!(input)
+      input.map! do |x|
         next if x[:type] == :paren && x[:value].is_a?(String)
         next if x[:nest_type] == :colon && x[:value].empty?
         if x[:nest_type] == :compare && x[:value].length < 2
-          x = clean_ununused_syntax(x[:value]).first
+          x = clean_ununused!(x[:value]).first
         end
         next x unless x && x[:type] == :nest
-        x[:value] = clean_ununused_syntax(x[:value])
+        x[:value] = clean_ununused!(x[:value])
         x
       end
-      out.compact
+      input.compact!
+      input
     end
 
     def parse(input)
       out = input
+      clean_ununusable!(out)
       out = group_parens(out)
       cluster!(:colon, out)
       unchain!(:compare, out)
       cluster!(:compare, out)
       cluster!(:minus, out, :prefix)
       cluster!(:pipe, out)
-      out = clean_ununused_syntax(out)
+      out = clean_ununused!(out)
       out
     end
   end

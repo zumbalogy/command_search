@@ -32,7 +32,7 @@ def opt(x)
   CommandSearch::Optimizer.optimize(parse(x))
 end
 
-describe CommandSearch::Parser do
+describe CommandSearch::Optimizer do
 
   it 'should work and be a no-op in some cases' do
     opt('foo 1 2 a b').should == CommandSearch::Optimizer.optimize(opt('foo 1 2 a b'))
@@ -218,25 +218,51 @@ describe CommandSearch::Parser do
   end
 
   it 'should handle wacky nonsense' do
+    opt('|').should == []
     opt('(-)').should == []
     opt('(|)').should == []
-    opt('(:)').should == []
     opt('(()').should == []
-    opt(')())').should == []
     opt('(())').should == []
-    opt(':').should == []
-    opt('-').should == []
-    opt('|').should == []
-    opt('>').should == []
-    opt('>>').should == []
-    opt('>=').should == []
-    opt('>=>').should == []
-    opt('<').should == []
-    opt('<=').should == []
-    opt('-<').should == []
-    opt('-<=').should == []
-    opt('|:)').should == []
-    opt('-<>=-()<>:|(>=-|:)').should == []
+    opt(')())').should == []
+    opt(':').should == [{type: :str, value: ':'}]
+    opt('(:)').should == [{type: :str, value: ':'}]
+    opt('-').should == [{type: :str, value: '-'}]
+    opt('>').should == [{type: :str, value: ">"}]
+
+    # User will currently have to use quotations
+    opt('>>').should == [{type: :str, value: '>'}]
+    opt('>:').should == [{type: :str, value: '>'}, {type: :str, value: ':'}]
+
+    opt('>=').should == [{type: :str, value: '>='}]
+    opt('>=>').should == [{type: :str, value: '>='}, {type: :str, value: '>'}]
+    opt('<').should == [{type: :str, value: '<'}]
+    opt('<=').should == [{type: :str, value: '<='}]
+    opt('-<').should == [
+      {type: :nest,
+        :nest_type=>:minus,
+        :nest_op=>'-',
+        value: [{type: :str, value: '<'}]}]
+    opt('-<=').should == [
+      {type: :nest,
+        :nest_type=>:minus,
+        :nest_op=>'-',
+        value: [{type: :str, value: '<='}]}]
+    opt('|:)').should == [{type: :str, value: ':'}]
+    opt('-<>=-()<>:|(>=-|:)').should == [
+      { type: :nest,
+        nest_type: :minus,
+        nest_op: '-',
+        value: [{type: :str, value: '<>='}]},
+        { type: :nest,
+          nest_type: :pipe,
+          nest_op: '|',
+          value: [
+            { type: :str, value: '<>:'},
+            { type: :nest,
+               nest_type: :paren,
+               value: [
+                { type: :str, value: '>=' }, 
+                { type: :str, value: ':' }]}]}]
   end
 
   it 'should handle empty strings' do
