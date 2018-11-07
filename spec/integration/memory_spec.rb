@@ -398,29 +398,40 @@ describe CommandSearch::Memory do
 
   it 'should not throw errors' do
     CommandSearch.search([{}], "Q)'(':{Mc&hO    T)r", { fields: [:foo] })
-    # CommandSearch.search([{}], "m3(_:;_[P4ZV<]w)t", { fields: [:foo] })
-    # CommandSearch.search([{}], " d<1-Tw?.�ey<1.E4:e>cb]", { fields: [:foo] })
-    # CommandSearch.search([{}], "=4Ts2em(5sZ ]]&x<-", { fields: [:foo] })
-    # CommandSearch.search([{}], "<|SOUv~Y74+Fm+Yva`64", { fields: [:foo] })
-    # CommandSearch.search([{}], "4:O0E%~Z<@?O]e'h@<'k^", { fields: [:foo] })
-    check = true
-    # 1000000.times do |i|
-    #   str = (0...24).map { (rand(130)).chr }.join
-    #   begin
-    #     CommandSearch.search([{}], str, { fields: [:foo] })
-    #   rescue
-    #     puts str
-    #     check = false
-    #   end
-    # end
-    check.should == true
+    CommandSearch.search([{}], "m3(_:;_[P4ZV<]w)t", { fields: [:foo] })
+    CommandSearch.search([{}], " d<1-Tw?.�ey<1.E4:e>cb]", { fields: [:foo] })
+    CommandSearch.search([{}], "=4Ts2em(5sZ ]]&x<-", { fields: [:foo] })
+    CommandSearch.search([{}], "<|SOUv~Y74+Fm+Yva`64", { fields: [:foo] })
+    CommandSearch.search([{}], "4:O0E%~Z<@?O]e'h@<'k^", { fields: [:foo] })
+
+    CommandSearch.search([{}], '(-sdf:sdfdf>sd\'s":f-', { fields: [:foo] })
+    CommandSearch.search([{}], '""sdfdsfhellosdf|dsfsdf::>>><><', { fields: [:foo] })
   end
 
-  # it 'should error gracefully' do
-  #   lopsided parens
-  #   search('(-sdf:sdfdf>sd\'s":f-').count.should == 0
-  #   search('""sdfdsfhellosdf|dsfsdf::>>><><').count.should == 0
-  # end
+# it 'should handle fuzzing' do
+#     check = true
+#     1000.times do |i|
+#       str = (0...24).map { (rand(130)).chr }.join
+#       begin
+#         CommandSearch.search([{}], str, { fields: [:foo] })
+#       rescue
+#         puts str
+#         check = false
+#       end
+#     end
+#
+#     strs = ['a', 'b', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
+#     strs.repeated_permutation(6).each do |perm|
+#       begin
+#         CommandSearch.search([{}], perm.join, { fields: [:foo] })
+#       rescue
+#         puts perm
+#         check = false
+#       end
+#     end
+#
+#     check.should == true
+#   end
 
   # it 'should handle searching ones that are not specified and also wierd hash ones' do
   #   search('custom_s:penn').count.should == 1

@@ -4,9 +4,9 @@ module CommandSearch
 
     def parens_rindex(input)
       val_list = input.map { |x| x[:value] }
-      open_i = val_list.rindex('(')
+      open_i = input.rindex { |x| x[:value] == '(' && x[:type] == :paren}
       return unless open_i
-      close_offset = val_list.drop(open_i).index(')')
+      close_offset = input.drop(open_i).index { |x| x[:value] == ')' && x[:type] == :paren}
       return unless close_offset
       [open_i, close_offset + open_i]
     end
