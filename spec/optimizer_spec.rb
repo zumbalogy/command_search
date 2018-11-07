@@ -249,17 +249,19 @@ describe CommandSearch::Optimizer do
       { type: :nest,
         nest_type: :minus,
         nest_op: '-',
-        value: [{type: :str, value: '<>='}]},
-        { type: :nest,
-          nest_type: :pipe,
-          nest_op: '|',
-          value: [
-            { type: :str, value: '<>:'},
-            { type: :nest,
-               nest_type: :paren,
-               value: [
-                { type: :str, value: '>=' },
-                { type: :str, value: ':' }]}]}]
+        value: [
+          { type: :nest,
+            nest_type: :compare,
+            nest_op: '>=',
+            value: [{ type: :str, value: '<' },
+                    { type: :str, value: '-' }]}]},
+      { type: :nest,
+        nest_type: :pipe,
+        nest_op: '|',
+        value: [
+          { type: :str, value: '<>:' },
+          { type: :str, value: '>=-' },
+          { type: :str, value: ':' }]}]
   end
 
   it 'should handle empty strings' do

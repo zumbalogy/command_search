@@ -59,68 +59,50 @@ module CommandSearch
       end
     end
 
+    def merge_strs_forward(input)
+      return input if input.empty?
+      if input[1] && input[1][:type] == :str
+        values = input.map { |x| x[:value] }
+        { type: :str, value: values.join() }
+      else
+        input[0][:type] = :str
+        input
+      end
+    end
+
+    def merge_strs_backward(input)
+      return input if input.empty?
+      if input[-2] && input[-2][:type] == :str
+        values = input.map { |x| x[:value] }
+        { type: :str, value: values.join() }
+      else
+        input[-1][:type] = :str
+        input
+      end
+    end
+
     def clean_ununusable!(input)
       return unless input.any?
-      # if colon or comprare in the front or back, merge it with neighboring string or delete it
-      if input[0][:type] == :colon || input[0][:type] == :compare
-        if input[1] && input[1][:type] == :str
-          values = input[0..1].map { |x| x[:value] }
-          input[0..1] = { type: :str, value: values.join() }
-        else
-          input[0][:type] = :str
-        end
-      end
-      if input[-1][:type] == :colon || input[-1][:type] == :compare
-        if input[-2] && input[-2][:type] == :str
-          values = input[-2..-1].map { |x| x[:value] }
-          input[-2..-1] = { type: :str, value: values.join() }
-        else
-          input[-1][:type] = :str
-        end
-      end
 
-      # if minus is after compare or colon, merge it with following string if there is one
       i = 0
       while i < input.length
-        if input[i][:type] == :minus
-          if i > 0 && input[i - 1][:type] == :compare || input[i - 1][:type] == :colon
-            if input[i + 1] && input[i + 1][:type] == :str
-              values = input[i..i + 1].map { |x| x[:value] }
-              input[i..i + 1] = { type: :str, value: values.join() }
-            else
-              input[i][:type] == :str
-            end
-          end
-        end
-        i += 1
+        next i += 1 unless input[i][:type] == :minus
+        next i += 1 unless i > 0 && [:compare, :colon].include?(input[i - 1][:type])
+        input[i..i + 1] = merge_strs_forward(input[i..i + 1])
       end
 
-      # if colon or compare dont have a string after them, turn to string
       i = 0
       while i < input.length
-        if input[i][:type] == :colon || input[i][:type] == :compare
-          if i > 0 && input[i - 1] && ![:str, :number, :quoted_str].include?(input[i - 1][:type])
-            if input[i + 1] && input[i + 1][:type] == :str
-              values = input[i..i + 1].map { |x| x[:value] }
-              input[i..i + 1] = { type: :str, value: values.join() }
-              i -= 1
-            else
-              input[i][:type] = :str
-            end
-          end
-          if i > 0 && input[i + 1] && ![:str, :number, :quoted_str].include?(input[i + 1][:type])
-            if input[i - 1][:type] == :str
-              values = input[i - 1..i].map { |x| x[:value] }
-              input[i - 1..i] = { type: :str, value: values.join() }
-              i -= 1
-            else
-              input[i][:type] = :str
-            end
-          end
-          input[i][:type] = :str unless input[i + 1]
-        end
-        i += 1
+        next i += 1 if ![:compare, :colon].include?(input[i][:type])
+        next i += 1 if i > 0 &&
+          (i < input.count - 1) &&
+          [:str, :number, :quoted_str].include?(input[i - 1][:type]) &&
+          [:str, :number, :quoted_str].include?(input[i + 1][:type])
+
+        input[i..i + 1] = merge_strs_forward(input[i..i + 1])
+        input[i - 1..i] = merge_strs_backward(input[i - 1..i])
       end
+
       input.select! { |x| x[:type] != :space }
       input[-1][:type] = :str if input[-1] && input[-1][:type] == :minus
     end

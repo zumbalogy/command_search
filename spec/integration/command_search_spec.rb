@@ -116,11 +116,10 @@ describe CommandSearch do
     CommandSearch.search(Bird, '>4', options).count.should == 0
     CommandSearch.search(Bird, '4<', options).count.should == 0
     CommandSearch.search(Bird, '4>=', options).count.should == 0
-
-    CommandSearch.search($birds, 'feathers>>', options).count.should == 3
-    CommandSearch.search($birds, '=<feathers>>', options).count.should == 3
-    CommandSearch.search(Bird, 'feathers>>', options).count.should == 3
-    CommandSearch.search(Bird, '=<feathers>>', options).count.should == 3
+    CommandSearch.search($birds, 'feathers>>', options).count.should == 0
+    CommandSearch.search($birds, '=<feathers>>', options).count.should == 0
+    CommandSearch.search(Bird, 'feathers>>', options).count.should == 0
+    CommandSearch.search(Bird, '=<feathers>>', options).count.should == 0
   end
 
   it 'should be able to handle a field declared as Numeric or Interger' do
