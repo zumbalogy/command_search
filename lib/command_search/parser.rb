@@ -59,24 +59,13 @@ module CommandSearch
       end
     end
 
-    def merge_strs_forward(input)
+    def merge_strs(input, (x, y))
       return input if input.empty?
-      if input[1] && input[1][:type] == :str
+      if input[y] && input[y][:type] == :str
         values = input.map { |x| x[:value] }
         { type: :str, value: values.join() }
       else
-        input[0][:type] = :str
-        input
-      end
-    end
-
-    def merge_strs_backward(input)
-      return input if input.empty?
-      if input[-2] && input[-2][:type] == :str
-        values = input.map { |x| x[:value] }
-        { type: :str, value: values.join() }
-      else
-        input[-1][:type] = :str
+        input[x][:type] = :str
         input
       end
     end
@@ -88,7 +77,7 @@ module CommandSearch
       while i < input.length
         next i += 1 unless input[i][:type] == :minus
         next i += 1 unless i > 0 && [:compare, :colon].include?(input[i - 1][:type])
-        input[i..i + 1] = merge_strs_forward(input[i..i + 1])
+        input[i..i + 1] = merge_strs(input[i..i + 1], [0, 1])
       end
 
       i = 0
@@ -99,8 +88,8 @@ module CommandSearch
           [:str, :number, :quoted_str].include?(input[i - 1][:type]) &&
           [:str, :number, :quoted_str].include?(input[i + 1][:type])
 
-        input[i..i + 1] = merge_strs_forward(input[i..i + 1])
-        input[i - 1..i] = merge_strs_backward(input[i - 1..i])
+        input[i..i + 1] = merge_strs(input[i..i + 1], [0, 1])
+        input[i - 1..i] = merge_strs(input[i - 1..i], [1, 0]) if i > 0
       end
 
       input.select! { |x| x[:type] != :space }
