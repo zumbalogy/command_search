@@ -13,6 +13,9 @@ consider things like:
 opt(':').should == [{ type: :str, value: ':' }]
 so people can search emoji without quotes.
 (clean_ununused_syntax in parser.rb)
+parse(':)').should == ...
+parse('(: smile').should == ...
+need to decompose unmatched parens to strings.
 
 Make sure the aliaser (and rest of command search) plays friendly with pagination for mongo and in memory.
 

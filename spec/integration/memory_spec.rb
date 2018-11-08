@@ -408,30 +408,32 @@ describe CommandSearch::Memory do
     CommandSearch.search([{}], '""sdfdsfhellosdf|dsfsdf::>>><><', { fields: [:foo] })
   end
 
-# it 'should handle fuzzing' do
-#     check = true
-#     1000.times do |i|
-#       str = (0...24).map { (rand(130)).chr }.join
-#       begin
-#         CommandSearch.search([{}], str, { fields: [:foo] })
-#       rescue
-#         puts str
-#         check = false
-#       end
-#     end
-#
-#     strs = ['a', 'b', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
-#     strs.repeated_permutation(6).each do |perm|
-#       begin
-#         CommandSearch.search([{}], perm.join, { fields: [:foo] })
-#       rescue
-#         puts perm
-#         check = false
-#       end
-#     end
-#
-#     check.should == true
-#   end
+  it 'should handle fuzzing' do
+    check = true
+    10000.times do |i|
+      str = (0...24).map { (rand(130)).chr }.join
+      begin
+        CommandSearch.search([{}], str, { fields: [:foo] })
+      rescue
+        puts str
+        check = false
+      end
+    end
+  end
+
+  # it 'should handle permutations' do
+  #   check = true
+  #   strs = ['a', 'b', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
+  #   strs.repeated_permutation(6).each do |perm|
+  #     begin
+  #       CommandSearch.search([{}], perm.join, { fields: [:foo] })
+  #     rescue
+  #       puts perm
+  #       check = false
+  #     end
+  #   end
+  #   check.should == true
+  # end
 
   # it 'should handle searching ones that are not specified and also wierd hash ones' do
   #   search('custom_s:penn').count.should == 1
