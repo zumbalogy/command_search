@@ -7,8 +7,8 @@ end
 
 describe CommandSearch::Parser do
   it 'should not parse simple strings more than the lexer' do
-    CommandSearch::Lexer.lex('foo 1 2 a b').should == parse('foo 1 2 a b')
-    CommandSearch::Lexer.lex('red "blue green"').should == parse('red "blue green"')
+    lexed = CommandSearch::Lexer.lex('foo 1 2 a b "1 ()"').select { |x| x[:type] != :space }
+    lexed.should == parse('foo 1 2 a b "1 ()"')
     parse('red "blue green"').should == CommandSearch::Parser.parse(parse('red "blue green"'))
     parse('foo').should == [{type: :str, value: 'foo'}]
     parse('f1oo').should == [{type: :str, value: 'f1oo'}]
@@ -287,6 +287,23 @@ it 'should handle negating' do
                {type: :number, value: '-1'}]}]
   end
 
+  it 'should handle bad commands and compares' do
+    parse('foo:').should == [{type: :str, value: 'foo:'}]
+    parse(':foo').should == [{type: :str, value: ':foo'}]
+    parse(':foo:').should == [{type: :str, value: ':foo:'}]
+    parse('<=foo:').should == [{type: :str, value: '<=foo:'}]
+    parse('<=foo>=').should == [{type: :str, value: '<=foo>='}]
+    parse('<=foo=>=').should == [{type: :str, value: '<=foo=>='}]
+    parse('foo:-bar').should == [
+      { type: :nest,
+        nest_type: :colon,
+        nest_op: ':',
+        value: [{ type: :str, value: 'foo' },
+                { type: :str, value: '-bar' }]}]
+    parse('foo:-(bar x)').should == parse('foo:- (bar x)')
+    parse(':--34').should == parse(':- -34')
+  end
+
   it 'should handle chained comparisons' do
     parse('-5<x<-10').should == [
       {type: :nest,
@@ -328,39 +345,91 @@ it 'should handle negating' do
                {type: :number, value: '-34'}]}]
   end
 
+  it 'should handle chained commands and compares' do
+    abc = [
+      { type: :nest,
+        nest_type: :colon,
+        nest_op: ':',
+        value: [
+          { type: :str, value: 'a' },
+          { type: :str, value: 'b' }]},
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [
+          { type: :str, value: 'b' },
+          { type: :str, value: 'c' }]}]
+    parse('a:b<c').should == abc
+    parse('(a:b<c)').should == [{ type: :nest, nest_type: :paren, value: abc }]
+    parse('a<b<c:d<e').should == [
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [
+          { type: :str, value: 'a' },
+          { type: :str, value: 'b' }]},
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [
+          { type: :str, value: 'b' },
+          { type: :str, value: 'c' }]},
+      { type: :nest,
+        nest_type: :colon,
+        nest_op: ':',
+        value: [
+          { type: :str, value: 'c' },
+          { type: :str, value: 'd' }]},
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [
+          { type: :str, value: 'd' },
+          { type: :str, value: 'e' }]}]
+  end
+
   it 'should handle command syntax mid-command' do
-    # parse('foo:-bar').should == [
-    #   { type: :nest,
-    #     nest_type: :colon,
-    #     nest_op: ':',
-    #     value: [
-    #       { type: :str, value: 'foo' },
-    #       { type: :nest,
-    #         nest_type: :minus,
-    #         nest_op: '-',
-    #         value: [{ type: :str, value: 'bar' }]}]}]
-    # parse('foo:(bar)').should == [
-    #   { type: :nest,
-    #     nest_type: :colon,
-    #     nest_op: ':',
-    #     value: [
-    #       { type: :str, value: 'foo' },
-    #       { type: :nest,
-    #         nest_type: :minus,
-    #         nest_op: '-',
-    #         value: [{ type: :str, value: 'bar' }]}]}]
+    parse('foo:-bar').should == [
+      { type: :nest,
+        nest_type: :colon,
+        nest_op: ':',
+        value: [
+          { type: :str, value: 'foo' },
+          { type: :str, value: '-bar' }]}]
+    parse('foo:(bar)').should == [
+      { type: :str, value: 'foo:' },
+      { type: :nest,
+        nest_type: :paren,
+        value: [{ type: :str, value: 'bar' }]}]
   end
 
   it 'should handle wacky combinations' do
-    parse(':').should == []
+    parse(':').should == [{type: :str, value: ':'}]
     parse('|').should == [{type: :nest, nest_type: :pipe, nest_op: '|', value: []}]
     parse('(-)').should == [
-      {type: :nest,
-       nest_type: :paren,
-       value: [{type: :nest, nest_type: :minus, nest_op: '-', value: []}]}]
+      { type: :nest,
+        nest_type: :paren,
+        value: [{type: :nest, nest_type: :minus, nest_op: '-', value: []}]}]
     parse('(|)').should == [
-      {type: :nest,
-       nest_type: :paren,
-       value: [{type: :nest, nest_type: :pipe, nest_op: '|', value: []}]}]
+      { type: :nest,
+        nest_type: :paren,
+        value: [{type: :nest, nest_type: :pipe, nest_op: '|', value: []}]}]
+    parse('foo -').should == [
+      { type: :str, value: 'foo' },
+      { type: :str, value: '-' }]
+    parse('<|a').should == [
+      { type: :nest,
+        nest_type: :pipe,
+        nest_op: '|',
+        value: [
+          { type: :str, value: '<' },
+          { type: :str, value: 'a' }]}]
+    parse("'(':a)").should == [
+      { type: :nest,
+        nest_type: :colon,
+        nest_op: ':',
+        value: [
+          { type: :quoted_str, value: '(' },
+          { type: :str, value: 'a' }]}]
   end
 end

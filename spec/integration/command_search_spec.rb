@@ -58,8 +58,8 @@ describe CommandSearch do
     CommandSearch.search($birds, query, options).count.should == 2
     CommandSearch.search(Bird, 'name:name4', options).count.should == 1
     CommandSearch.search($birds, 'name:name4', options).count.should == 1
-    # CommandSearch.search(Bird, 'name:-name4', options).count.should == 1
-    # CommandSearch.search($birds, 'name:-name4', options).count.should == 1
+    CommandSearch.search(Bird, 'name:-name4', options).count.should == 0
+    CommandSearch.search($birds, 'name:-name4', options).count.should == 0
     CommandSearch.search(Bird, 'badKey:foo', options).count.should == 0
     CommandSearch.search($birds, 'badKey:foo', options).count.should == 0
   end
@@ -109,17 +109,17 @@ describe CommandSearch do
   it 'should be able to handle unbalanced compares' do
     options = { command_fields: { feathers: Numeric } }
     CommandSearch.search($birds, 'feathers>', options).count.should == 0
-    CommandSearch.search($birds, 'feathers>>', options).count.should == 0
-    CommandSearch.search($birds, '=<feathers>>', options).count.should == 0
     CommandSearch.search($birds, '>4', options).count.should == 0
     CommandSearch.search($birds, '4<', options).count.should == 0
     CommandSearch.search($birds, '4>=', options).count.should == 0
     CommandSearch.search(Bird, 'feathers>', options).count.should == 0
-    CommandSearch.search(Bird, 'feathers>>', options).count.should == 0
-    CommandSearch.search(Bird, '=<feathers>>', options).count.should == 0
     CommandSearch.search(Bird, '>4', options).count.should == 0
     CommandSearch.search(Bird, '4<', options).count.should == 0
     CommandSearch.search(Bird, '4>=', options).count.should == 0
+    CommandSearch.search($birds, 'feathers>>', options).count.should == 0
+    CommandSearch.search($birds, '=<feathers>>', options).count.should == 0
+    CommandSearch.search(Bird, 'feathers>>', options).count.should == 0
+    CommandSearch.search(Bird, '=<feathers>>', options).count.should == 0
   end
 
   it 'should be able to handle a field declared as Numeric or Interger' do
