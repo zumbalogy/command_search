@@ -61,7 +61,6 @@ module CommandSearch
     end
 
     def self.clean_ununusable!(input)
-      # todo: merge the two loops
       i = 0
       while i < input.length
         next i += 1 unless input[i][:type] == :minus
@@ -89,8 +88,7 @@ module CommandSearch
       input.reject! { |x| x[:type] == :paren && x[:value].is_a?(String) }
     end
 
-    def self.parse(input)
-      # todo: rename this parse!
+    def self.parse!(input)
       clean_ununusable!(input)
       unchain!([:colon, :compare], input)
       group_parens!(input)

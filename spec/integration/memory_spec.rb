@@ -422,7 +422,7 @@ describe CommandSearch::Memory do
     end
     check.should == true
   end
-  #
+
   # it 'should handle permutations' do
   #   check = true
   #   strs = ['a', 'b', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
