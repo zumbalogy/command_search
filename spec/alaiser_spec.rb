@@ -8,7 +8,10 @@ $aliases = {
   'A+' => 'grade>=97',
   'user:me' => -> (match) { "user:#{$current_user_id}" },
   /coo+l/ => 'ice cold',
-  /minutes:\d+/ => -> (match) { "seconds:#{match.split(':').last.to_i * 60}" }
+  /minutes:\d+/ => -> (match) { "seconds:#{match.split(':').last.to_i * 60}" },
+  [] => 'bad_val',
+  [2] => 'bad_val2',
+  'bad_key' => []
 }
 
 def a(input, input_aliases = $aliases)
@@ -35,6 +38,19 @@ describe CommandSearch::Aliaser do
     a('a reD house').should == 'a blue house'
     a('a rEd house').should == 'a blue house'
     a('aRedHouse').should == 'aRedHouse'
+  end
+
+  it 'should handle quotes' do
+    a('a very red house').should == 'a very blue house'
+    a('a "very red house').should == 'a "very blue house'
+    a('a very red "house').should == 'a very blue "house'
+    a('a "very red" house').should == 'a "very red" house'
+    a("a 'very red' house").should == "a 'very red' house"
+    a("a 'very' red house").should == "a 'very' blue house"
+    a('a "very" red house').should == 'a "very" blue house'
+    a("red's red house").should == "blue's blue house"
+    a("red's RED house").should == "blue's blue house"
+    a("a \"very\" red house's roof").should == "a \"very\" blue house's roof"
   end
 
   it 'should handle aliases with command syntax' do
@@ -77,6 +93,7 @@ describe CommandSearch::Aliaser do
 
   it 'should handle multiple matches sequentially' do
     a('foo', { 'foo' => 'bar', 'bar' => 'baz' }).should == 'baz'
+    a('foo', { 'foo' => 'bar', /fo./ => 'baz' }).should == 'bar'
     a('me', { 'me' => 'current_user', 'user' => 'non_admin' }).should == 'current_user'
     a('you', { 'me' => 'self', 'you' => 'me' }).should == 'me'
     a('cool', { /oo/ => 'ooooo' }).should == 'coooool'
@@ -85,10 +102,10 @@ describe CommandSearch::Aliaser do
 
   it 'should handle function aliases with closures' do
     variable = 0
-    a('hit', { 'hit' => proc {|_| variable = 100; 101 }}).should == '101'
+    a('hit', { 'hit' => proc { |_| variable = 100; 101 }}).should == '101'
     variable.should == 100
     variable2 = ''
-    a('abc', { /./ => proc {|x| variable2 += x; x }}).should == 'abc'
+    a('abc', { /./ => proc { |x| variable2 += x; x }}).should == 'abc'
     variable2.should == 'cba'
   end
 
@@ -97,5 +114,11 @@ describe CommandSearch::Aliaser do
     a('cool cooool cooooool hot cool').should == 'ice cold ice cold ice cold hot ice cold'
     a('hello hello hello', { 'hello hello' => 'bye hello' }).should == 'bye hello hello'
     a('hello hello hello hello', { 'hello hello' => 'bye hello' }).should == 'bye hello bye hello'
+  end
+
+  it 'should ignore invalid aliases' do
+    a('[]').should == '[]'
+    a('[2]').should == '[2]'
+    a('bad_key').should == 'bad_key'
   end
 end
