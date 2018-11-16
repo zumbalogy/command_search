@@ -302,6 +302,23 @@ it 'should handle negating' do
                 { type: :str, value: '-bar' }]}]
     parse('foo:-(bar x)').should == parse('foo:- (bar x)')
     parse(':--34').should == parse(':- -34')
+    parse('a<<<b').should == [
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [{ type: :str, value: 'a<<' },
+                { type: :str, value: 'b' }]}]
+    parse('a<-<b').should == [
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [{ type: :str, value: 'a' },
+                { type: :str, value: '-' }]},
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [{ type: :str, value: '-' },
+                { type: :str, value: 'b' }]}]
   end
 
   it 'should handle chained comparisons' do

@@ -33,21 +33,17 @@ module CommandSearch
           value: val
         }
       end
-      input.map! do |x|
-        next x unless x[:type] == :nest
-        cluster!(type, x[:value], cluster_type)
-        x
+      input.each do |x|
+        cluster!(type, x[:value], cluster_type) if x[:type] == :nest
       end
     end
 
     def self.unchain!(types, input)
       i = 0
       while i < input.length - 2
-        front = input[i][:type]
-        mid = input[i + 1][:type]
-        back = input[i + 2][:type]
-        # +    if ((types.include?(front) && (!types.include?(nil))) && types.include?(back))
-        if types.include?(front) && !types.include?(mid) && types.include?(back)
+        left = input[i][:type]
+        right = input[i + 2][:type]
+        if types.include?(left) && types.include?(right)
           input.insert(i + 1, input[i + 1])
         end
         i += 1
@@ -65,6 +61,7 @@ module CommandSearch
     end
 
     def self.clean_ununusable!(input)
+      # todo: merge the two loops
       i = 0
       while i < input.length
         next i += 1 unless input[i][:type] == :minus
@@ -93,17 +90,16 @@ module CommandSearch
     end
 
     def self.parse(input)
-      out = input
-      clean_ununusable!(out)
-      unchain!([:colon, :compare], out)
-      # make this with a bang
-      group_parens!(out)
-      cluster!(:colon, out)
-      cluster!(:compare, out)
-      cluster!(:minus, out, :prefix)
-      cluster!(:pipe, out)
-      clean_ununused!(out)
-      out
+      # todo: rename this parse!
+      clean_ununusable!(input)
+      unchain!([:colon, :compare], input)
+      group_parens!(input)
+      cluster!(:colon, input)
+      cluster!(:compare, input)
+      cluster!(:minus, input, :prefix)
+      cluster!(:pipe, input)
+      clean_ununused!(input)
+      input
     end
   end
 end

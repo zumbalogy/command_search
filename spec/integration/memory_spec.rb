@@ -415,12 +415,14 @@ describe CommandSearch::Memory do
       begin
         CommandSearch.search([{}], str, { fields: [:foo] })
       rescue
-        puts str
+        puts str.inspect
         check = false
+        break
       end
     end
+    check.should == true
   end
-
+  #
   # it 'should handle permutations' do
   #   check = true
   #   strs = ['a', 'b', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
