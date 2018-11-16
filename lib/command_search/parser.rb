@@ -1,9 +1,7 @@
 module CommandSearch
   module Parser
-    module_function
 
-    def parens_rindex(input)
-      val_list = input.map { |x| x[:value] }
+    def self.parens_rindex(input)
       open_i = input.rindex { |x| x[:value] == '(' && x[:type] == :paren}
       return unless open_i
       close_offset = input.drop(open_i).index { |x| x[:value] == ')' && x[:type] == :paren}
@@ -11,47 +9,44 @@ module CommandSearch
       [open_i, close_offset + open_i]
     end
 
-    def group_parens(input)
-      out = input
-      while parens_rindex(out)
-        (a, b) = parens_rindex(out)
-        val = out[(a + 1)..(b - 1)]
-        out[a..b] = { type: :nest, nest_type: :paren, value: val }
+    def self.group_parens!(input)
+      while parens_rindex(input)
+        (a, b) = parens_rindex(input)
+        val = input[(a + 1)..(b - 1)]
+        input[a..b] = { type: :nest, nest_type: :paren, value: val }
       end
-      out
     end
 
-    def cluster!(type, input, cluster_type = :binary)
+    def self.cluster!(type, input, cluster_type = :binary)
       binary = (cluster_type == :binary)
-      out = input
-      out = out[:value] while out.is_a?(Hash)
-      out.compact!
+      input.compact!
       # rindex (vs index) important for nested prefixes
-      while (i = out.rindex { |x| x[:type] == type })
-        val = [out[i + 1]]
-        val.unshift(out[i - 1]) if binary && i > 0
+      while (i = input.rindex { |x| x[:type] == type })
+        val = [input[i + 1]]
+        val.unshift(input[i - 1]) if binary && i > 0
         front_offset = 0
         front_offset = 1 if binary && i > 0
-        out[(i - front_offset)..(i + 1)] = {
+        input[(i - front_offset)..(i + 1)] = {
           type: :nest,
           nest_type: type,
-          nest_op: out[i][:value],
+          nest_op: input[i][:value],
           value: val
         }
       end
-      out.map! do |x|
+      input.map! do |x|
         next x unless x[:type] == :nest
-        x[:value] = cluster!(type, x[:value], cluster_type)
+        cluster!(type, x[:value], cluster_type)
         x
       end
     end
 
-    def unchain!(types, input)
+    def self.unchain!(types, input)
       i = 0
       while i < input.length - 2
         front = input[i][:type]
         mid = input[i + 1][:type]
         back = input[i + 2][:type]
+        # +    if ((types.include?(front) && (!types.include?(nil))) && types.include?(back))
         if types.include?(front) && !types.include?(mid) && types.include?(back)
           input.insert(i + 1, input[i + 1])
         end
@@ -59,8 +54,7 @@ module CommandSearch
       end
     end
 
-    def merge_strs(input, (x, y))
-      return input if input.empty?
+    def self.merge_strs(input, (x, y))
       if input[y] && input[y][:type] == :str
         values = input.map { |x| x[:value] }
         { type: :str, value: values.join() }
@@ -70,9 +64,7 @@ module CommandSearch
       end
     end
 
-    def clean_ununusable!(input)
-      return unless input.any?
-
+    def self.clean_ununusable!(input)
       i = 0
       while i < input.length
         next i += 1 unless input[i][:type] == :minus
@@ -96,26 +88,16 @@ module CommandSearch
       input[-1][:type] = :str if input[-1] && input[-1][:type] == :minus
     end
 
-    def clean_ununused!(input)
-      input.map! do |x|
-        next if x[:type] == :paren && x[:value].is_a?(String)
-        next if x[:nest_type] == :colon && x[:value].empty?
-        if x[:nest_type] == :compare && x[:value].length < 2
-          x = clean_ununused!(x[:value]).first
-        end
-        next x unless x && x[:type] == :nest
-        x[:value] = clean_ununused!(x[:value])
-        x
-      end
-      input.compact!
-      input
+    def self.clean_ununused!(input)
+      input.reject! { |x| x[:type] == :paren && x[:value].is_a?(String) }
     end
 
-    def parse(input)
+    def self.parse(input)
       out = input
       clean_ununusable!(out)
       unchain!([:colon, :compare], out)
-      out = group_parens(out)
+      # make this with a bang
+      group_parens!(out)
       cluster!(:colon, out)
       cluster!(:compare, out)
       cluster!(:minus, out, :prefix)
