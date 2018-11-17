@@ -11,7 +11,7 @@ Benchmark.bmbm() do |bm|
 
   def dealias(input, command_fields)
     lexed = CommandSearch::Lexer.lex(input)
-    parsed = CommandSearch::Parser.parse(lexed)
+    parsed = CommandSearch::Parser.parse!(lexed)
     $bm.report("Decompose: #{input.inspect}") { $iterations.times {
       CommandSearch::CommandDealiaser.decompose_unaliasable(parsed, command_fields)
     } }

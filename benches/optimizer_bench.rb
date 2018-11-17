@@ -13,7 +13,7 @@ Benchmark.bmbm() do |bm|
   def optimize(input)
     title = "Optimize: #{input.inspect}"
     lexed = CommandSearch::Lexer.lex(input)
-    parsed = CommandSearch::Parser.parse(lexed)
+    parsed = CommandSearch::Parser.parse!(lexed)
     $bm.report(title) { $iterations.times { CommandSearch::Optimizer.optimize(parsed) } }
   end
 

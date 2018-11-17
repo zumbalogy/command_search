@@ -2,7 +2,7 @@ load(__dir__ + '/./spec_helper.rb')
 
 def parse(x)
   tokens = CommandSearch::Lexer.lex(x)
-  CommandSearch::Parser.parse(tokens)
+  CommandSearch::Parser.parse!(tokens)
 end
 
 def dealias(x, aliases)

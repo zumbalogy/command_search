@@ -201,7 +201,7 @@ CommandSearch::Lexer.lex('(price<=200 discount)|price<=99.99')
 ```
 The parser then takes that and turns it into a tree.
 ```ruby
-CommandSearch::Parser.parse(_)
+CommandSearch::Parser.parse!(_)
 [{ type: :nest,
    nest_type: :pipe,
    nest_op: '|',
