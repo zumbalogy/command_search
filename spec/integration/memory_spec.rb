@@ -408,6 +408,22 @@ describe CommandSearch::Memory do
     CommandSearch.search([{}], '""sdfdsfhellosdf|dsfsdf::>>><><', { fields: [:foo] })
   end
 
+  it 'should not throw errors in the presence of "naughty strings"' do
+    # https://github.com/minimaxir/big-list-of-naughty-strings
+    require('json')
+    file = File.read(__dir__ + '/blns.json')
+    list = JSON.parse(file)
+    check = true
+    list.each do |str|
+      begin
+        CommandSearch.search([{}], str, { fields: [:foo] })
+      rescue
+        check = false
+      end
+    end
+    check.should == true
+  end
+
   it 'should handle fuzzing' do
     check = true
     10000.times do |i|
