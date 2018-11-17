@@ -65,6 +65,11 @@ describe CommandSearch::Optimizer do
   it 'should denest parens' do
     opt('a').should == [{type: :str, value: 'a'}]
     opt('(a)').should == [{type: :str, value: 'a'}]
+    opt('a a').should == [{type: :str, value: 'a'}]
+    opt('a a a a a a').should == [{type: :str, value: 'a'}]
+    opt('(a a a a a a)').should == [{type: :str, value: 'a'}]
+    opt('(a a a a a "a")').should_not == [{type: :str, value: 'a'}]
+    opt('(a a)').should == [{type: :str, value: 'a'}]
     opt('(1 foo 2)').should == [
       {type: :number, value: '1'},
       {type: :str, value: 'foo'},
