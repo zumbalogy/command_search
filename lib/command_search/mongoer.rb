@@ -2,9 +2,8 @@ require('chronic')
 
 module CommandSearch
   module Mongoer
-    module_function
 
-    def build_search(ast_node, fields)
+    def self.build_search(ast_node, fields)
       str = ast_node[:value] || ''
       fields = [fields] unless fields.is_a?(Array)
       if ast_node[:type] == :quoted_str
@@ -30,17 +29,17 @@ module CommandSearch
       end
     end
 
-    def is_bool_str?(str)
-      return true if str[/^true$|^false$/i]
+    def self.is_bool_str?(str)
+      return true if str[/\Atrue\Z|\Afalse\Z/i]
       false
     end
 
-    def make_boolean(str)
-      return true if str[/^true$/i]
+    def self.make_boolean(str)
+      return true if str[/\Atrue\Z/i]
       false
     end
 
-    def build_command(ast_node, command_types)
+    def self.build_command(ast_node, command_types)
       (field_node, search_node) = ast_node[:value]
       key = field_node[:value]
       raw_type = command_types[key.to_sym]
@@ -57,7 +56,7 @@ module CommandSearch
         type = raw_type
       end
 
-      if defined?(Boolean) && type == Boolean
+      if type == Boolean
         bool = make_boolean(raw_val)
         bool = !bool if field_node[:negate]
         val = [
@@ -96,7 +95,7 @@ module CommandSearch
       elsif [Numeric, Integer].include?(type)
         if raw_val == raw_val.to_i.to_s
           val = raw_val.to_i
-        elsif raw_val.to_f != 0 || raw_val[/^[\.0]*0$/]
+        elsif raw_val.to_f != 0 || raw_val[/\A[\.0]*0\Z/]
           val = raw_val.to_f
         else
           val = raw_val
@@ -126,7 +125,7 @@ module CommandSearch
       end
     end
 
-    def build_compare(ast_node, command_types)
+    def self.build_compare(ast_node, command_types)
       flip_ops = {
         '<' => '>',
         '>' => '<',
@@ -201,7 +200,7 @@ module CommandSearch
       { key => { mongo_op => val } }
     end
 
-    def build_searches!(ast, fields, command_types)
+    def self.build_searches!(ast, fields, command_types)
       ast.map! do |x|
         type = x[:nest_type]
         if type == :colon
@@ -218,7 +217,7 @@ module CommandSearch
       ast.flatten!
     end
 
-    def build_tree!(ast)
+    def self.build_tree!(ast)
       mongo_types = { paren: '$and', pipe: '$or', minus: '$not' }
       ast.each do |x|
         next x unless x[:nest_type]
@@ -232,14 +231,14 @@ module CommandSearch
       end
     end
 
-    def collapse_ors!(ast)
+    def self.collapse_ors!(ast)
       ast.each do |x|
         next unless x['$or']
         x['$or'].map! { |kid| kid['$or'] || kid }.flatten!
       end
     end
 
-    def decompose_nots!(ast, not_depth = 0)
+    def self.decompose_nots!(ast, not_depth = 0)
       ast.flat_map do |x|
         if x[:nest_type] == :minus
           decompose_nots!(x[:value], not_depth + 1)
@@ -253,7 +252,7 @@ module CommandSearch
       end
     end
 
-    def build_query(ast, fields, command_types = {})
+    def self.build_query(ast, fields, command_types = {})
       out = ast
       out = decompose_nots!(out)
       build_searches!(out, fields, command_types)
