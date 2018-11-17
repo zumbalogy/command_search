@@ -22,9 +22,9 @@ module CommandSearch
     end
 
     def self.dealias(ast, aliases)
-      ast.flat_map do |x| # look into map!
+      ast.map! do |x| # look into map!
         next x unless x[:nest_type]
-        x[:value] = dealias(x[:value], aliases)
+        dealias(x[:value], aliases)
         next x unless [:colon, :compare].include?(x[:nest_type])
         x[:value] = dealias_values(x[:value], aliases)
         x
@@ -32,9 +32,9 @@ module CommandSearch
     end
 
     def self.decompose_unaliasable(ast, aliases)
-      ast.flat_map do |x| # look into map!
+      ast.map! do |x| # look into map!
         next x unless x[:nest_type]
-        x[:value] = decompose_unaliasable(x[:value], aliases)
+        decompose_unaliasable(x[:value], aliases)
         next x unless [:colon, :compare].include?(x[:nest_type])
         unnest_unaliased(x, aliases)
       end
