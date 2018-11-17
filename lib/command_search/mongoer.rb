@@ -5,7 +5,7 @@ module CommandSearch
     module_function
 
     def build_search(ast_node, fields)
-      str = ast_node[:value]
+      str = ast_node[:value] || ''
       fields = [fields] unless fields.is_a?(Array)
       if ast_node[:type] == :quoted_str
         regex = /\b#{Regexp.escape(str)}\b/
@@ -15,9 +15,7 @@ module CommandSearch
           regex = Regexp.new(head_border + Regexp.escape(str) + tail_border)
         end
       else
-        # TODO: This OR check is only needed due to mutable objects between subclasses of command_search,
-        # and is only needed for outside use or benchmarking.
-        regex = /#{Regexp.escape(str || '')}/i
+        regex = /#{Regexp.escape(str)}/i
       end
       if ast_node[:negate]
         forms = fields.map { |f| { f => { '$not' => regex } } }
@@ -43,7 +41,6 @@ module CommandSearch
     end
 
     def build_command(ast_node, command_types)
-      # aliasing will is done before ast gets to mongoer.rb
       (field_node, search_node) = ast_node[:value]
       key = field_node[:value]
       raw_type = command_types[key.to_sym]
@@ -61,7 +58,6 @@ module CommandSearch
       end
 
       if defined?(Boolean) && type == Boolean
-        # val = make_boolean(raw_val)
         bool = make_boolean(raw_val)
         bool = !bool if field_node[:negate]
         val = [
@@ -205,49 +201,50 @@ module CommandSearch
       { key => { mongo_op => val } }
     end
 
-    def build_searches(ast, fields, command_types)
-      ast.flat_map do |x|
+    def build_searches!(ast, fields, command_types)
+      ast.map! do |x|
         type = x[:nest_type]
         if type == :colon
           build_command(x, command_types)
         elsif type == :compare
           build_compare(x, command_types)
         elsif [:paren, :pipe, :minus].include?(type)
-          x[:value] = build_searches(x[:value], fields, command_types)
+          build_searches!(x[:value], fields, command_types)
           x
         else
           build_search(x, fields)
         end
       end
+      ast.flatten!
     end
 
-    def build_tree(ast)
-      ast.flat_map do |x|
+    def build_tree!(ast)
+      mongo_types = { paren: '$and', pipe: '$or', minus: '$not' }
+      ast.each do |x|
         next x unless x[:nest_type]
-        mongo_types = { paren: '$and', pipe: '$or', minus: '$not' }
+        build_tree!(x[:value])
         key = mongo_types[x[:nest_type]]
-        { key => build_tree(x[:value]) }
+        x[key] = x[:value]
+        x.delete(:nest_type)
+        x.delete(:nest_op)
+        x.delete(:value)
+        x.delete(:type)
       end
     end
 
-    def collapse_ors(ast)
-      ast.flat_map do |x|
-        ['$and', '$or', '$not'].map do |key|
-          next unless x[key]
-          x[key] = collapse_ors(x[key])
-        end
-        next x unless x['$or']
-        val = x['$or'].flat_map { |kid| kid['$or'] || kid }
-        { '$or' => val }
+    def collapse_ors!(ast)
+      ast.each do |x|
+        next unless x['$or']
+        x['$or'].map! { |kid| kid['$or'] || kid }.flatten!
       end
     end
 
-    def decompose_nots(ast, not_depth = 0)
+    def decompose_nots!(ast, not_depth = 0)
       ast.flat_map do |x|
         if x[:nest_type] == :minus
-          decompose_nots(x[:value], not_depth + 1)
+          decompose_nots!(x[:value], not_depth + 1)
         elsif x[:nest_type]
-          x[:value] = decompose_nots(x[:value], not_depth)
+          x[:value] = decompose_nots!(x[:value], not_depth)
           x
         else
           x[:negate] = not_depth.odd?
@@ -257,12 +254,11 @@ module CommandSearch
     end
 
     def build_query(ast, fields, command_types = {})
-      # Numbers are searched as strings unless part of a compare/command
       out = ast
-      out = decompose_nots(out)
-      out = build_searches(out, fields, command_types)
-      out = build_tree(out)
-      out = collapse_ors(out)
+      out = decompose_nots!(out)
+      build_searches!(out, fields, command_types)
+      build_tree!(out)
+      collapse_ors!(out)
       out = {} if out == []
       out = out.first if out.count == 1
       out = { '$and' => out } if out.count > 1
