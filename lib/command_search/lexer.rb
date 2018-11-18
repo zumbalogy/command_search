@@ -1,7 +1,8 @@
 module CommandSearch
   module Lexer
+    module_function
 
-    def self.lex(input)
+    def lex(input)
       out = []
       i = 0
       while i < input.length

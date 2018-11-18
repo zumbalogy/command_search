@@ -1,7 +1,8 @@
 module CommandSearch
   module Optimizer
+    module_function
 
-    def self.ands_and_ors!(ast)
+    def ands_and_ors!(ast)
       ast.map! do |node|
         next node unless node[:nest_type] == :paren || node[:nest_type] == :pipe
         ands_and_ors!(node[:value])
@@ -15,7 +16,7 @@ module CommandSearch
       end
     end
 
-    def self.negate_negate(ast)
+    def negate_negate(ast)
       ast.flat_map do |node|
         next node unless node[:nest_type]
         node[:value] = negate_negate(node[:value])
@@ -27,7 +28,7 @@ module CommandSearch
       end
     end
 
-    def self.denest_parens(ast, parent_type = :root)
+    def denest_parens(ast, parent_type = :root)
       ast.flat_map do |node|
         next node unless node[:nest_type]
         node[:value] = denest_parens(node[:value], node[:nest_type])
@@ -39,14 +40,14 @@ module CommandSearch
       end
     end
 
-    def self.remove_empty_strings!(ast)
+    def remove_empty_strings!(ast)
       ast.reject! do |node|
         remove_empty_strings!(node[:value]) if node[:nest_type]
         node[:type] == :quoted_str && node[:value] == ''
       end
     end
 
-    def self.optimize(ast)
+    def optimize(ast)
       out = ast
       out = denest_parens(out)
       remove_empty_strings!(out)

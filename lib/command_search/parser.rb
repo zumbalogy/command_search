@@ -1,7 +1,8 @@
 module CommandSearch
   module Parser
+    module_function
 
-    def self.parens_rindex(input)
+    def parens_rindex(input)
       open_i = input.rindex { |x| x[:value] == '(' && x[:type] == :paren}
       return unless open_i
       close_offset = input.drop(open_i).index { |x| x[:value] == ')' && x[:type] == :paren}
@@ -9,7 +10,7 @@ module CommandSearch
       [open_i, close_offset + open_i]
     end
 
-    def self.group_parens!(input)
+    def group_parens!(input)
       while parens_rindex(input)
         (a, b) = parens_rindex(input)
         val = input[(a + 1)..(b - 1)]
@@ -17,7 +18,7 @@ module CommandSearch
       end
     end
 
-    def self.cluster!(type, input, cluster_type = :binary)
+    def cluster!(type, input, cluster_type = :binary)
       binary = (cluster_type == :binary)
       input.compact!
       # rindex (vs index) important for nested prefixes
@@ -38,7 +39,7 @@ module CommandSearch
       end
     end
 
-    def self.unchain!(types, input)
+    def unchain!(types, input)
       i = 0
       while i < input.length - 2
         left = input[i][:type]
@@ -50,7 +51,7 @@ module CommandSearch
       end
     end
 
-    def self.merge_strs(input, (x, y))
+    def merge_strs(input, (x, y))
       if input[y] && input[y][:type] == :str
         values = input.map { |x| x[:value] }
         { type: :str, value: values.join() }
@@ -60,7 +61,7 @@ module CommandSearch
       end
     end
 
-    def self.clean_ununusable!(input)
+    def clean_ununusable!(input)
       i = 0
       while i < input.length
         next i += 1 unless input[i][:type] == :minus
@@ -84,11 +85,11 @@ module CommandSearch
       input[-1][:type] = :str if input[-1] && input[-1][:type] == :minus
     end
 
-    def self.clean_ununused!(input)
+    def clean_ununused!(input)
       input.reject! { |x| x[:type] == :paren && x[:value].is_a?(String) }
     end
 
-    def self.parse!(input)
+    def parse!(input)
       clean_ununusable!(input)
       unchain!([:colon, :compare], input)
       group_parens!(input)

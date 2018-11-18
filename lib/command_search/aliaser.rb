@@ -1,19 +1,20 @@
 module CommandSearch
   module Aliaser
+    module_function
 
-    def self.build_regex(str)
+    def build_regex(str)
       head_border = '(?<=^|[^:\w])'
       tail_border = '(?=$|\W)'
       Regexp.new(head_border + Regexp.escape(str) + tail_border, 'i')
     end
 
-    def self.quotes?(head, tail)
+    def quotes?(head, tail)
       return true if head.count("'").odd? && tail.count("'").odd?
       return true if head.count('"').odd? && tail.count('"').odd?
       false
     end
 
-    def self.alias_item(query, alias_key, alias_value)
+    def alias_item(query, alias_key, alias_value)
       if alias_key.is_a?(Regexp)
         pattern = alias_key
       elsif alias_key.is_a?(String)
@@ -40,7 +41,7 @@ module CommandSearch
       head + replacement + tail
     end
 
-    def self.alias(query, aliases)
+    def alias(query, aliases)
       aliases.reduce(query) { |q, (k, v)| alias_item(q, k, v) }
     end
   end

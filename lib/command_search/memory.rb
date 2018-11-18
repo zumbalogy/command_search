@@ -2,8 +2,9 @@ require('chronic')
 
 module CommandSearch
   module Memory
+    module_function
 
-    def self.command_check(item, val, command_types)
+    def command_check(item, val, command_types)
       cmd = val[0][:value].to_sym
       cmd_search = val[1][:value]
       raw_cmd_type = [command_types[cmd]].flatten
@@ -36,7 +37,7 @@ module CommandSearch
       end
     end
 
-    def self.compare_check(item, node, command_types)
+    def compare_check(item, node, command_types)
       children = node[:value]
       cmd = children.find { |c| command_types[c[:value].to_sym] }
       raw_cmd_type = [command_types[cmd[:value].to_sym]].flatten
@@ -71,7 +72,7 @@ module CommandSearch
       fn.call(*args.map(&:to_f))
     end
 
-    def self.check(item, ast, fields, command_types)
+    def check(item, ast, fields, command_types)
       field_vals = fields.map { |x| item[x] || item[x.to_s] || item[x.to_sym] }.compact
       ast_array = ast.is_a?(Array) ? ast : [ast]
       ast_array.all? do |node|
@@ -103,7 +104,7 @@ module CommandSearch
       end
     end
 
-    def self.build_query(ast, fields, command_types = {})
+    def build_query(ast, fields, command_types = {})
       proc { |x| check(x, ast, fields, command_types) }
     end
   end

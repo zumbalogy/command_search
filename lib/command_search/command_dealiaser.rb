@@ -1,18 +1,19 @@
 module CommandSearch
   module CommandDealiaser
+    module_function
 
-    def self.dealias_key(key, aliases)
+    def dealias_key(key, aliases)
       key = aliases[key.to_sym] while aliases[key.to_sym].is_a?(Symbol)
       key.to_s
     end
 
-    def self.dealias_values((key_node, search_node), aliases)
+    def dealias_values((key_node, search_node), aliases)
       new_key = dealias_key(key_node[:value], aliases)
       key_node[:value] = new_key
       [key_node, search_node]
     end
 
-    def self.unnest_unaliased(node, aliases)
+    def unnest_unaliased(node, aliases)
       type = node[:nest_type]
       values = node[:value].map { |x| x[:value].to_sym }
       return node if type == :colon && aliases[values.first]
@@ -21,7 +22,7 @@ module CommandSearch
       { type: :str, value: str_values }
     end
 
-    def self.dealias(ast, aliases)
+    def dealias(ast, aliases)
       ast.map! do |x|
         next x unless x[:nest_type]
         dealias(x[:value], aliases)
@@ -31,7 +32,7 @@ module CommandSearch
       end
     end
 
-    def self.decompose_unaliasable(ast, aliases)
+    def decompose_unaliasable(ast, aliases)
       ast.map! do |x|
         next x unless x[:nest_type]
         decompose_unaliasable(x[:value], aliases)
