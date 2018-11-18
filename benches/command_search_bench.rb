@@ -61,6 +61,7 @@ Benchmark.bmbm() do |bm|
   mem('name', { fields: [:title, :description, :tags] })
   mem('name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
   mem('title:name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
+
   mem('name', {
     fields: [:title, :description, :tags],
     command_fields: { has_child_id: Boolean, title: String, name: :title }
@@ -84,6 +85,7 @@ Benchmark.bmbm() do |bm|
   mongo('name', { fields: [:title, :description, :tags] })
   mongo('name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
   mongo('title:name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
+
   mongo('name', {
     fields: [:title, :description, :tags],
     command_fields: { has_child_id: Boolean, title: String, name: :title }
