@@ -7,9 +7,9 @@ $hats = [
   { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
   { description: "desk new \n line" },
   { tags: "multi tag, 'quoted tag'" },
-  { title: 'same_name', feathers: 2, cost: 0, fav_date: "2.months.ago" },
-  { title: 'same_name', feathers: 5, cost: 4, fav_date: "1.year.ago" },
-  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
+  { title: 'same_name', feathers: 2, cost: 0, fav_date: '2.months.ago' },
+  { title: 'same_name', feathers: 5, cost: 4, fav_date: '1.year.ago' },
+  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' }
 ]
 
 def search(query, list = $hats)
@@ -324,6 +324,8 @@ describe CommandSearch::Memory do
     search('fav_date<3_months_ago').count.should == 1
     search('fav_date<2_years_ago').count.should == 0
     search('fav_date>1/1/1900').count.should == 3
+    search('fav_date>=1/1/1900').count.should == 3
+    search('2019>fav_date>=1/1/1900').count.should == 3
   end
 
   it 'should handle negative comparisons and ORs put together. commands too' do

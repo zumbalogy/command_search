@@ -2,15 +2,13 @@ require('chronic')
 
 module CommandSearch
   module Memory
-    module_function
 
-    def command_check(item, val, command_types)
+    def self.command_check(item, val, command_types)
       cmd = val[0][:value].to_sym
       cmd_search = val[1][:value]
       raw_cmd_type = [command_types[cmd]].flatten
       allow_existence_boolean = raw_cmd_type.include?(:allow_existence_boolean)
       cmd_type = (raw_cmd_type - [:allow_existence_boolean]).first
-      return unless cmd_type
       if cmd_type == Boolean
         if cmd_search[/true/i]
           item[cmd]
@@ -25,8 +23,6 @@ module CommandSearch
         end
       elsif !item.key?(cmd)
         return false
-      elsif val[1][:type] == :str
-        item[cmd][/#{Regexp.escape(cmd_search)}/i]
       elsif val[1][:type] == :quoted_str
         regex = /\b#{Regexp.escape(cmd_search)}\b/
         if cmd_search[/(^\W)|(\W$)/]
@@ -40,7 +36,7 @@ module CommandSearch
       end
     end
 
-    def compare_check(item, node, command_types)
+    def self.compare_check(item, node, command_types)
       children = node[:value]
       cmd = children.find { |c| command_types[c[:value].to_sym] }
       raw_cmd_type = [command_types[cmd[:value].to_sym]].flatten
@@ -75,7 +71,7 @@ module CommandSearch
       fn.call(*args.map(&:to_f))
     end
 
-    def check(item, ast, fields, command_types)
+    def self.check(item, ast, fields, command_types)
       field_vals = fields.map { |x| item[x] || item[x.to_s] || item[x.to_sym] }.compact
       ast_array = ast.is_a?(Array) ? ast : [ast]
       ast_array.all? do |node|
@@ -107,7 +103,7 @@ module CommandSearch
       end
     end
 
-    def build_query(ast, fields, command_types = {})
+    def self.build_query(ast, fields, command_types = {})
       proc { |x| check(x, ast, fields, command_types) }
     end
   end
