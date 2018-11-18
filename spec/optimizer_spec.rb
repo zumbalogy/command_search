@@ -319,10 +319,10 @@ describe CommandSearch::Optimizer do
   end
 
   # it 'should handle fancier logic' do
+  #   opt('-a a').should == []
   #   opt('a b a|b').should == [{type: :str, value: 'a'},
   #                             {type: :str, value: 'b'}]
   #   opt('(a b c) | (a b)').should == [{type: :str, value: 'a'},
   #                                     {type: :str, value: 'b'}]
   # end
-
 end
