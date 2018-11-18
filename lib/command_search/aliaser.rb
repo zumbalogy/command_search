@@ -8,32 +8,34 @@ module CommandSearch
       Regexp.new(head_border + Regexp.escape(str) + tail_border, 'i')
     end
 
-    def opens_quote?(str)
-      while str[/".*"/] || str[/'.*'/]
-        mark = str[/["']/]
-        str.sub(/#{mark}.*#{mark}/, '')
-      end
-      str[/"/] || str[/\B'/]
+    def quotes?(head, tail)
+      return true if head.count("'").odd? && tail.count("'").odd?
+      return true if head.count('"').odd? && tail.count('"').odd?
+      false
     end
 
     def alias_item(query, alias_key, alias_value)
       if alias_key.is_a?(Regexp)
         pattern = alias_key
+      elsif alias_key.is_a?(String)
+        pattern = build_regex(alias_key)
       else
-        pattern = build_regex(alias_key.to_s)
+        return query
       end
       current_match = query[pattern]
       return query unless current_match
       offset = Regexp.last_match.offset(0)
       head = query[0...offset.first]
       tail = alias_item(query[offset.last..-1], alias_key, alias_value)
-      if opens_quote?(head)
+      if quotes?(head, tail)
         replacement = current_match
       else
         if alias_value.is_a?(String)
           replacement = alias_value
         elsif alias_value.is_a?(Proc)
           replacement = alias_value.call(current_match).to_s
+        else
+          return query
         end
       end
       head + replacement + tail

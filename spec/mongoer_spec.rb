@@ -2,7 +2,7 @@ load(__dir__ + '/./spec_helper.rb')
 
 def q(x, fields, command_types = {})
   tokens = CommandSearch::Lexer.lex(x)
-  parsed = CommandSearch::Parser.parse(tokens)
+  parsed = CommandSearch::Parser.parse!(tokens)
   dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_types)
   cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_types)
   opted = CommandSearch::Optimizer.optimize(cleaned)

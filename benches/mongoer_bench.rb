@@ -18,7 +18,7 @@ def mongo(input, fields, command_fields)
       $lexed = CommandSearch::Lexer.lex(input)
     }}
     p = bm.report('P') { $iterations.times {
-      $parsed = CommandSearch::Parser.parse($lexed)
+      $parsed = CommandSearch::Parser.parse!($lexed)
     }}
     d = bm.report('D') { $iterations.times {
       $dealiased = CommandSearch::CommandDealiaser.dealias($parsed, command_fields)

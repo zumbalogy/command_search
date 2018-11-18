@@ -93,7 +93,7 @@ CommandSearch will use the following keys, all of which are optional:
 
   * aliases: A hash that maps strings or regex to strings or procs.
   CommandSearch will iterate though the hash and substitute parts of the query
-  that match the key with the value or the returned value of the proc. The proc
+  that match the key with the value or the returned value of the proc. The procs
   will be called once per match with the value of the match and are free to have
   closures and side effects.
   This happens before any other parsing or searching steps.
@@ -201,7 +201,7 @@ CommandSearch::Lexer.lex('(price<=200 discount)|price<=99.99')
 ```
 The parser then takes that and turns it into a tree.
 ```ruby
-CommandSearch::Parser.parse(_)
+CommandSearch::Parser.parse!(_)
 [{ type: :nest,
    nest_type: :pipe,
    nest_op: '|',

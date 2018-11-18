@@ -8,29 +8,29 @@ module CommandSearch
       while i < input.length
         match = nil
         case input[i..-1]
-        when /^\s+/
+        when /\A\s+/
           type = :space
-        when /^"(.*?)"/
+        when /\A"(.*?)"/
           match = Regexp.last_match[1]
           type = :quoted_str
-        when /^'(.*?)'/
+        when /\A'(.*?)'/
           match = Regexp.last_match[1]
           type = :quoted_str
-        when /^\-?\d+(\.\d+)?(?=$|[\s"':|<>()])/
+        when /\A\-?\d+(\.\d+)?(?=$|[\s"':|<>()])/
           type = :number
-        when /^-/
+        when /\A-/
           type = :minus
-        when /^[^\s:"|<>()]+/
+        when /\A[^\s:"|<>()]+/
           type = :str
-        when /^\|+/
+        when /\A\|+/
           type = :pipe
-        when /^[()]/
+        when /\A[()]/
           type = :paren
-        when /^:/
+        when /\A:/
           type = :colon
-        when /^[<>]=?/
+        when /\A[<>]=?/
           type = :compare
-        when /^./
+        when /\A./
           type = :str
         end
         match = match || Regexp.last_match[0]

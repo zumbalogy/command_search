@@ -10,7 +10,6 @@ module CommandSearch
       raw_cmd_type = [command_types[cmd]].flatten
       allow_existence_boolean = raw_cmd_type.include?(:allow_existence_boolean)
       cmd_type = (raw_cmd_type - [:allow_existence_boolean]).first
-      return unless cmd_type
       if cmd_type == Boolean
         if cmd_search[/true/i]
           item[cmd]
@@ -25,8 +24,6 @@ module CommandSearch
         end
       elsif !item.key?(cmd)
         return false
-      elsif val[1][:type] == :str
-        item[cmd][/#{Regexp.escape(cmd_search)}/i]
       elsif val[1][:type] == :quoted_str
         regex = /\b#{Regexp.escape(cmd_search)}\b/
         if cmd_search[/(^\W)|(\W$)/]

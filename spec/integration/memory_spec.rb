@@ -7,9 +7,9 @@ $hats = [
   { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
   { description: "desk new \n line" },
   { tags: "multi tag, 'quoted tag'" },
-  { title: 'same_name', feathers: 2, cost: 0, fav_date: "2.months.ago" },
-  { title: 'same_name', feathers: 5, cost: 4, fav_date: "1.year.ago" },
-  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
+  { title: 'same_name', feathers: 2, cost: 0, fav_date: '2.months.ago' },
+  { title: 'same_name', feathers: 5, cost: 4, fav_date: '1.year.ago' },
+  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' }
 ]
 
 def search(query, list = $hats)
@@ -324,6 +324,8 @@ describe CommandSearch::Memory do
     search('fav_date<3_months_ago').count.should == 1
     search('fav_date<2_years_ago').count.should == 0
     search('fav_date>1/1/1900').count.should == 3
+    search('fav_date>=1/1/1900').count.should == 3
+    search('2019>fav_date>=1/1/1900').count.should == 3
   end
 
   it 'should handle negative comparisons and ORs put together. commands too' do
@@ -408,6 +410,22 @@ describe CommandSearch::Memory do
     CommandSearch.search([{}], '""sdfdsfhellosdf|dsfsdf::>>><><', { fields: [:foo] })
   end
 
+  it 'should not throw errors in the presence of "naughty strings"' do
+    # https://github.com/minimaxir/big-list-of-naughty-strings
+    require('json')
+    file = File.read(__dir__ + '/blns.json')
+    list = JSON.parse(file)
+    check = true
+    list.each do |str|
+      begin
+        CommandSearch.search([{}], str, { fields: [:foo] })
+      rescue
+        check = false
+      end
+    end
+    check.should == true
+  end
+
   it 'should handle fuzzing' do
     check = true
     10000.times do |i|
@@ -415,10 +433,12 @@ describe CommandSearch::Memory do
       begin
         CommandSearch.search([{}], str, { fields: [:foo] })
       rescue
-        puts str
+        puts str.inspect
         check = false
+        break
       end
     end
+    check.should == true
   end
 
   # it 'should handle permutations' do

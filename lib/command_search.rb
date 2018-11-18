@@ -18,7 +18,7 @@ module CommandSearch
 
     aliased_query = Aliaser.alias(query, aliases)
     tokens = Lexer.lex(aliased_query)
-    parsed = Parser.parse(tokens)
+    parsed = Parser.parse!(tokens)
     dealiased = CommandDealiaser.dealias(parsed, command_fields)
     cleaned = CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
     opted = Optimizer.optimize(cleaned)

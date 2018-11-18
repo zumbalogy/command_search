@@ -25,7 +25,7 @@ load(__dir__ + '/./spec_helper.rb')
 
 def parse(x)
   tokens = CommandSearch::Lexer.lex(x)
-  CommandSearch::Parser.parse(tokens)
+  CommandSearch::Parser.parse!(tokens)
 end
 
 def opt(x)
@@ -65,6 +65,12 @@ describe CommandSearch::Optimizer do
   it 'should denest parens' do
     opt('a').should == [{type: :str, value: 'a'}]
     opt('(a)').should == [{type: :str, value: 'a'}]
+    opt('a a').should == [{type: :str, value: 'a'}]
+    opt('a a a a a a').should == [{type: :str, value: 'a'}]
+    opt('(a a a a a a)').should == [{type: :str, value: 'a'}]
+    opt('(a a (a (a)) () (a a))').should == [{type: :str, value: 'a'}]
+    opt('(a a a a a "a")').should_not == [{type: :str, value: 'a'}]
+    opt('(a a)').should == [{type: :str, value: 'a'}]
     opt('(1 foo 2)').should == [
       {type: :number, value: '1'},
       {type: :str, value: 'foo'},
@@ -159,7 +165,7 @@ describe CommandSearch::Optimizer do
          {type: :str, value: 'e'},
          {type: :str, value: 'f'},
          {type: :str, value: 'g'}]}]
-    opt('(a|b|((c|d)|(e|f|g)|h|i)|j)|k|l').should == [
+    opt('(a|b|((c|d)|(e|f|g)|h|i)|j)|k|l|a').should == [
       {type: :nest,
        nest_type: :pipe,
        nest_op: '|',
@@ -213,6 +219,10 @@ describe CommandSearch::Optimizer do
     opt('   ').should == []
     opt("   \n ").should == []
     opt('()').should == []
+    opt('-()').should == []
+    opt('-(-)').should == []
+    opt('-""').should == []
+    opt('-|').should == []
     opt(' ( ( ()) -(()  )) ').should == []
     opt(' ( ( ()) -((-(()||(()|()))|(()|())-((-())))  )) ').should == []
   end
@@ -266,6 +276,9 @@ describe CommandSearch::Optimizer do
 
   it 'should handle empty strings' do
     opt('""').should == []
+    opt('""|""').should == []
+    opt('(""|"")').should == []
+    opt('(""|"")|""|("")|(""|(""|((""|"")|(""|""))))').should == []
     opt("''").should == []
     opt("'' foo").should == [{type: :str, value: 'foo'}]
   end

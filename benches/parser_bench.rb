@@ -11,7 +11,7 @@ Benchmark.bmbm() do |bm|
   def parse(input)
     title = "Parse: #{input.inspect}"
     lexed = CommandSearch::Lexer.lex(input)
-    $bm.report(title) { $iterations.times { CommandSearch::Parser.parse(lexed) } }
+    $bm.report(title) { $iterations.times { CommandSearch::Parser.parse!(lexed) } }
   end
 
   parse('')

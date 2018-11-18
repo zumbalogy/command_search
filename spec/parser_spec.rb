@@ -2,14 +2,14 @@ load(__dir__ + '/./spec_helper.rb')
 
 def parse(x)
   tokens = CommandSearch::Lexer.lex(x)
-  CommandSearch::Parser.parse(tokens)
+  CommandSearch::Parser.parse!(tokens)
 end
 
 describe CommandSearch::Parser do
   it 'should not parse simple strings more than the lexer' do
     lexed = CommandSearch::Lexer.lex('foo 1 2 a b "1 ()"').select { |x| x[:type] != :space }
     lexed.should == parse('foo 1 2 a b "1 ()"')
-    parse('red "blue green"').should == CommandSearch::Parser.parse(parse('red "blue green"'))
+    parse('red "blue green"').should == CommandSearch::Parser.parse!(parse('red "blue green"'))
     parse('foo').should == [{type: :str, value: 'foo'}]
     parse('f1oo').should == [{type: :str, value: 'f1oo'}]
     parse('a b 3 c').should == [
@@ -302,6 +302,23 @@ it 'should handle negating' do
                 { type: :str, value: '-bar' }]}]
     parse('foo:-(bar x)').should == parse('foo:- (bar x)')
     parse(':--34').should == parse(':- -34')
+    parse('a<<<b').should == [
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [{ type: :str, value: 'a<<' },
+                { type: :str, value: 'b' }]}]
+    parse('a<-<b').should == [
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [{ type: :str, value: 'a' },
+                { type: :str, value: '-' }]},
+      { type: :nest,
+        nest_type: :compare,
+        nest_op: '<',
+        value: [{ type: :str, value: '-' },
+                { type: :str, value: 'b' }]}]
   end
 
   it 'should handle chained comparisons' do
