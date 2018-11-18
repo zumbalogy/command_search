@@ -238,12 +238,12 @@ module CommandSearch
       end
     end
 
-    def self.decompose_nots!(ast, not_depth = 0)
+    def self.decompose_nots(ast, not_depth = 0)
       ast.flat_map do |x|
         if x[:nest_type] == :minus
-          decompose_nots!(x[:value], not_depth + 1)
+          decompose_nots(x[:value], not_depth + 1)
         elsif x[:nest_type]
-          x[:value] = decompose_nots!(x[:value], not_depth)
+          x[:value] = decompose_nots(x[:value], not_depth)
           x
         else
           x[:negate] = not_depth.odd?
@@ -254,7 +254,7 @@ module CommandSearch
 
     def self.build_query(ast, fields, command_types = {})
       out = ast
-      out = decompose_nots!(out)
+      out = decompose_nots(out)
       build_searches!(out, fields, command_types)
       build_tree!(out)
       collapse_ors!(out)
