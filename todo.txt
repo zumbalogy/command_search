@@ -24,7 +24,3 @@ Aliaser, currently string alaises wont match halves of command. should be though
 a('house:red').should == 'house:red'
 
 maybe support a real regex type. using that could mean certain things are not needed.
-
-
-useing \A and \Z, as well as .match vs other regex methods might be faster (and
-stricter in \a \z case)
