@@ -45,8 +45,7 @@ jobs:
             mkdir /tmp/test-results
             TEST_FILES="$(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)"
 
-            bundle exec rspec --exclude-pattern "spec/searchable_spec.rb" \
-                              --format RspecJunitFormatter \
+            bundle exec rspec --format RspecJunitFormatter \
                               --out /tmp/test-results/rspec.xml \
                               --format progress \
                               $TEST_FILES
