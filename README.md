@@ -17,7 +17,7 @@ the following substitutions are possible if desired:
 command_search does not require an engine, is relatively free of magic, and
 should be easy to set up.
 
-Feedback, bug reports, pull requests, and feature requests are welcome.
+Feedback, questions, bug reports, pull requests, and feature requests are welcome.
 
 ## Syntax
 Normal queries like `friday dinner`, `shoelace`, or `treehouse` work normally,
