@@ -17,6 +17,8 @@ the following substitutions are possible if desired:
 command_search does not require an engine, is relatively free of magic, and
 should be easy to set up.
 
+Feedback, questions, bug reports, pull requests, and feature requests are welcome.
+
 ## Syntax
 Normal queries like `friday dinner`, `shoelace`, or `treehouse` work normally,
 and will perform case insensitive partial matching per space-delineated part of
@@ -184,6 +186,10 @@ end
 The lifecycle of a query is as follows: The query is alaised, lexed, parsed, de-aliased,
 optimized, and then turned into a Ruby select function or a MongoDB compatible
 query.
+
+In the example shown below, the time it takes to turn the string
+into a Mongo query is under a 0.2ms and smaller queries such
+as "foo bar:baz" should take less than 70µs (2015 i7-6500U Ruby 2.2.2).
 
 The lexer breaks a query into pieces.
 ```ruby

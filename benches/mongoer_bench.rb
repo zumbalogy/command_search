@@ -2,6 +2,7 @@ require('benchmark')
 
 include Benchmark
 
+load(__dir__ + '/../lib/command_search/aliaser.rb')
 load(__dir__ + '/../lib/command_search/lexer.rb')
 load(__dir__ + '/../lib/command_search/parser.rb')
 load(__dir__ + '/../lib/command_search/command_dealiaser.rb')
@@ -14,7 +15,10 @@ $iterations = 1000
 
 def mongo(input, fields, command_fields)
   Benchmark.benchmark(CAPTION, 60, FORMAT, 'Total:') do |bm|
-    l = bm.report("Lex: #{input.inspect}") { $iterations.times {
+    a = bm.report("Alias: #{input.inspect}") { $iterations.times {
+      $lexed = CommandSearch::Aliaser.alias(input, {'foo' => 'bar'})
+    }}
+    l = bm.report('L') { $iterations.times {
       $lexed = CommandSearch::Lexer.lex(input)
     }}
     p = bm.report('P') { $iterations.times {
@@ -43,5 +47,6 @@ mongo('', [], {})
 mongo('', fields, command_fields)
 mongo('foo bar', fields, command_fields)
 mongo('-(a)|"b"', fields, command_fields)
+mongo('(price<=200 discount)|price<=99.99', fields, command_fields)
 mongo('name:foo tile -(foo bar)', fields, command_fields)
 mongo('name:foo tile -(foo bar)|"hello world" foo>1.2', fields, command_fields)

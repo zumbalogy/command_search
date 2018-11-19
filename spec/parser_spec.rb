@@ -420,6 +420,22 @@ it 'should handle negating' do
         value: [{ type: :str, value: 'bar' }]}]
   end
 
+  # it 'should handle text emojis' do
+  # # NOTE: For now, users will have to use quotes around their text emojis
+  #   def testStr(input)
+  #     parse(input)[0][:value].should == input
+  #     parse(input.reverse)[0][:value].should == input.reverse
+  #   end
+  #   testStr(':)')
+  #   testStr(':(')
+  #   testStr(':-(')
+  #   testStr(':-)')
+  #   testStr(';-)')
+  #   testStr(';)')
+  #   testStr(';(')
+  #   parse(':) smile').should == []
+  # end
+
   it 'should handle wacky combinations' do
     parse(':').should == [{type: :str, value: ':'}]
     parse('|').should == [{type: :nest, nest_type: :pipe, nest_op: '|', value: []}]

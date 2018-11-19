@@ -79,15 +79,18 @@ describe CommandSearch do
 
   it 'should be able to work without command fields' do
     options = { fields: [:title, :description, :tags] }
+    options2 = { fields: ['title', :description, :tags] }
     birds2 = [
       { title: 'bird:1' },
-      { title: 'title:2' }
+      { 'title' => 'title:2' }
     ]
     query = '3|tags2'
     CommandSearch.search(Bird, query, options).count.should == 2
     CommandSearch.search($birds, query, options).count.should == 2
     CommandSearch.search(birds2, 'bird:1', options).count.should == 1
     CommandSearch.search(birds2, 'title:2', options).count.should == 1
+    CommandSearch.search(birds2, 'bird:1', options2).count.should == 1
+    CommandSearch.search(birds2, 'title:2', options2).count.should == 1
   end
 
   it 'should be able to work without search fields' do

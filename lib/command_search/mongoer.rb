@@ -31,13 +31,11 @@ module CommandSearch
     end
 
     def is_bool_str?(str)
-      return true if str[/\Atrue\Z|\Afalse\Z/i]
-      false
+      str[/\Atrue\Z|\Afalse\Z/i]
     end
 
     def make_boolean(str)
-      return true if str[/\Atrue\Z/i]
-      false
+      str[/\Atrue\Z/i]
     end
 
     def build_command(ast_node, command_types)

@@ -43,14 +43,21 @@ describe CommandSearch::Aliaser do
   it 'should handle quotes' do
     a('a very red house').should == 'a very blue house'
     a('a "very red house').should == 'a "very blue house'
+    a('a"very red house').should == 'a"very blue house'
     a('a very red "house').should == 'a very blue "house'
     a('a "very red" house').should == 'a "very red" house'
+    a('a"very red"house').should == 'a"very red"house'
+    a('a""very red"house').should == 'a""very blue"house'
     a("a 'very red' house").should == "a 'very red' house"
     a("a 'very' red house").should == "a 'very' blue house"
     a('a "very" red house').should == 'a "very" blue house'
     a("red's red house").should == "blue's blue house"
     a("red's RED house").should == "blue's blue house"
     a("a \"very\" red house's roof").should == "a \"very\" blue house's roof"
+
+    a('a"""very red"house', { '"very' => 'light' }).should == 'a""light red"house'
+    a('a""very red"house', { '"very' => 'light' }).should == 'a""very red"house'
+
   end
 
   it 'should handle aliases with command syntax' do
@@ -106,7 +113,7 @@ describe CommandSearch::Aliaser do
     variable.should == 100
     variable2 = ''
     a('abc', { /./ => proc { |x| variable2 += x; x }}).should == 'abc'
-    variable2.should == 'cba'
+    variable2.should == 'abc'
   end
 
   it 'should handle having multiple matches in one query' do
