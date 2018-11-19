@@ -8,13 +8,16 @@ module CommandSearch
       Regexp.new(head_border + Regexp.escape(str) + tail_border, 'i')
     end
 
-    def quotes?(head, tail)
+    def quotes?(str, offset)
+      head = str[0...offset[0]]
+      tail = str[offset[1]..-1]
       return true if head.count("'").odd? && tail.count("'").odd?
       return true if head.count('"').odd? && tail.count('"').odd?
       false
     end
 
     def alias_item(query, alias_key, alias_value)
+      return query unless alias_value.is_a?(String) || alias_value.is_a?(Proc)
       if alias_key.is_a?(Regexp)
         pattern = alias_key
       elsif alias_key.is_a?(String)
@@ -22,23 +25,14 @@ module CommandSearch
       else
         return query
       end
-      current_match = query[pattern]
-      return query unless current_match
-      offset = Regexp.last_match.offset(0)
-      head = query[0...offset.first]
-      tail = alias_item(query[offset.last..-1], alias_key, alias_value)
-      if quotes?(head, tail)
-        replacement = current_match
-      else
+      query.gsub(pattern) do |match|
+        next match if quotes?(query, Regexp.last_match.offset(0))
         if alias_value.is_a?(String)
-          replacement = alias_value
+          alias_value
         elsif alias_value.is_a?(Proc)
-          replacement = alias_value.call(current_match).to_s
-        else
-          return query
+          alias_value.call(match).to_s
         end
       end
-      head + replacement + tail
     end
 
     def alias(query, aliases)
