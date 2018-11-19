@@ -3,7 +3,7 @@ require('mongoid')
 
 load(__dir__ + '/../lib/command_search.rb')
 
-Mongoid.load!(__dir__ + '/..//mongoid.yml', :test)
+Mongoid.load!(__dir__ + '/../spec/integration/mongoid.yml', :test)
 
 class Bird
   include Mongoid::Document
