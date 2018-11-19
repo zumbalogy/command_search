@@ -26,6 +26,12 @@ describe CommandSearch::Aliaser do
     a('foo|bar -bat "" baz:zap', {}).should == 'foo|bar -bat "" baz:zap'
   end
 
+  it 'should not modify the original string' do
+    str = 'a red house'
+    a('a red house').should == 'a blue house'
+    str.should == 'a red house'
+  end
+
   it 'should handle text to text aliases' do
     a('aredhouse').should == 'aredhouse'
     a('a red house').should == 'a blue house'
