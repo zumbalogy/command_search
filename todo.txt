@@ -37,8 +37,8 @@ from other nest types (compare and command) in the ast, to avoid code like
     [:paren, :pipe, :minus].include?(x[:nest_type])
 
 chronic thinks that "2000" means 20:20 today, not year 2000.
-look into having date type for colons, not just compares
-so, then, it would be nice if "foo:monday" matched any date on a monday, not just like this monday.
+for colons, though confusint for compares:
+it would be nice if "foo:monday" matched any date on a monday, not just like this monday.
 
 release notes?
 
