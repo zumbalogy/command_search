@@ -1,7 +1,7 @@
 load(__dir__ + '/../spec_helper.rb')
 require('mongoid')
 
-Mongoid.load!(__dir__ + '/../../mongoid.yml', :test)
+Mongoid.load!(__dir__ + '/mongoid.yml', :test)
 
 class Hat
   include Mongoid::Document
@@ -404,7 +404,10 @@ describe Hat do
     Hat.search('fav_date<=1_day_ago').count.should == 3
     Hat.search('fav_date<=15_days_ago').count.should == 2
     Hat.search('fav_date<3_months_ago').count.should == 1
+    Hat.search('3_months_ago>fav_date').count.should == 1
     Hat.search('fav_date<2_years_ago').count.should == 0
+    Hat.search('2_years_ago>fav_date').count.should == 0
+    Hat.search('2_years_ago<fav_date').count.should == 3
   end
 
   it 'should handle negative comparisons and ORs put together. commands too' do

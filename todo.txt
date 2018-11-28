@@ -19,3 +19,27 @@ Aliaser, currently string alaises wont match halves of command. should be though
 a('house:red').should == 'house:red'
 
 maybe support a real regex type. using that could mean certain things are not needed.
+
+consider only loading chronic if user uses time types
+
+it could be nice to be able to have an alias where the proper
+name is off limits.
+
+support arrays (and maybe other nesting/relations)
+
+One potential future feature (besides more customizable syntax and all)
+would be to be able to specify a certain number of matches. like,
+this name field must have the string ":)" 3 times. having
+an option to pass though to real regexes might solve this.
+
+it might be good to have a way to tell "collection" types (paren, or, minus)
+from other nest types (compare and command) in the ast, to avoid code like
+    [:paren, :pipe, :minus].include?(x[:nest_type])
+
+chronic thinks that "2000" means 20:20 today, not year 2000.
+look into having date type for colons, not just compares
+so, then, it would be nice if "foo:monday" matched any date on a monday, not just like this monday.
+
+release notes?
+
+maybe break out technical details into its own file in doc folder

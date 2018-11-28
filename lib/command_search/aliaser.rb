@@ -25,7 +25,7 @@ module CommandSearch
       else
         return query
       end
-      query.gsub(pattern) do |match|
+      query.gsub!(pattern) do |match|
         next match if quotes?(query, Regexp.last_match.offset(0))
         if alias_value.is_a?(String)
           alias_value
@@ -33,6 +33,7 @@ module CommandSearch
           alias_value.call(match).to_s
         end
       end
+      query
     end
 
     def alias(query, aliases)
