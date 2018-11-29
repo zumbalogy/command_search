@@ -37,7 +37,10 @@ module CommandSearch
     end
 
     def alias(query, aliases)
-      aliases.reduce(query) { |q, (k, v)| alias_item(q, k, v) }
+      return query unless aliases.any?
+      out = query.dup
+      aliases.each { |(k, v)| alias_item(out, k, v) }
+      out
     end
   end
 end

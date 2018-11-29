@@ -28,6 +28,7 @@ describe CommandSearch::Aliaser do
 
   it 'should not modify the original string' do
     str = 'a red house'
+    a(str).should == 'a blue house'
     a('a red house').should == 'a blue house'
     str.should == 'a red house'
   end

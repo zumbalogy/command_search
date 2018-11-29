@@ -1,14 +1,13 @@
 # Command Search
 [![CircleCI](https://circleci.com/gh/zumbalogy/command_search.svg?style=svg)](https://circleci.com/gh/zumbalogy/command_search)
 
-A Ruby gem to help users query collections.
+A Ruby gem to help let users query collections.
 
 command_search should make it easy to create search inputs where
 users can search for `flamingos` or `author:herbert`, as well
 as using negations, comparisons, ors, and ands.
 
-command_search also provides ways to alias keywords or regular expressions so that
-the following substitutions are possible if desired:
+command_search also supports aliasing so that the following substitutions are easy to make:
 * `name:alice` to `user_name:alice`
 * `A+` to `grade>=97`
 * `user:me` to `user:59guwJphUhqfd2A` (but with the actual ID)
@@ -19,11 +18,21 @@ should be easy to set up.
 
 Feedback, questions, bug reports, pull requests, and feature requests are welcome.
 
+## Install
+Command Line:
+```ruby
+gem install command_search
+```
+Gemfile:
+```ruby
+gem 'command_search'
+```
+
 ## Syntax
 Normal queries like `friday dinner`, `shoelace`, or `treehouse` work normally,
-and will perform case insensitive partial matching per space-delineated part of
-the query.
-A user can specify full-word and case sensitive query parts by using quotation
+and will perform case-insensitive partial matching per space-delineated part of
+the query. The order of the parts should not affect the search results.
+A user can specify full-word and case-sensitive query parts by using quotation
 marks, so the search `'ann'` will not match "anne" or `"bob"` to not match
 "bobby". Quoted query parts can search for whole phrases, such as `"You had me at HELLO!"`.
 Collections can also be queried with commands, which can be used in combination.
@@ -57,18 +66,7 @@ submitted dates, such as `tuesday` or `1/1/11`. Chronic's handling of timezones
 and leap years and such is not perfect, but is only used if 'Date' is declared
 as a field type in the config.
 
-## Install
-Command Line:
-```ruby
-gem install command_search
-```
-Gemfile:
-```ruby
-gem 'command_search'
-```
-
 ## Setup
-
 To query collections, command_search provides the CommandSearch.search function,
 which takes a collection, a query, the general search fields and the command
 search fields. Providing an empty list for either the general or command search
@@ -86,12 +84,11 @@ CommandSearch will use the following keys, all of which are optional:
   * command_fields: A hash that maps symbols matching a field's name
   to its type, or to another symbol as an alias. Valid types are `String`,
   `Boolean`, `Numeric`, and `Time`.
-  Fields specified as `Boolean` will check for existence of a value if the
-  underlying data is not actually a boolean, so, for example `bookmarked:true`
+  command_fields specified as `Boolean` will check for existence of a value if
+  the underlying data is not actually a boolean, so the query `bookmarked:true`
   could work even if the bookmarked field is a timestamp. To be able to query
-  the bookmarked field as both a timestamp and a boolean, the symbol
-  `:allow_existence_boolean` can be added to the value for the key bookmarked,
-  like so: `bookmarked: [Time, :allow_existence_boolean]`.
+  the bookmarked field as both a timestamp and a boolean, a symbol
+  can be added to the value in the hash like so: `bookmarked: [Time, :allow_existence_boolean]`.
 
   * aliases: A hash that maps strings or regex to strings or procs.
   CommandSearch will iterate though the hash and substitute parts of the query
@@ -150,7 +147,6 @@ end
 ```
 
 ## Examples
-
 An example setup of using aliases to allow users to choose how a list is sorted:
 ```ruby
 class SortableFoo
@@ -182,7 +178,6 @@ end
 ```
 
 ## Internal Details
-
 The lifecycle of a query is as follows: The query is alaised, lexed, parsed, de-aliased,
 optimized, and then turned into a Ruby select function or a MongoDB compatible
 query.
