@@ -12,22 +12,21 @@ parse(':)').should == ...
 parse('(: smile').should == ...
 need to decompose unmatched parens to strings.
 
-Make sure the aliaser (and rest of command search) plays friendly with pagination for mongo and in memory.
-
-Aliaser, currently string alaises wont match halves of command. should be thought about and noted somewhere.
-'red' => 'blue',
-a('house:red').should == 'house:red'
+show example of it playing friendly with pagination for mongo/memory.
 
 maybe support a real regex type. using that could mean certain things are not needed.
 
 consider only loading chronic if user uses time types
 
-it could be nice to be able to have an alias where the proper
-name is off limits.
+it could be nice to be able to have an alias where the proper name is off limits.
 
 support arrays (and maybe other nesting/relations)
 
-One potential future feature (besides more customizable syntax and all)
+more customizable syntax
+
+interface to plug extensions/backend into.
+
+One potential future feature
 would be to be able to specify a certain number of matches. like,
 this name field must have the string ":)" 3 times. having
 an option to pass though to real regexes might solve this.
@@ -37,7 +36,7 @@ from other nest types (compare and command) in the ast, to avoid code like
     [:paren, :pipe, :minus].include?(x[:nest_type])
 
 chronic thinks that "2000" means 20:20 today, not year 2000.
-for colons, though confusint for compares:
+for colons, though confusing for compares:
 it would be nice if "foo:monday" matched any date on a monday, not just like this monday.
 
 release notes?
