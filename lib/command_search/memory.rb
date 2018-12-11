@@ -26,6 +26,7 @@ module CommandSearch
         return false
       elsif val[1][:type] == :quoted_str
         regex = /\b#{Regexp.escape(cmd_search)}\b/
+        regex = /\A\Z/ if cmd_search == ''
         if cmd_search[/(^\W)|(\W$)/]
           head_border = '(?<=^|[^:+\w])'
           tail_border = '(?=$|[^:+\w])'
