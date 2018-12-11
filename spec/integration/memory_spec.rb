@@ -1,7 +1,7 @@
 load(__dir__ + '/../spec_helper.rb')
 
 $hats = [
-  { title: 'name name1 1', description: ''},
+  { title: 'name name1 1', description: '' },
   { title: 'name name2 2', description: 'desk desk1 1' },
   { title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1' },
   { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
