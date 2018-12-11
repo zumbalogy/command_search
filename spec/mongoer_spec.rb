@@ -170,8 +170,9 @@ describe CommandSearch::Mongoer do
     fields = ['hello']
     q('(-)', fields).should == {}
     q('(|)', fields).should == {}
-    q(':', fields).should == {"hello"=>/:/i}
+    q(':', fields).should == { 'hello' => /:/i }
     q('name:foo tile -(foo bar)|"hello world" foo>1.2', fields).should_not == {}
-    q('-(a)|"b"', fields).should == {"$or"=>[{"hello"=>{"$not"=>/a/i}}, {"hello"=>/\bb\b/}]}
+    q('-(a)|"b"', fields).should == { '$or' => [{ 'hello' => { '$not' => /a/i } }, { 'hello'=>/\bb\b/ }] }
+    q('command:""', fields, { command: String }).should == { 'command'=> '' }
   end
 end

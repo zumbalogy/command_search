@@ -1,7 +1,7 @@
 load(__dir__ + '/../spec_helper.rb')
 
 $hats = [
-  { title: 'name name1 1' },
+  { title: 'name name1 1', description: ''},
   { title: 'name name2 2', description: 'desk desk1 1' },
   { title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1' },
   { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
@@ -37,6 +37,7 @@ describe CommandSearch::Memory do
 
   it 'should be able to do an empty string query' do
     search('').count.should == $hats.count
+    search('desc:""').count.should == 1
   end
 
   it 'should be able to do specific matches' do
@@ -319,6 +320,7 @@ describe CommandSearch::Memory do
 
   it 'should handle comparisons with dates' do
     search('fav_date<=1_day_ago').count.should == 3
+    search('fav_date<="1 day ago"').count.should == 3
     search('fav_date<=15_days_ago').count.should == 2
     search('fav_date<=15-days.ago').count.should == 2
     search('fav_date<3_months_ago').count.should == 1
@@ -408,6 +410,8 @@ describe CommandSearch::Memory do
 
     CommandSearch.search([{}], '(-sdf:sdfdf>sd\'s":f-', { fields: [:foo] })
     CommandSearch.search([{}], '""sdfdsfhellosdf|dsfsdf::>>><><', { fields: [:foo] })
+
+    CommandSearch.search([{}], 'foo:""', { command_fields: { foo: String } })
   end
 
   it 'should not throw errors in the presence of "naughty strings"' do

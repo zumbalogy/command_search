@@ -479,6 +479,10 @@ describe Hat do
 
   it 'should handle wacky things' do
     Hat.search('-(zzz)|"b"').count.should == 9
+    Hat.create(description: '')
+    Hat.search('description:""').count.should == 1
+    Hat.create(description: '')
+    Hat.search('description:""').count.should == 2
   end
 
   # it 'should error gracefully' do

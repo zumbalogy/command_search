@@ -281,6 +281,12 @@ describe CommandSearch::Optimizer do
     opt('(""|"")|""|("")|(""|(""|((""|"")|(""|""))))').should == []
     opt("''").should == []
     opt("'' foo").should == [{type: :str, value: 'foo'}]
+    opt('foo:""').should == [{
+      type: :nest,
+      nest_type: :colon,
+      nest_op: ':',
+      value: [{ type: :str, value: 'foo' },
+              { type: :quoted_str, value: '' }]}]
   end
 
   it 'should handle single sides ORs' do

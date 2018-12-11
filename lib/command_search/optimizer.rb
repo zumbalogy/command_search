@@ -45,7 +45,7 @@ module CommandSearch
 
     def remove_empty_strings!(ast)
       ast.reject! do |node|
-        remove_empty_strings!(node[:value]) if node[:nest_type]
+        remove_empty_strings!(node[:value]) if [:paren, :pipe, :minus].include?(node[:nest_type])
         node[:type] == :quoted_str && node[:value] == ''
       end
     end

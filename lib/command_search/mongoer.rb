@@ -83,6 +83,7 @@ module CommandSearch
       elsif type == String
         if search_type == :quoted_str
           val = /\b#{Regexp.escape(raw_val)}\b/
+          val = '' if raw_val == ''
           if raw_val[/(^\W)|(\W$)/]
             head_border = '(?<=^|[^:+\w])'
             tail_border = '(?=$|[^:+\w])'
