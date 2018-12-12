@@ -95,10 +95,14 @@ describe CommandSearch::Mongoer do
 
   it 'should handle time commands' do
     def q2(s); q(s, [], { created: Time }); end
+    def q3(s); q(s, [], { created: Date }); end
+    def q4(s); q(s, [], { created: DateTime }); end
     res = q2('created:yesterday')
     start = res['$and'].first['created']['$gte']
     stop = res['$and'].last['created']['$lte']
     (stop - start).should == (60 * 60 * 24)
+    q2('created:"april 10 2000"').should == q3('created:"april 10 2000"')
+    q2('created:"april 10 2000"').should == q4('created:"april 10 2000"')
     q2('created:"april 10 2000"').should == {
       '$and'=>[
         {'created'=>{'$gte'=>Chronic.parse('2000-04-10 00:00:00')}},
@@ -140,7 +144,15 @@ describe CommandSearch::Mongoer do
     q2('created<8/8/8888').should == {'created'=>{'$lt'=>Chronic.parse('8888-08-08 00:00:00')}}
     q2('created<=8/8/8888').should == {'created'=>{'$lte'=>Chronic.parse('8888-08-09 00:00:00')}}
     q2('created>"1/1/11 1:11pm"').should == {'created'=>{'$gt'=>Chronic.parse('2011-01-01 13:11:01')}}
+    q2('created>"1/1/11 2:11pm"').should == {'created'=>{'$gt'=>Chronic.parse('2011-01-01 14:11:01')}}
+    q2('created<"1:11pm"').should == {'created'=>{'$lt'=>Chronic.parse('1:11pm', guess: nil).first}}
     q2('created>="january 2020"').should =={'created'=>{'$gte'=>Chronic.parse('2020-01-01 00:00:00')}}
+    def q3(s); q(s, [], { created: Date }); end
+    q3('created<8/8/8888').should == {'created'=>{'$lt'=>Chronic.parse('8888-08-08 00:00:00')}}
+    q3('created>"1/1/11 1:11pm"').should == {'created'=>{'$gt'=>Chronic.parse('2011-01-01 13:11:01')}}
+    def q4(s); q(s, [], { created: DateTime }); end
+    q4('created<8/8/8888').should == {'created'=>{'$lt'=>Chronic.parse('8888-08-08 00:00:00')}}
+    q4('created>"1/1/11 1:11pm"').should == {'created'=>{'$gt'=>Chronic.parse('2011-01-01 13:11:01')}}
   end
 
   it 'should handle negating' do

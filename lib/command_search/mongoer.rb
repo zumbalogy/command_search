@@ -100,8 +100,9 @@ module CommandSearch
         else
           val = raw_val
         end
-      elsif type == Time
+      elsif [Date, Time, DateTime].include?(type)
         time_str = raw_val.tr('_.-', ' ')
+        # TODO: this needs to handle years better, like compare in memory.rb does. for input "1999" for example.
         date = Chronic.parse(time_str, guess: nil)
         if field_node[:negate]
           val = [
@@ -177,7 +178,7 @@ module CommandSearch
         else
           val = val.to_f
         end
-      elsif type == Time
+      elsif [Date, Time, DateTime].include?(type)
         # foo <  day | day.start
         # foo <= day | day.end
         # foo >  day | day.end
@@ -190,6 +191,7 @@ module CommandSearch
         }
         date_pick = date_start_map[op]
         time_str = val.tr('_.-', ' ')
+        # TODO: this needs to handle years better, like compare in memory.rb does. for input "1999" for example.
         date = Chronic.parse(time_str, guess: nil)
         if date_pick == :start
           val = date.first
