@@ -420,6 +420,7 @@ describe CommandSearch::Memory do
     CommandSearch.search(list2, 'foo<2010', { command_fields: { foo: DateTime } }).count.should == 2
     list3 = [{ foo: Time.new('1991-01-01') }, { foo: Time.new('1995') }]
     CommandSearch.search(list3, 'foo:"1991/01/01"', { command_fields: { foo: DateTime } }).count.should == 1
+    CommandSearch.search(list3, 'foo:"1991-01-01"', { command_fields: { foo: DateTime } }).count.should == 1
     CommandSearch.search(list3, 'foo:"1995"', { command_fields: { foo: DateTime } }).count.should == 1
     CommandSearch.search(list3, 'foo:"1994"', { command_fields: { foo: DateTime } }).count.should == 0
     CommandSearch.search(list3, 'foo:"1996"', { command_fields: { foo: DateTime } }).count.should == 0
@@ -428,6 +429,7 @@ describe CommandSearch::Memory do
     CommandSearch.search(list4, 'foo<=1995', { command_fields: { foo: DateTime } }).count.should == 2
     CommandSearch.search(list4, '-foo<=1995', { command_fields: { foo: DateTime } }).count.should == 1
     CommandSearch.search(list4, 'foo>=1995', { command_fields: { foo: DateTime } }).count.should == 3
+    CommandSearch.search(list4, 'foo>=1995-02-03', { command_fields: { foo: DateTime } }).count.should == 3
   end
 
   it 'should not throw errors' do

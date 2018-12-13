@@ -515,10 +515,13 @@ describe Hat do
     search_bats('fav_date:1991',         1)
     search_bats('fav_date<=1990',        1)
     search_bats('fav_date:"1991/01/01"', 1)
+    search_bats('fav_date:"1991-01-01"', 1)
+    search_bats('fav_date:1991-01-01',   1)
     search_bats('fav_date<=1991',        2)
     search_bats('fav_date<2010',         6)
     search_bats('fav_date>1990',         7)
     search_bats('fav_date<1990',         1)
+    search_bats('fav_date<1990-01-01',   1)
   end
 
   it 'should handle wacky things' do
