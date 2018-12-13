@@ -106,7 +106,7 @@ module CommandSearch
           date_begin = Time.new(time_str)
           date_end = Time.new(time_str.to_i + 1).yesterday
         else
-          date = Chronic.parse(time_str, guess: nil)
+          date = Chronic.parse(time_str, guess: nil) || Chronic.parse(raw_val, guess: nil)
           date_begin = date.begin
           date_end = date.end
         end
@@ -201,7 +201,7 @@ module CommandSearch
         if time_str == time_str.to_i.to_s
           date = [Time.new(time_str), Time.new(time_str.to_i + 1).yesterday]
         else
-          date = Chronic.parse(time_str, guess: nil)
+          date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
         end
 
         if date_pick == :start
