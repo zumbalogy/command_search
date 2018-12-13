@@ -100,19 +100,26 @@ module CommandSearch
         else
           val = raw_val
         end
-      elsif type == Time
+      elsif [Date, Time, DateTime].include?(type)
         time_str = raw_val.tr('_.-', ' ')
-        date = Chronic.parse(time_str, guess: nil)
+        if time_str == time_str.to_i.to_s
+          date_begin = Time.new(time_str)
+          date_end = Time.new(time_str.to_i + 1).yesterday
+        else
+          date = Chronic.parse(time_str, guess: nil)
+          date_begin = date.begin
+          date_end = date.end
+        end
         if field_node[:negate]
           val = [
-            { key => { '$gt' => date.end   } },
-            { key => { '$lt' => date.begin } }
+            { key => { '$gt' => date_end   } },
+            { key => { '$lt' => date_begin } }
           ]
           key = '$or'
         else
           val = [
-            { key => { '$gte' => date.begin } },
-            { key => { '$lte' => date.end   } }
+            { key => { '$gte' => date_begin } },
+            { key => { '$lte' => date_end   } }
           ]
           key = '$and'
         end
@@ -177,7 +184,7 @@ module CommandSearch
         else
           val = val.to_f
         end
-      elsif type == Time
+      elsif [Date, Time, DateTime].include?(type)
         # foo <  day | day.start
         # foo <= day | day.end
         # foo >  day | day.end
@@ -190,7 +197,13 @@ module CommandSearch
         }
         date_pick = date_start_map[op]
         time_str = val.tr('_.-', ' ')
-        date = Chronic.parse(time_str, guess: nil)
+
+        if time_str == time_str.to_i.to_s
+          date = [Time.new(time_str), Time.new(time_str.to_i + 1).yesterday]
+        else
+          date = Chronic.parse(time_str, guess: nil)
+        end
+
         if date_pick == :start
           val = date.first
         elsif date_pick == :end

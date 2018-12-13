@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'command_search'
-  s.version     = '0.6.0'
+  s.version     = '0.7.0'
 
   s.summary     = 'Let users query collections with ease.'
   s.description = 'Build powerful and friendly search APIs for users.'

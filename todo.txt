@@ -1,3 +1,5 @@
+look into letting Float being a valid class in the command search hash
+
 show example using aliases to support commas in numbers
 /#{word_break}[,\d]+#{word_break}/ => -> (match) { match.tr(',', '') }
 or something. that does not validate commas being every 3. maybe:

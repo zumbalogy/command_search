@@ -477,6 +477,50 @@ describe Hat do
     Hat.search('').map(&:description).should_not == sorted_desc
   end
 
+  it 'should handle different time data types' do
+    class Bat1; include Mongoid::Document; field :fav_date, type: Time; end
+    class Bat2; include Mongoid::Document; field :fav_date, type: Date; end
+    class Bat3; include Mongoid::Document; field :fav_date, type: DateTime; end
+    class Bat4; include Mongoid::Document; field :fav_date, type: DateTime; end
+
+    def make_bats(fav_date)
+      Bat1.create(fav_date: fav_date)
+      Bat2.create(fav_date: fav_date)
+      Bat3.create(fav_date: fav_date)
+      Bat4.create(fav_date: fav_date)
+    end
+
+    def search_bats(query, total)
+      [Bat1, Bat2, Bat3, Bat4].each do |klass|
+        CommandSearch.search(klass, query, { command_fields: { fav_date: DateTime } }).count.should == total
+        CommandSearch.search(klass, query, { command_fields: { fav_date: Date } }).count.should == total
+        CommandSearch.search(klass, query, { command_fields: { fav_date: Time } }).count.should == total
+      end
+    end
+
+    make_bats(Date.new(1000))
+    make_bats(DateTime.now)
+    make_bats(Time.now)
+    make_bats(Time.new('1991'))
+    make_bats(Time.new('1995'))
+    make_bats(Time.new('1995-01-01'))
+    make_bats(Time.new('1995-5-5'))
+    make_bats(Time.new('1995-12-12'))
+
+    search_bats('fav_date:"1993"',       0)
+    search_bats('fav_date:"1994"',       0)
+    search_bats('fav_date:"1995"',       4)
+    search_bats('fav_date:"1996"',       0)
+    search_bats('fav_date:1000',         1)
+    search_bats('fav_date:1991',         1)
+    search_bats('fav_date<=1990',        1)
+    search_bats('fav_date:"1991/01/01"', 1)
+    search_bats('fav_date<=1991',        2)
+    search_bats('fav_date<2010',         6)
+    search_bats('fav_date>1990',         7)
+    search_bats('fav_date<1990',         1)
+  end
+
   it 'should handle wacky things' do
     Hat.search('-(zzz)|"b"').count.should == 9
     Hat.create(description: '')

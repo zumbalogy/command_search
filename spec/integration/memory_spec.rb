@@ -7,9 +7,9 @@ $hats = [
   { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
   { description: "desk new \n line" },
   { tags: "multi tag, 'quoted tag'" },
-  { title: 'same_name', feathers: 2, cost: 0, fav_date: '2.months.ago' },
-  { title: 'same_name', feathers: 5, cost: 4, fav_date: '1.year.ago' },
-  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' }
+  { title: 'same_name', feathers: 2, cost: 0, fav_date: Chronic.parse('2 months ago') },
+  { title: 'same_name', feathers: 5, cost: 4, fav_date: Chronic.parse('1 year ago') },
+  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: Chronic.parse('1 week ago') }
 ]
 
 def search(query, list = $hats)
@@ -398,6 +398,36 @@ describe CommandSearch::Memory do
       CommandSearch.search([{ a: 'សួស្តី​ពិភពលោក' }], 'ព្រះ​ច័ន្ទ', fields).count.should == 0
       CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ໂລກ', fields).count.should == 1
       CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ເດືອນ', fields).count.should == 0
+  end
+
+  it 'should handle different time data types' do
+    list = [{ foo: Date.new(1000) }, { foo: Time.now }, { foo: DateTime.now }]
+    CommandSearch.search(list, 'foo>1990', { command_fields: { foo: Time } }).count.should == 2
+    CommandSearch.search(list, 'foo>1990', { command_fields: { foo: Date } }).count.should == 2
+    CommandSearch.search(list, 'foo>1990', { command_fields: { foo: DateTime } }).count.should == 2
+    CommandSearch.search(list, 'foo:1000', {  command_fields: { foo: Time } }).count.should == 1
+    CommandSearch.search(list, 'foo:1000', { command_fields: { foo: Date } }).count.should == 1
+    CommandSearch.search(list, 'foo:1000', { command_fields: { foo: DateTime } }).count.should == 1
+    list2 = [{ foo: Time.new('1991') }, { foo: Time.new('1995') }]
+    CommandSearch.search(list2, 'foo:1991', { command_fields: { foo: Time } }).count.should == 1
+    CommandSearch.search(list2, 'foo<=1991', { command_fields: { foo: Time } }).count.should == 1
+    CommandSearch.search(list2, 'foo<2010', { command_fields: { foo: Time } }).count.should == 2
+    CommandSearch.search(list2, 'foo:1991', { command_fields: { foo: Date } }).count.should == 1
+    CommandSearch.search(list2, 'foo<=1991', { command_fields: { foo: Date } }).count.should == 1
+    CommandSearch.search(list2, 'foo<2010', { command_fields: { foo: Date } }).count.should == 2
+    CommandSearch.search(list2, 'foo:1991', { command_fields: { foo: DateTime } }).count.should == 1
+    CommandSearch.search(list2, 'foo<=1991', { command_fields: { foo: DateTime } }).count.should == 1
+    CommandSearch.search(list2, 'foo<2010', { command_fields: { foo: DateTime } }).count.should == 2
+    list3 = [{ foo: Time.new('1991-01-01') }, { foo: Time.new('1995') }]
+    CommandSearch.search(list3, 'foo:"1991/01/01"', { command_fields: { foo: DateTime } }).count.should == 1
+    CommandSearch.search(list3, 'foo:"1995"', { command_fields: { foo: DateTime } }).count.should == 1
+    CommandSearch.search(list3, 'foo:"1994"', { command_fields: { foo: DateTime } }).count.should == 0
+    CommandSearch.search(list3, 'foo:"1996"', { command_fields: { foo: DateTime } }).count.should == 0
+    list4 = [{ foo: Time.new('1995') }, { foo: Time.new('1995-12-12') }, { foo: Time.new('1996') }]
+    CommandSearch.search(list4, 'foo:"1995"', { command_fields: { foo: DateTime } }).count.should == 2
+    CommandSearch.search(list4, 'foo<=1995', { command_fields: { foo: DateTime } }).count.should == 2
+    CommandSearch.search(list4, '-foo<=1995', { command_fields: { foo: DateTime } }).count.should == 1
+    CommandSearch.search(list4, 'foo>=1995', { command_fields: { foo: DateTime } }).count.should == 3
   end
 
   it 'should not throw errors' do

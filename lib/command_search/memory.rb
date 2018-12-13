@@ -24,6 +24,14 @@ module CommandSearch
         end
       elsif !item.key?(cmd)
         return false
+      elsif [Date, Time, DateTime].include?(cmd_type)
+        item_time = item[cmd].to_time
+        if cmd_search == cmd_search.to_i.to_s
+          Time.new(cmd_search) <= item_time && item_time < Time.new(cmd_search.to_i + 1)
+        else
+          input_times = Chronic.parse(cmd_search, { guess: nil })
+          input_times.first <= item_time && item_time < input_times.last
+        end
       elsif val[1][:type] == :quoted_str
         regex = /\b#{Regexp.escape(cmd_search)}\b/
         regex = /\A\Z/ if cmd_search == ''
@@ -48,8 +56,10 @@ module CommandSearch
         child_val = child[:value]
         item_val = item[child_val.to_s] || item[child_val.to_sym]
         item_val ||= child_val unless child == cmd
-        return unless item_val
-        if cmd_type == Time
+        next unless item_val
+        next item_val.to_time if child == cmd && [Date, Time, DateTime].include?(cmd_type)
+        next item_val if child == cmd
+        if [Date, Time, DateTime].include?(cmd_type)
           date_start_map = {
             '<' => :start,
             '>' => :end,
@@ -58,6 +68,9 @@ module CommandSearch
           }
           date_pick = date_start_map[node[:nest_op]]
           time_str = item_val.gsub(/[\._-]/, ' ')
+
+          next Time.new(time_str) if time_str == time_str.to_i.to_s
+
           date = Chronic.parse(time_str, { guess: nil })
           if date_pick == :start
             date.first
