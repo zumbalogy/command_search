@@ -27,7 +27,7 @@ module CommandSearch
       elsif [Date, Time, DateTime].include?(cmd_type)
         item_time = item[cmd].to_time
         if cmd_search == cmd_search.to_i.to_s
-          item_time >= Time.new(cmd_search) && item_time < Time.new(cmd_search.to_i + 1)
+          Time.new(cmd_search) <= item_time && item_time < Time.new(cmd_search.to_i + 1)
         else
           input_times = Chronic.parse(cmd_search, { guess: nil })
           item_time >= input_times.first && item_time < input_times.last
