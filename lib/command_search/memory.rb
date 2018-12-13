@@ -30,7 +30,7 @@ module CommandSearch
           Time.new(cmd_search) <= item_time && item_time < Time.new(cmd_search.to_i + 1)
         else
           input_times = Chronic.parse(cmd_search, { guess: nil })
-          item_time >= input_times.first && item_time < input_times.last
+          input_times.first <= item_time && item_time < input_times.last
         end
       elsif val[1][:type] == :quoted_str
         regex = /\b#{Regexp.escape(cmd_search)}\b/
