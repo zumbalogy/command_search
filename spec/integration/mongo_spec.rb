@@ -526,6 +526,14 @@ describe Hat do
     search_bats('fav_date<1990-01-01',   1)
   end
 
+  it 'should handle NOTs with commands with numbers' do
+    Hat.search('feathers:0').count.should == 0
+    Hat.search('-feathers:0').count.should == 9
+    Hat.search('-feathers:100').count.should == 9
+    Hat.search('-feathers:8').count.should == 8
+    Hat.search('-feathers>7').count.should == 2
+  end
+
   it 'should handle wacky things' do
     Hat.search('-(zzz)|"b"').count.should == 9
     Hat.create(description: '')

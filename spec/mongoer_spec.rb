@@ -156,17 +156,21 @@ describe CommandSearch::Mongoer do
   end
 
   it 'should handle negating' do
-    def q2(s); q(s, [:foo, :bar], { red: Numeric }); end
-    q2('- -a').should == {'$or'=>[{:foo=>/a/i}, {:bar=>/a/i}]}
-    q2('-a').should == {'$and'=>[{:foo=>{'$not'=>/a/i}}, {:bar=>{'$not'=>/a/i}}]}
-    q2('-red:-1').should == {'red'=>{'$not'=>-1}}
-    q2('-(-1 2 -abc)').should == {
-      '$and'=>[{'$and'=>[{:foo=>{'$not'=>/\-1/i}},
-                         {:bar=>{'$not'=>/\-1/i}}]},
-               {'$and'=>[{:foo=>{'$not'=>/2/i}},
-                         {:bar=>{'$not'=>/2/i}}]},
-               {'$or'=>[{:foo=>/abc/i},
-                        {:bar=>/abc/i}]}]}
+    def q2(s); q(s, [:foo, :bar], { red: Numeric, blue: String }); end
+    q2('- -a').should == { '$or' => [{ foo: /a/i }, { bar: /a/i }] }
+    q2('-a').should == { '$and' => [{ foo: { '$not' => /a/i } }, { bar: { '$not' => /a/i } }] }
+    q2('-blue:"very green"').should == { 'blue' => { '$not' => /\bvery\ green\b/ } }
+    q2('-red:-1').should == { 'red' => { '$ne' => -1 } }
+    q2('-red:0').should == { 'red' => { '$ne' => 0 } }
+    q2('-red:1').should == { 'red' => { '$ne' => 1 } }
+    q2('-red:66').should == { 'red' => { '$ne' => 66 } }
+    q2('-(-1 2 -abc)').should == { # TODO: these seems to be wrong. should be same as (1 -2 abc)
+      '$and' => [{ '$and' => [{ foo: {'$not' => /\-1/i } },
+                              { bar: {'$not' => /\-1/i } }] },
+                 { '$and' => [{ foo: {'$not' => /2/i } },
+                              { bar: {'$not' => /2/i } }] },
+                 { '$or' => [{ foo: /abc/i },
+                             { bar: /abc/i }] }] }
   end
 
   it 'should return [] for empty nonsense' do

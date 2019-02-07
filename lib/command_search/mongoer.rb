@@ -125,7 +125,9 @@ module CommandSearch
         end
       end
 
-      if field_node[:negate] && (type == Numeric || type == String)
+      if field_node[:negate] && type == Numeric
+        { key => { '$ne' => val } }
+      elsif field_node[:negate] && type == String
         { key => { '$not' => val } }
       else
         { key => val }

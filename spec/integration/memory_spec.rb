@@ -327,7 +327,7 @@ describe CommandSearch::Memory do
     search('fav_date<2_years_ago').count.should == 0
     search('fav_date>1/1/1900').count.should == 3
     search('fav_date>=1/1/1900').count.should == 3
-    search('2019>fav_date>=1/1/1900').count.should == 3
+    search("#{Time.now.year + 10}>fav_date>=1/1/1900").count.should == 3
   end
 
   it 'should handle negative comparisons and ORs put together. commands too' do
