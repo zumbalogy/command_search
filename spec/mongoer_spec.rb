@@ -164,7 +164,15 @@ describe CommandSearch::Mongoer do
     q2('-red:0').should == { 'red' => { '$ne' => 0 } }
     q2('-red:1').should == { 'red' => { '$ne' => 1 } }
     q2('-red:66').should == { 'red' => { '$ne' => 66 } }
-    q2('-(-1 2 -abc)').should == { # TODO: these seems to be wrong. should be same as (1 -2 abc)
+    q2('1 -2 abc').should == {
+      "$and" => [{ "$or" => [{ foo: /1/i },
+                             { bar: /1/i }] },
+                 { "$or" => [{ foo: /\-2/i },
+                             { bar: /\-2/i }]},
+                 { "$or" => [{ foo: /abc/i },
+                             { bar: /abc/i }] }] }
+    q2('-(-1 2 -abc)').should == q2('-(-1) -(2) abc')
+    q2('-(-1 2 -abc)').should == {
       '$and' => [{ '$and' => [{ foo: {'$not' => /\-1/i } },
                               { bar: {'$not' => /\-1/i } }] },
                  { '$and' => [{ foo: {'$not' => /2/i } },
