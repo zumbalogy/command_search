@@ -41,6 +41,7 @@ chronic thinks that "2000" means 20:20 today, not year 2000.
 for colons, though confusing for compares:
 it would be nice if "foo:monday" matched any date on a monday, not just like this monday.
 
-release notes?
+General searches that are numeric need to be specified and included in the command_fields.
+making general searches a hash could fix this.
 
-maybe break out technical details into its own file in doc folder
+Handling dynamic types in mongo is something to think about.

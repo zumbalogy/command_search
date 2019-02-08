@@ -31,11 +31,12 @@ gem 'command_search'
 ## Syntax
 Normal queries like `friday dinner`, `shoelace`, or `treehouse` work normally,
 and will perform case-insensitive partial matching per space-delineated part of
-the query. The order of the parts should not affect the search results.
-A user can specify full-word and case-sensitive query parts by using quotation
-marks, so the search `'ann'` will not match "anne" or `"bob"` to not match
-"bobby". Quoted query parts can search for whole phrases, such as `"You had me at HELLO!"`.
-Collections can also be queried with commands, which can be used in combination.
+the query. The order of the parts should not affect the search results. A user
+can specify full-word and case-sensitive query parts by using quotation marks,
+so the search `'ann'` will not match "anne" or `"bob"` to not match "bobby".
+Quoted query parts can search for whole phrases, such as `"You had me at
+HELLO!"`. Collections can also be queried with commands, which can be used in
+combination.
 
 | Command | Character            | Examples                               |
 | ----    | -----                | ----------                             |
@@ -79,7 +80,9 @@ fields is OK.
 * Options: A hash that describes how to search the collection.
 CommandSearch will use the following keys, all of which are optional:
 
-  * fields: An array of the values to search in items of the collection.
+  * fields: An array of the values to search in items of the collection with
+  general searches. NOTE: If one of these values is a Numeric type, it will have
+  included in, and specified as such, in the command_fields to work properly.
 
   * command_fields: A hash that maps symbols matching a field's name
   to its type, or to another symbol as an alias. Valid types are `String`,
@@ -178,13 +181,13 @@ end
 ```
 
 ## Internal Details
-The lifecycle of a query is as follows: The query is alaised, lexed, parsed, de-aliased,
-optimized, and then turned into a Ruby select function or a MongoDB compatible
-query.
+The lifecycle of a query is as follows: The query is alaised, lexed, parsed,
+de-aliased, optimized, and then turned into a Ruby select function or a MongoDB
+compatible query.
 
-In the example shown below, the time it takes to turn the string
-into a Mongo query is under a 0.2ms and smaller queries such
-as "foo bar:baz" should take less than 70µs (2015 i7-6500U Ruby 2.2.2).
+In the example shown below, the time it takes to turn the string into a Mongo
+query is under 0.2ms and smaller queries such as "foo bar:baz" should take less
+than 70µs (2015 i7-6500U Ruby 2.2.2).
 
 The lexer breaks a query into pieces.
 ```ruby

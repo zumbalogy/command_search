@@ -501,11 +501,11 @@ describe Hat do
     make_bats(Date.new(1000))
     make_bats(DateTime.now)
     make_bats(Time.now)
-    make_bats(Time.new('1991'))
-    make_bats(Time.new('1995'))
-    make_bats(Time.new('1995-01-01'))
-    make_bats(Time.new('1995-5-5'))
-    make_bats(Time.new('1995-12-12'))
+    make_bats(Time.new(1991))
+    make_bats(Time.new(1995))
+    make_bats(Time.new(1995, 1, 1))
+    make_bats(Time.new(1995, 5, 5))
+    make_bats(Time.new(1995, 12, 12))
 
     search_bats('fav_date:"1993"',       0)
     search_bats('fav_date:"1994"',       0)
@@ -515,10 +515,23 @@ describe Hat do
     search_bats('fav_date:1991',         1)
     search_bats('fav_date<=1990',        1)
     search_bats('fav_date:"1991/01/01"', 1)
+    search_bats('fav_date:"1991-01-01"', 1)
+    search_bats('fav_date:1991-01-01',   1)
     search_bats('fav_date<=1991',        2)
     search_bats('fav_date<2010',         6)
     search_bats('fav_date>1990',         7)
     search_bats('fav_date<1990',         1)
+    search_bats('fav_date<=1995',        6) # command_search looks at the first of the year for this.
+    search_bats('fav_date<=1995-5-5',    5)
+    search_bats('fav_date<1990-01-01',   1)
+  end
+
+  it 'should handle NOTs with commands with numbers' do
+    Hat.search('feathers:0').count.should == 0
+    Hat.search('-feathers:0').count.should == 9
+    Hat.search('-feathers:100').count.should == 9
+    Hat.search('-feathers:8').count.should == 8
+    Hat.search('-feathers>7').count.should == 2
   end
 
   it 'should handle wacky things' do

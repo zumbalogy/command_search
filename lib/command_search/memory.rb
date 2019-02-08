@@ -29,7 +29,8 @@ module CommandSearch
         if cmd_search == cmd_search.to_i.to_s
           Time.new(cmd_search) <= item_time && item_time < Time.new(cmd_search.to_i + 1)
         else
-          input_times = Chronic.parse(cmd_search, { guess: nil })
+          time_str = cmd_search.gsub(/[\._-]/, ' ')
+          input_times = Chronic.parse(time_str, { guess: nil }) || Chronic.parse(cmd_search, { guess: nil })
           input_times.first <= item_time && item_time < input_times.last
         end
       elsif val[1][:type] == :quoted_str
@@ -68,10 +69,9 @@ module CommandSearch
           }
           date_pick = date_start_map[node[:nest_op]]
           time_str = item_val.gsub(/[\._-]/, ' ')
-
           next Time.new(time_str) if time_str == time_str.to_i.to_s
 
-          date = Chronic.parse(time_str, { guess: nil })
+          date = Chronic.parse(time_str, { guess: nil }) || Chronic.parse(item_val, { guess: nil })
           if date_pick == :start
             date.first
           else

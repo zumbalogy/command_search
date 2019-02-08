@@ -4,7 +4,7 @@ module CommandSearch
   module Mongoer
     module_function
 
-    def build_search(ast_node, fields)
+    def build_search(ast_node, fields, command_types)
       str = ast_node[:value] || ''
       fields = [fields] unless fields.is_a?(Array)
       if ast_node[:type] == :quoted_str
@@ -18,9 +18,22 @@ module CommandSearch
         regex = /#{Regexp.escape(str)}/i
       end
       if ast_node[:negate]
-        forms = fields.map { |f| { f => { '$not' => regex } } }
+        forms = fields.map do |field|
+          if [Numeric, Integer].include?(command_types[field.to_sym])
+            { field => { '$ne' => str } }
+          else
+            { field => { '$not' => regex } }
+          end
+        end
       else
         forms = fields.map { |f| { f => regex } }
+        forms = fields.map do |field|
+          if [Numeric, Integer].include?(command_types[field.to_sym])
+            { field => str }
+          else
+            { field => regex }
+          end
+        end
       end
       return forms if forms.count < 2
       if ast_node[:negate]
@@ -106,7 +119,7 @@ module CommandSearch
           date_begin = Time.new(time_str)
           date_end = Time.new(time_str.to_i + 1).yesterday
         else
-          date = Chronic.parse(time_str, guess: nil)
+          date = Chronic.parse(time_str, guess: nil) || Chronic.parse(raw_val, guess: nil)
           date_begin = date.begin
           date_end = date.end
         end
@@ -124,8 +137,9 @@ module CommandSearch
           key = '$and'
         end
       end
-
-      if field_node[:negate] && (type == Numeric || type == String)
+      if field_node[:negate] && [Numeric, Integer].include?(type)
+        { key => { '$ne' => val } }
+      elsif field_node[:negate] && type == String
         { key => { '$not' => val } }
       else
         { key => val }
@@ -178,7 +192,7 @@ module CommandSearch
         key = '$' + key
         val = [key, val]
         key = '$expr'
-      elsif type == Numeric
+      elsif [Numeric, Integer].include?(type)
         if val == val.to_i.to_s
           val = val.to_i
         else
@@ -201,7 +215,7 @@ module CommandSearch
         if time_str == time_str.to_i.to_s
           date = [Time.new(time_str), Time.new(time_str.to_i + 1).yesterday]
         else
-          date = Chronic.parse(time_str, guess: nil)
+          date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
         end
 
         if date_pick == :start
@@ -224,7 +238,7 @@ module CommandSearch
           build_searches!(x[:value], fields, command_types)
           x
         else
-          build_search(x, fields)
+          build_search(x, fields, command_types)
         end
       end
       ast.flatten!
