@@ -80,7 +80,9 @@ fields is OK.
 * Options: A hash that describes how to search the collection.
 CommandSearch will use the following keys, all of which are optional:
 
-  * fields: An array of the values to search in items of the collection.
+  * fields: An array of the values to search in items of the collection with
+  general searches. NOTE: If one of these values is a Numeric type, it will have
+  included in, and specified as such, in the command_fields to work properly.
 
   * command_fields: A hash that maps symbols matching a field's name
   to its type, or to another symbol as an alias. Valid types are `String`,

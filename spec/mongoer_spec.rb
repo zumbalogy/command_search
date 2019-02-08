@@ -40,29 +40,40 @@ describe CommandSearch::Mongoer do
 
   it 'should sanitize inputs' do
     def q2(s); q(s, ['f1'], { str1: String }); end
-    q2('"a b"').should == {"f1"=>/\ba\ b\b/}
-    q2("str1:'a-b'").should == {"str1"=>/\ba\-b\b/}
-    q2("str1:'a+'").should == {"str1"=>/(?<=^|[^:+\w])a\+(?=$|[^:+\w])/}
+    q2('"a b"').should == { 'f1' => /\ba\ b\b/ }
+    q2("str1:'a-b'").should == { 'str1' => /\ba\-b\b/ }
+    q2("str1:'a+'").should == { 'str1' => /(?<=^|[^:+\w])a\+(?=$|[^:+\w])/ }
+  end
+
+  it 'should handle numeric type general fields' do
+    def q2(s); q(s, ['foo', 'bar'], { foo: Numeric, bar: String }); end
+    q2('4').should == { '$or' => [{ 'foo' => '4' },
+                                  { 'bar' => /4/i }] }
+    q2('-(4)').should == { '$and' => [{ 'foo' => { '$ne' => '4' } },
+                                      { 'bar' => { '$not' => /4/i } }] }
+    def q3(s); q(s, ['foo', 'bar'], { foo: Integer, bar: String }); end
+    q3('4').should == q2('4')
+    q3('-(4)').should == q2('-(4)')
   end
 
   it 'should handle ORs' do
     fields = ['f1', 'f2']
     q('a|b|(c|d) foo|bar', fields).should == {
-      '$and'=>[
-        {'$or'=>[
-           {'f1'=>/a/i},
-           {'f2'=>/a/i},
-           {'f1'=>/b/i},
-           {'f2'=>/b/i},
-           {'f1'=>/c/i},
-           {'f2'=>/c/i},
-           {'f1'=>/d/i},
-           {'f2'=>/d/i}]},
-        {'$or'=>[
-           {'f1'=>/foo/i},
-           {'f2'=>/foo/i},
-           {'f1'=>/bar/i},
-           {'f2'=>/bar/i}]}]}
+      '$and' => [
+        {'$or' => [
+           { 'f1' => /a/i },
+           { 'f2' => /a/i },
+           { 'f1' => /b/i },
+           { 'f2' => /b/i },
+           { 'f1' => /c/i },
+           { 'f2' => /c/i },
+           { 'f1' => /d/i },
+           { 'f2' => /d/i }] },
+        { '$or' => [
+           { 'f1' => /foo/i },
+           { 'f2' => /foo/i },
+           { 'f1' => /bar/i },
+           { 'f2' => /bar/i }] }] }
   end
 
   it 'should denest parens' do
@@ -79,12 +90,12 @@ describe CommandSearch::Mongoer do
 
   it 'should handle basic commands' do
     def q2(s); q(s, ['f1'], { str1: String, num1: Numeric }); end
-    q2('str1:red').should == {'str1'=>/red/i}
-    q2('str1:12.2').should == {'str1'=>/12\.2/i}
-    q2('num1:-230').should == {'num1'=>-230}
-    q2('num1:-0.930').should == {'num1'=>-0.930}
-    q2('num1:4.0').should == {'num1'=>4.0}
-    q2('num1:red').should == {'num1'=>'red'}
+    q2('str1:red').should == { 'str1' => /red/i }
+    q2('str1:12.2').should == { 'str1' => /12\.2/i }
+    q2('num1:-230').should == { 'num1' => -230 }
+    q2('num1:-0.930').should == { 'num1' => -0.930 }
+    q2('num1:4.0').should == { 'num1' => 4.0 }
+    q2('num1:red').should == { 'num1' => 'red' }
   end
 
   it 'should handle chained commands' do
