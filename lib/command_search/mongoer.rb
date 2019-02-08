@@ -4,6 +4,16 @@ module CommandSearch
   module Mongoer
     module_function
 
+    def numeric_field?(field, command_types)
+      raw_type = command_types[field.to_sym]
+      if raw_type.is_a?(Array)
+        type = (raw_type - [:allow_existence_boolean]).first
+      else
+        type = raw_type
+      end
+      [Numeric, Integer].include?(type)
+    end
+
     def build_search(ast_node, fields, command_types)
       str = ast_node[:value] || ''
       fields = [fields] unless fields.is_a?(Array)
@@ -19,16 +29,15 @@ module CommandSearch
       end
       if ast_node[:negate]
         forms = fields.map do |field|
-          if [Numeric, Integer].include?(command_types[field.to_sym])
+          if numeric_field?(field, command_types)
             { field => { '$ne' => str } }
           else
             { field => { '$not' => regex } }
           end
         end
       else
-        forms = fields.map { |f| { f => regex } }
         forms = fields.map do |field|
-          if [Numeric, Integer].include?(command_types[field.to_sym])
+          if numeric_field?(field, command_types)
             { field => str }
           else
             { field => regex }

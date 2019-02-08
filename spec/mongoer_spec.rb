@@ -54,6 +54,9 @@ describe CommandSearch::Mongoer do
     def q3(s); q(s, ['foo', 'bar'], { foo: Integer, bar: String }); end
     q3('4').should == q2('4')
     q3('-(4)').should == q2('-(4)')
+    def q4(s); q(s, ['foo', 'bar'], { foo: [Numeric, :allow_existence_boolean], bar: String }); end
+    q4('4').should == q2('4')
+    q4('-(4)').should == q2('-(4)')
   end
 
   it 'should handle ORs' do
