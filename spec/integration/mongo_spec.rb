@@ -79,6 +79,24 @@ describe Hat do
     Hat.search('"nne"').count.should == 1
   end
 
+  it 'should only be case sensitive for quoted text' do
+    Hat.create(title: 'italy')
+    Hat.create(title: 'Italy')
+    Hat.create(title: 'ITALY')
+    Hat.search('italy').count.should == 3
+    Hat.search('Italy').count.should == 3
+    Hat.search('ITALY').count.should == 3
+    Hat.search('"italy"').count.should == 1
+    Hat.search('"Italy"').count.should == 1
+    Hat.search('"ITALY"').count.should == 1
+    Hat.search('title:italy').count.should == 3
+    Hat.search('title:Italy').count.should == 3
+    Hat.search('title:ITALY').count.should == 3
+    Hat.search('title:"italy"').count.should == 1
+    Hat.search('title:"Italy"').count.should == 1
+    Hat.search('title:"ITALY"').count.should == 1
+  end
+
   it 'should be able to handle special characters' do
     Hat.create(title: '+')
     Hat.create(title: 'a+')
