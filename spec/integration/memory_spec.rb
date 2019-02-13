@@ -331,9 +331,6 @@ describe CommandSearch::Memory do
   end
 
   it 'should handle negative comparisons and ORs put together. commands too' do
-    # NOTE: Unlike mongo version, items that dont have a key are returned
-    # in the negation case. so if the search is "-foo" an item {bar: 5} will be
-    # returned
     search('fav_date<2_years_ago').count.should == 0
     search('-fav_date<2_years_ago').count.should == 9
     search('-fav_date<3_months_ago').count.should == 8
@@ -341,6 +338,16 @@ describe CommandSearch::Memory do
     search('-fav_date<=1_day_ago|fav_date<=1_day_ago').count.should == 9
     search('-fav_date<=1_day_ago|desk1').count.should == 6
     search('-fav_date<=1_day_ago|-desk1').count.should == 9
+
+    hats2 = [
+      { title: 'penguin', description: 'panda'},
+      { description: 'panda'},
+      { title: 'penguin'}
+    ]
+    search('panda', hats2).count.should == 2
+    search('-(penguin panda) panda', hats2).count.should == 1
+    search('-(penguin panda) penguin', hats2).count.should == 1
+    search('-(penguin panda) penguin panda', hats2).count.should == 0
   end
 
   it 'should handle nesting via parentheses' do
@@ -478,19 +485,19 @@ describe CommandSearch::Memory do
     check.should == true
   end
 
-  # it 'should handle permutations' do
-  #   check = true
-  #   strs = ['a', 'b', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
-  #   strs.repeated_permutation(6).each do |perm|
-  #     begin
-  #       CommandSearch.search([{}], perm.join, { fields: [:foo] })
-  #     rescue
-  #       puts perm
-  #       check = false
-  #     end
-  #   end
-  #   check.should == true
-  # end
+  it 'should handle permutations' do
+    check = true
+    strs = ['a', 'b', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
+    strs.repeated_permutation(4).each do |perm|
+      begin
+        CommandSearch.search([{}], perm.join, { fields: [:foo] })
+      rescue
+        puts perm
+        check = false
+      end
+    end
+    check.should == true
+  end
 
   # it 'should handle searching ones that are not specified and also wierd hash ones' do
   #   search('custom_s:penn').count.should == 1
