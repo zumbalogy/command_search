@@ -105,7 +105,8 @@ CommandSearch will use the following keys, all of which are optional:
   whole words, so `'foo' => 'bar'` will not effect the query `baz:foo`.
   Regex keys will be used as is, but respect user quotations unless the regex
   matches the quotes. A query can be altered before being passed to CommandSearch
-  to sidestep any limitation.
+  to sidestep any limitation. NOTE: If aliasing to something complex, wrapping the
+  output in parentheses can help it work as expected with the command_search syntax.
 
 An example setup for searching a Foo class in MongoDB:
 ```ruby
@@ -139,6 +140,7 @@ class Foo
       },
       aliases: {
         'favorite' => 'starred:true',
+        'classic' => '(starred:true fav_date<15_years_ago)'
         /=/ => ':',
         'me' => -> () { current_user.name },
         /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }
