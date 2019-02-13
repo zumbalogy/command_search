@@ -45,3 +45,6 @@ General searches that are numeric need to be specified and included in the comma
 making general searches a hash could fix this.
 
 Handling dynamic types in mongo is something to think about.
+
+q2('-(-1 2 -abc)').should == q2('-(-1) -(2) abc') is currently equivalent logically, but not the same exact query .
+multiple NORs under same parent can be merged together.

@@ -27,29 +27,15 @@ module CommandSearch
       else
         regex = /#{Regexp.escape(str)}/i
       end
-      if ast_node[:negate]
-        forms = fields.map do |field|
-          if numeric_field?(field, command_types)
-            { field => { '$ne' => str } }
-          else
-            { field => { '$not' => regex } }
-          end
-        end
-      else
-        forms = fields.map do |field|
-          if numeric_field?(field, command_types)
-            { field => str }
-          else
-            { field => regex }
-          end
+      forms = fields.map do |field| # TODO: look into doing the mutation version of this.
+        if numeric_field?(field, command_types)
+          { field => str }
+        else
+          { field => regex }
         end
       end
       return forms if forms.count < 2
-      if ast_node[:negate]
-        { '$and' => forms }
-      else
-        { '$or' => forms }
-      end
+      { '$or' => forms }
     end
 
     def is_bool_str?(str)
@@ -79,20 +65,14 @@ module CommandSearch
 
       if type == Boolean
         bool = make_boolean(raw_val)
-        bool = !bool if field_node[:negate]
         val = [
           { key => { '$exists' => true } },
           { key => { '$ne' => !bool } }
         ]
         key = '$and'
       elsif is_bool
-        # This returns true for empty arrays, when it probably should not.
-        # Alternativly, something like tags>5 could return things that have more
-        # than 5 tags in the array.
-        # https://stackoverflow.com/questions/22367335/mongodb-check-if-value-exists-for-a-field-in-a-document
-        # val = { '$exists' => make_boolean(raw_val) }
+        # These queries return true for empty arrays.
         bool = make_boolean(raw_val)
-        bool = !bool if field_node[:negate]
         if bool
           val = [
             { key => { '$exists' => true } },
@@ -117,7 +97,7 @@ module CommandSearch
       elsif [Numeric, Integer].include?(type)
         if raw_val == raw_val.to_i.to_s
           val = raw_val.to_i
-        elsif raw_val.to_f != 0 || raw_val[/\A[\.0]*0\Z/]
+        elsif raw_val.to_f != 0 || raw_val[/\A[\.0]*0\Z/] # TODO: test 0.0 floats
           val = raw_val.to_f
         else
           val = raw_val
@@ -132,27 +112,13 @@ module CommandSearch
           date_begin = date.begin
           date_end = date.end
         end
-        if field_node[:negate]
-          val = [
-            { key => { '$gt' => date_end   } },
-            { key => { '$lt' => date_begin } }
-          ]
-          key = '$or'
-        else
-          val = [
-            { key => { '$gte' => date_begin } },
-            { key => { '$lte' => date_end   } }
-          ]
-          key = '$and'
-        end
+        val = [
+          { key => { '$gte' => date_begin } },
+          { key => { '$lte' => date_end   } }
+        ]
+        key = '$and'
       end
-      if field_node[:negate] && [Numeric, Integer].include?(type)
-        { key => { '$ne' => val } }
-      elsif field_node[:negate] && type == String
-        { key => { '$not' => val } }
-      else
-        { key => val }
-      end
+      { key => val }
     end
 
     def build_compare(ast_node, command_types)
@@ -161,12 +127,6 @@ module CommandSearch
         '>' => '<',
         '<=' => '>=',
         '>=' => '<='
-      }
-      reverse_ops = {
-        '<' => '>=',
-        '<=' => '>',
-        '>' => '<=',
-        '>=' => '<'
       }
       mongo_op_map = {
         '<' => '$lt',
@@ -180,7 +140,6 @@ module CommandSearch
       key = first_node[:value]
       val = last_node[:value]
       op = ast_node[:nest_op]
-      op = reverse_ops[op] if first_node[:negate]
 
       if keys.include?(val.to_sym)
         (key, val) = [val, key]
@@ -254,46 +213,29 @@ module CommandSearch
     end
 
     def build_tree!(ast)
-      mongo_types = { paren: '$and', pipe: '$or', minus: '$not' }
-      ast.each do |x|
-        next x unless x[:nest_type]
-        build_tree!(x[:value])
-        key = mongo_types[x[:nest_type]]
-        x[key] = x[:value]
-        x.delete(:nest_type)
-        x.delete(:nest_op)
-        x.delete(:value)
-        x.delete(:type)
-      end
-    end
-
-    def collapse_ors!(ast)
-      ast.each do |x|
-        next unless x['$or']
-        x['$or'].map! { |kid| kid['$or'] || kid }.flatten!
-      end
-    end
-
-    def decompose_nots(ast, not_depth = 0)
-      ast.flat_map do |x|
-        if x[:nest_type] == :minus
-          decompose_nots(x[:value], not_depth + 1)
-        elsif x[:nest_type]
-          x[:value] = decompose_nots(x[:value], not_depth)
-          x
+      mongo_types = { paren: '$and', pipe: '$or', minus: '$nor' }
+      ast.each do |node|
+        next node unless node[:nest_type]
+        build_tree!(node[:value])
+        key = mongo_types[node[:nest_type]]
+        if key == '$nor' && node[:value].count > 1
+          node[key] = [{ '$and' => node[:value] }]
         else
-          x[:negate] = not_depth.odd?
-          x
+          node[key] = node[:value]
         end
+        node['$or'].map! { |x| x['$or'] || x }.flatten! if node['$or']
+        node['$nor'].map! { |x| x['$or'] || x }.flatten! if node['$nor']
+        node.delete(:nest_type)
+        node.delete(:nest_op)
+        node.delete(:value)
+        node.delete(:type)
       end
     end
 
     def build_query(ast, fields, command_types = {})
       out = ast
-      out = decompose_nots(out)
       build_searches!(out, fields, command_types)
       build_tree!(out)
-      collapse_ors!(out)
       out = {} if out == []
       out = out.first if out.count == 1
       out = { '$and' => out } if out.count > 1
