@@ -16,6 +16,9 @@ command_search also supports aliasing so that the following substitutions are ea
 command_search does not require an engine, is relatively free of magic, and
 should be easy to set up.
 
+A sample Rails app using command_search can be seen at [github.com/zumbalogy/command_search_example](https://github.com/zumbalogy/command_search_example)
+A live version can be found at [earthquake-search.herokuapp.com](https://earthquake-search.herokuapp.com/).
+
 Feedback, questions, bug reports, pull requests, and feature requests are welcome.
 
 ## Install
@@ -105,7 +108,8 @@ CommandSearch will use the following keys, all of which are optional:
   whole words, so `'foo' => 'bar'` will not effect the query `baz:foo`.
   Regex keys will be used as is, but respect user quotations unless the regex
   matches the quotes. A query can be altered before being passed to CommandSearch
-  to sidestep any limitation.
+  to sidestep any limitation. NOTE: If aliasing to something complex, wrapping the
+  output in parentheses can help it work as expected with the command_search syntax.
 
 An example setup for searching a Foo class in MongoDB:
 ```ruby
@@ -139,6 +143,7 @@ class Foo
       },
       aliases: {
         'favorite' => 'starred:true',
+        'classic' => '(starred:true fav_date<15_years_ago)'
         /=/ => ':',
         'me' => -> () { current_user.name },
         /\$\d+/ => -> (match) { "cost:#{match[1..-1]}" }

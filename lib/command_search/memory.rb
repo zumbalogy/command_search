@@ -111,7 +111,7 @@ module CommandSearch
         when :pipe
           val.any? { |v| check(item, v, fields, command_types) }
         when :minus
-          val.none? { |v| check(item, v, fields, command_types) }
+          !val.all? { |v| check(item, v, fields, command_types) }
         when :paren
           val.all? { |v| check(item, v, fields, command_types) }
         end

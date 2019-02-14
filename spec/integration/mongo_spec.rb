@@ -79,6 +79,24 @@ describe Hat do
     Hat.search('"nne"').count.should == 1
   end
 
+  it 'should only be case sensitive for quoted text' do
+    Hat.create(title: 'italy')
+    Hat.create(title: 'Italy')
+    Hat.create(title: 'ITALY')
+    Hat.search('italy').count.should == 3
+    Hat.search('Italy').count.should == 3
+    Hat.search('ITALY').count.should == 3
+    Hat.search('"italy"').count.should == 1
+    Hat.search('"Italy"').count.should == 1
+    Hat.search('"ITALY"').count.should == 1
+    Hat.search('title:italy').count.should == 3
+    Hat.search('title:Italy').count.should == 3
+    Hat.search('title:ITALY').count.should == 3
+    Hat.search('title:"italy"').count.should == 1
+    Hat.search('title:"Italy"').count.should == 1
+    Hat.search('title:"ITALY"').count.should == 1
+  end
+
   it 'should be able to handle special characters' do
     Hat.create(title: '+')
     Hat.create(title: 'a+')
@@ -228,6 +246,10 @@ describe Hat do
     Hat.search('title:name1').selector.should == { 'title' => /name1/i }
     Hat.search('title:name500').count.should == 0
     Hat.search('feathers:5').count.should == 1
+    Hat.search('cost:0').count.should == 1
+    Hat.search('cost:0.0').count.should == 1
+    Hat.search('cost:-0.0').count.should == 1
+    Hat.search('cost:-0').count.should == 1
   end
 
   it 'should handle numeric existance checks' do
@@ -401,6 +423,7 @@ describe Hat do
   end
 
   it 'should handle comparisons with dates' do
+    # fav_date: fav_date: 1.week.ago, 2.months.ago, fav_date: 1.year.ago
     Hat.search('fav_date<=1_day_ago').count.should == 3
     Hat.search('fav_date<=15_days_ago').count.should == 2
     Hat.search('fav_date<3_months_ago').count.should == 1
@@ -411,15 +434,23 @@ describe Hat do
   end
 
   it 'should handle negative comparisons and ORs put together. commands too' do
-    Hat.search('-fav_date<2_years_ago').count.should == 3
-    Hat.search('-fav_date<1/20/1803').count.should == 3
-    Hat.search('-fav_date<3_months_ago').count.should == 2
-    Hat.search('-fav_date<3-months-ago').count.should == 2
-    Hat.search('-fav_date<=1_day_ago').count.should == 0
-    Hat.search('-fav_date<=1.day.ago').count.should == 0
-    Hat.search('-fav_date<=1_day_ago|fav_date<=1_day_ago').count.should == 3
-    Hat.search('-fav_date<=1_day_ago|desk1').count.should == 1
-    Hat.search('-fav_date<=1_day_ago|-desk1').count.should == 8
+    # fav_date: fav_date: 1.week.ago, 2.months.ago, fav_date: 1.year.ago
+    Hat.search('fav_date<2_years_ago').count.should == 0
+    Hat.search('fav_date>2_years_ago').count.should == 3
+    Hat.search('-fav_date>2_years_ago').count.should == 6
+    Hat.search('-fav_date<2_years_ago').count.should == 9
+    Hat.search('fav_date<1/20/1803').count.should == 0
+    Hat.search('-fav_date<1/20/1803').count.should == 9
+    Hat.search('fav_date<3_months_ago').count.should == 1
+    Hat.search('fav_date>3_months_ago').count.should == 2
+    Hat.search('-fav_date<3_months_ago').count.should == 8
+    Hat.search('-fav_date<3-months-ago').count.should == 8
+    Hat.search('-fav_date>3-months-ago').count.should == 7
+    Hat.search('-fav_date<=1_day_ago').count.should == 6
+    Hat.search('-fav_date<=1.day.ago').count.should == 6
+    Hat.search('-fav_date<=1_day_ago|fav_date<=1_day_ago').count.should == 9
+    Hat.search('-fav_date<=1_day_ago|desk1').count.should == 6
+    Hat.search('-fav_date<=1_day_ago|-desk1').count.should == 9
   end
 
   it 'should handle nesting via parentheses' do
@@ -531,7 +562,21 @@ describe Hat do
     Hat.search('-feathers:0').count.should == 9
     Hat.search('-feathers:100').count.should == 9
     Hat.search('-feathers:8').count.should == 8
-    Hat.search('-feathers>7').count.should == 2
+    Hat.search('-feathers>7').count.should == 8
+  end
+
+  it 'should handle NOTs with ORs' do
+    Hat.create(title: 'penguin', description: 'panda')
+    Hat.create(description: 'panda')
+    Hat.create(title: 'penguin')
+    Hat.search('-panda').count.should == Hat.count - 2
+    Hat.search('-(penguin panda)').count.should == Hat.count - 1
+    Hat.search('-(penguin|panda)').count.should == Hat.count - 3
+    Hat.search('-(penguin panda) panda').count.should == 1
+    Hat.search('-(penguin panda) penguin').count.should == 1
+    Hat.search('-(penguin panda) penguin panda').count.should == 0
+    Hat.search('-(penguin -panda) panda').count.should == 2
+    Hat.search('-(-penguin panda) panda').count.should == 1
   end
 
   it 'should handle wacky things' do

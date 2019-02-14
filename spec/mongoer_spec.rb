@@ -49,8 +49,8 @@ describe CommandSearch::Mongoer do
     def q2(s); q(s, ['foo', 'bar'], { foo: Numeric, bar: String }); end
     q2('4').should == { '$or' => [{ 'foo' => '4' },
                                   { 'bar' => /4/i }] }
-    q2('-(4)').should == { '$and' => [{ 'foo' => { '$ne' => '4' } },
-                                      { 'bar' => { '$not' => /4/i } }] }
+    q2('-(4)').should == { '$nor' => [{ 'foo' => '4' },
+                                      { 'bar' => /4/i }]}
     def q3(s); q(s, ['foo', 'bar'], { foo: Integer, bar: String }); end
     q3('4').should == q2('4')
     q3('-(4)').should == q2('-(4)')
@@ -122,9 +122,8 @@ describe CommandSearch::Mongoer do
         {'created'=>{'$gte'=>Chronic.parse('2000-04-10 00:00:00')}},
         {'created'=>{'$lte'=>Chronic.parse('2000-04-11 00:00:00')}}]}
     q2('-created:"april-10.2000"').should == {
-      '$or'=>[
-        {'created'=>{'$gt'=>Chronic.parse('2000-04-11 00:00:00')}},
-        {'created'=>{'$lt'=>Chronic.parse('2000-04-10 00:00:00')}}]}
+      '$nor'=>[{'$and'=>[{'created'=>{'$gte'=>Chronic.parse('2000-04-10 00:00:00')}},
+                         {'created'=>{'$lte'=>Chronic.parse('2000-04-11 00:00:00')}}]}]}
   end
 
   it 'should handle boolean commands' do
@@ -171,13 +170,14 @@ describe CommandSearch::Mongoer do
 
   it 'should handle negating' do
     def q2(s); q(s, [:foo, :bar], { red: Numeric, blue: String }); end
+    q2('a').should == { '$or' => [{ foo: /a/i }, { bar: /a/i }] }
     q2('- -a').should == { '$or' => [{ foo: /a/i }, { bar: /a/i }] }
-    q2('-a').should == { '$and' => [{ foo: { '$not' => /a/i } }, { bar: { '$not' => /a/i } }] }
-    q2('-blue:"very green"').should == { 'blue' => { '$not' => /\bvery\ green\b/ } }
-    q2('-red:-1').should == { 'red' => { '$ne' => -1 } }
-    q2('-red:0').should == { 'red' => { '$ne' => 0 } }
-    q2('-red:1').should == { 'red' => { '$ne' => 1 } }
-    q2('-red:66').should == { 'red' => { '$ne' => 66 } }
+    q2('-a').should == { '$nor' => [{ foo: /a/i }, { bar: /a/i }] }
+    q2('-blue:"very green"').should == { '$nor' => [{ 'blue' => /\bvery\ green\b/ }] }
+    q2('-red:-1').should == { '$nor' => [{ 'red' => -1 }] }
+    q2('-red:0').should == { '$nor' => [{ 'red' => 0 }] }
+    q2('-red:1').should == { '$nor' => [{ 'red' => 1 }] }
+    q2('-red:66').should == { '$nor' => [{ 'red' => 66 }] }
     q2('1 -2 abc').should == {
       "$and" => [{ "$or" => [{ foo: /1/i },
                              { bar: /1/i }] },
@@ -185,14 +185,24 @@ describe CommandSearch::Mongoer do
                              { bar: /\-2/i }]},
                  { "$or" => [{ foo: /abc/i },
                              { bar: /abc/i }] }] }
-    q2('-(-1 2 -abc)').should == q2('-(-1) -(2) abc')
     q2('-(-1 2 -abc)').should == {
-      '$and' => [{ '$and' => [{ foo: {'$not' => /\-1/i } },
-                              { bar: {'$not' => /\-1/i } }] },
-                 { '$and' => [{ foo: {'$not' => /2/i } },
-                              { bar: {'$not' => /2/i } }] },
-                 { '$or' => [{ foo: /abc/i },
-                             { bar: /abc/i }] }] }
+      '$nor' => [{ '$and' => [{ '$or' => [{ foo: /\-1/i }, { bar: /\-1/i }] },
+                              { '$or' => [{ foo: /2/i }, { bar: /2/i }] },
+                              { '$nor' => [{ foo: /abc/i },
+                                           { bar: /abc/i }] }] }] }
+    q2('-(red:1 blue:foo) red:1').should == {
+      '$and' => [{ '$nor' => [{ '$and' => [{ 'red' => 1 },
+                                           { 'blue' => /foo/i }] }] },
+                 {'red' => 1 }] }
+  end
+
+  it 'should handle negating with ORs' do
+    def q2(s); q(s, [], { foo: String }); end
+    q2('-(foo:a|foo:b)').should == { '$nor' => [{ 'foo' => /a/i },
+                                                { 'foo' => /b/i }] }
+    q2('-(foo:a|foo:b foo:c)').should == { '$nor' => [{ '$and' => [{ '$or' => [{ 'foo' => /a/i },
+                                                                               { 'foo' => /b/i }] },
+                                                                   { 'foo' => /c/i }] }] }
   end
 
   it 'should return [] for empty nonsense' do
@@ -210,7 +220,7 @@ describe CommandSearch::Mongoer do
     q('(|)', fields).should == {}
     q(':', fields).should == { 'hello' => /:/i }
     q('name:foo tile -(foo bar)|"hello world" foo>1.2', fields).should_not == {}
-    q('-(a)|"b"', fields).should == { '$or' => [{ 'hello' => { '$not' => /a/i } }, { 'hello'=>/\bb\b/ }] }
+    q('-(a)|"b"', fields).should == { '$or' => [{ '$nor' => [{ 'hello' => /a/i }] }, { 'hello' => /\bb\b/ }] }
     q('command:""', fields, { command: String }).should == { 'command'=> '' }
   end
 end
