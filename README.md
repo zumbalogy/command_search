@@ -16,7 +16,8 @@ command_search also supports aliasing so that the following substitutions are ea
 command_search does not require an engine, is relatively free of magic, and
 should be easy to set up.
 
-A sample Rails app using command_search can be seen at [github.com/zumbalogy/command_search_example](https://github.com/zumbalogy/command_search_example)
+A sample Rails app using command_search can be seen at [github.com/zumbalogy/command_search_example](https://github.com/zumbalogy/command_search_example).
+
 A live version can be found at [earthquake-search.herokuapp.com](https://earthquake-search.herokuapp.com/).
 
 Feedback, questions, bug reports, pull requests, and feature requests are welcome.
