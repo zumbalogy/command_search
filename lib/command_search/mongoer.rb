@@ -27,7 +27,8 @@ module CommandSearch
       else
         regex = /#{Regexp.escape(str)}/i
       end
-      forms = fields.map do |field| # TODO: look into doing the mutation version of this.
+
+      forms = fields.map do |field|
         if numeric_field?(field, command_types)
           { field => str }
         else
