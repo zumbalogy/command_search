@@ -562,13 +562,17 @@ describe Hat do
   end
 
   it 'should handle NOTs with ORs' do
-    # TODO: test this in the in-memory one too
     Hat.create(title: 'penguin', description: 'panda')
     Hat.create(description: 'panda')
     Hat.create(title: 'penguin')
+    Hat.search('-panda').count.should == Hat.count - 2
+    Hat.search('-(penguin panda)').count.should == Hat.count - 1
+    Hat.search('-(penguin|panda)').count.should == Hat.count - 3
     Hat.search('-(penguin panda) panda').count.should == 1
     Hat.search('-(penguin panda) penguin').count.should == 1
     Hat.search('-(penguin panda) penguin panda').count.should == 0
+    Hat.search('-(penguin -panda) panda').count.should == 2
+    Hat.search('-(-penguin panda) panda').count.should == 1
   end
 
   it 'should handle wacky things' do

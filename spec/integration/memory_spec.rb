@@ -345,6 +345,9 @@ describe CommandSearch::Memory do
       { title: 'penguin'}
     ]
     search('panda', hats2).count.should == 2
+    search('-panda', hats2).count.should == 1
+    search('-(penguin panda)', hats2).count.should == 2
+    search('-(penguin|panda)', hats2).count.should == 0
     search('-(penguin panda) panda', hats2).count.should == 1
     search('-(penguin panda) penguin', hats2).count.should == 1
     search('-(penguin panda) penguin panda', hats2).count.should == 0

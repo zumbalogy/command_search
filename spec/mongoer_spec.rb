@@ -197,7 +197,6 @@ describe CommandSearch::Mongoer do
   end
 
   it 'should handle negating with ORs' do
-    # TODO: test this in the in-memory one too
     def q2(s); q(s, [], { foo: String }); end
     q2('-(foo:a|foo:b)').should == { '$nor' => [{ 'foo' => /a/i },
                                                 { 'foo' => /b/i }] }
