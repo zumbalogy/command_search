@@ -97,7 +97,7 @@ module CommandSearch
       elsif [Numeric, Integer].include?(type)
         if raw_val == raw_val.to_i.to_s
           val = raw_val.to_i
-        elsif raw_val.to_f != 0 || raw_val[/\A[\.0]*0\Z/] # TODO: test 0.0 floats
+        elsif raw_val.to_f != 0 || raw_val[/\A[\.0]*0\Z/]
           val = raw_val.to_f
         else
           val = raw_val

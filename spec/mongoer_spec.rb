@@ -185,7 +185,7 @@ describe CommandSearch::Mongoer do
                              { bar: /\-2/i }]},
                  { "$or" => [{ foo: /abc/i },
                              { bar: /abc/i }] }] }
-    q2('-(-1 2 -abc)').should == { # TODO: make integration test for this.
+    q2('-(-1 2 -abc)').should == {
       '$nor' => [{ '$and' => [{ '$or' => [{ foo: /\-1/i }, { bar: /\-1/i }] },
                               { '$or' => [{ foo: /2/i }, { bar: /2/i }] },
                               { '$nor' => [{ foo: /abc/i },

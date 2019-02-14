@@ -246,6 +246,10 @@ describe Hat do
     Hat.search('title:name1').selector.should == { 'title' => /name1/i }
     Hat.search('title:name500').count.should == 0
     Hat.search('feathers:5').count.should == 1
+    Hat.search('cost:0').count.should == 1
+    Hat.search('cost:0.0').count.should == 1
+    Hat.search('cost:-0.0').count.should == 1
+    Hat.search('cost:-0').count.should == 1
   end
 
   it 'should handle numeric existance checks' do
