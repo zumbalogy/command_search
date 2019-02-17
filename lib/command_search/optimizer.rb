@@ -7,6 +7,7 @@ module CommandSearch
         next node unless node[:nest_type] == :paren || node[:nest_type] == :pipe
         ands_and_ors!(node[:value])
         next node[:value].first if node[:value].length < 2
+        next node unless node[:nest_type] == :pipe
         node[:value].map! do |kid|
           next kid[:value] if kid[:nest_type] == :pipe
           kid

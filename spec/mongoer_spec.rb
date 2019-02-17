@@ -205,6 +205,19 @@ describe CommandSearch::Mongoer do
                                                                    { 'foo' => /c/i }] }] }
   end
 
+  it 'should handle nested ORs' do
+    def q2(s); q(s, [], { foo: String, bar: String }); end
+    q2('(foo:a bar:x|bar:y)').should == {
+      '$and' => [{ 'foo' => /a/i },
+                 { '$or' => [{ 'bar' => /x/i },
+                             { 'bar' => /y/i }] }] }
+    q2('(foo:a bar:x|bar:y)|foo:b').should == {
+      '$or' => [{ '$and' => [{ 'foo' => /a/i },
+                             { '$or' => [{ 'bar' => /x/i },
+                                         { 'bar' => /y/i }] }] },
+                { 'foo' => /b/i }] }
+  end
+
   it 'should return [] for empty nonsense' do
     fields = ['hello']
     q('', fields).should == {}

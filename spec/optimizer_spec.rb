@@ -100,6 +100,19 @@ describe CommandSearch::Optimizer do
        nest_op: '|',
        value: [{type: :str, value: 'a'},
                {type: :str, value: 'b'}]}]
+    opt('(a|b c)|z').should ==  [
+      {type: :nest,
+       nest_type: :pipe,
+       nest_op: '|',
+       value: [ {type: :nest,
+                 nest_type: :paren,
+                 value: [ {type: :nest,
+                           nest_type: :pipe,
+                           nest_op: '|',
+                           value: [{type: :str, value: 'a'},
+                                   {type: :str, value: 'b'}]},
+                          {type: :str, value: 'c'}]},
+                {type: :str, value: 'z'}]}]
     opt('a|1 2|b').should == [
       {type: :nest,
        nest_type: :pipe,
