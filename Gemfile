@@ -4,6 +4,8 @@ gem 'chronic'
 
 group :test, :development do
   gem 'pry'
+  gem 'pg'
+  gem 'activerecord'
   gem 'mongoid'
 end
 

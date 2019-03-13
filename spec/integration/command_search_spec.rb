@@ -109,6 +109,20 @@ describe CommandSearch do
     CommandSearch.search(Bird, 'feathers>4', options).count.should == 0
   end
 
+  it 'should handle existence booleans' do
+    options = {
+      command_fields: {
+        title: [String, :allow_existence_boolean]
+      }
+    }
+    CommandSearch.search(Bird, 'title:3', options).count.should == 1
+    CommandSearch.search(Bird, 'title:true', options).count.should == 7
+    CommandSearch.search(Bird, 'title:false', options).count.should == 2
+    CommandSearch.search($birds, 'title:3', options).count.should == 1
+    CommandSearch.search($birds, 'title:true', options).count.should == 7
+    CommandSearch.search($birds, 'title:false', options).count.should == 2
+  end
+
   it 'should be able to handle unbalanced compares' do
     options = { command_fields: { feathers: Numeric } }
     CommandSearch.search($birds, 'feathers>', options).count.should == 0
