@@ -1,19 +1,5 @@
-# Hat.where(color: "red", kind: "party").explain
-# SELECT "hats".* FROM "hats" WHERE "hats"."color" = $1 AND "hats"."kind" = $2 [["color", "red"], ["kind", "party"]]
-
-# Hat.where(color: "red").or(Hat.where(kind: "party")).explain
-# SELECT "hats".* FROM "hats" WHERE ("hats"."color" = $1 OR "hats"."kind" = $2) [["color", "red"], ["kind", "party"]]
-
-# Hat.where(color: "red", kind: "sombrero").or(Hat.where(kind: "party")).explain
-# SELECT "hats".* FROM "hats" WHERE ("hats"."color" = $1 AND "hats"."kind" = $2 OR "hats"."kind" = $3) [["color", "red"], ["kind", "sombrero"], ["kind", "party"]]
-
-# Hat.where(color: "red", kind: "sombrero").or(Hat.where(color: "blue", kind: "party")).explain
-# SELECT "hats".* FROM "hats" WHERE ("hats"."color" = $1 AND "hats"."kind" = $2 OR "hats"."color" = $3 AND "hats"."kind" = $4) [["color", "red"], ["kind", "sombrero"], ["color", "blue"], ["kind", "party"]]
-
-# Hat.where(color: "red", kind: "sombrero").or(Hat.where(color: "blue", kind: "party").or(Hat.where(color: "green"))).explain
-# SELECT "hats".* FROM "hats" WHERE ("hats"."color" = $1 AND "hats"."kind" = $2 OR ("hats"."color" = $3 AND "hats"."kind" = $4 OR "hats"."color" = $5)) [["color", "red"], ["kind", "sombrero"], ["color", "blue"], ["kind", "party"], ["color", "green"]]
-
-# Client.where("created_at >= :start_date AND created_at <= :end_date", {start_date: params[:start_date], end_date: params[:end_date]})
+#  Hat.send(:where, color: "red").send(:merge, Hat.send(:where).send(:not, kind: "sombrero").send(:or, Hat.send(:where, kind: "cow"))).to_sql
+# => "SELECT \"hats\".* FROM \"hats\" WHERE \"hats\".\"color\" = 'red' AND (\"hats\".\"kind\" != 'sombrero' OR \"hats\".\"kind\" = 'cow')"
 
 require('chronic')
 
@@ -82,34 +68,3 @@ module CommandSearch
     end
   end
 end
-
-#
-# Hat.where(color: "red", kind: "sombrero").or(Hat.where(color: "blue", kind: "party").or(Hat.where(color: "green"))).explain
-#
-# Hat.where(color: "red", kind: "sombrero")
-# Hat.send(:where, color: "red").send(:where, kind: "sombrero")
-# Hat.send(:where, color: "red").where(Hat.send(:where, kind: "sombrero"))
-#
-# Hat.send(:where, color: "red").send(:where, Hat.send(:where, kind: "sombrero"))
-#
-# Hat.send(:where, color: "red").merge(Hat.send(:where, kind: "sombrero"))
-#
-#  Hat.send(:where, color: "red").merge(Hat.send(:where, kind: "sombrero").or(Hat.send(:where, kind: "cow"))).to_sql
-#
-#  Hat.send(:where, color: "red").merge(Hat.send(:where).send(:not, kind: "sombrero").or(Hat.send(:where, kind: "cow"))).to_sql
-#
-# Hat.send(:where, color: "red").send(:where, kind: "sombrero").or(Hat.where(color: "blue", kind: "party").or(Hat.where(color: "green"))).explain
-#
-#  Hat.send(:where, color: "red").send(:merge, Hat.send(:where).send(:not, kind: "sombrero").send(:or, Hat.send(:where, kind: "cow"))).to_sql
-# => "SELECT \"hats\".* FROM \"hats\" WHERE \"hats\".\"color\" = 'red' AND (\"hats\".\"kind\" != 'sombrero' OR \"hats\".\"kind\" = 'cow')"
-#
-#  Hat.send(:where, color: "red")
-#     .send(:merge, Hat
-#                   .send(:where)
-#                   .send(:not, kind: "sombrero")
-#                   .send(:or, Hat
-#                              .send(:where, kind: "cow"))).to_sql
-#
-# [[:where, { color: 'red' }],
-#  [:merge, [:where, [:not, { kind: 'sombrero' }]],
-#                    [:or, [:where, { kind: 'cow' }]]]]
