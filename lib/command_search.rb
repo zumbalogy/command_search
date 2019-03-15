@@ -3,8 +3,9 @@ load(__dir__ + '/command_search/lexer.rb')
 load(__dir__ + '/command_search/parser.rb')
 load(__dir__ + '/command_search/command_dealiaser.rb')
 load(__dir__ + '/command_search/optimizer.rb')
-load(__dir__ + '/command_search/mongoer.rb')
 load(__dir__ + '/command_search/memory.rb')
+load(__dir__ + '/command_search/mongoer.rb')
+load(__dir__ + '/command_search/postgres.rb')
 
 class Boolean; end
 
@@ -27,6 +28,10 @@ module CommandSearch
       fields = [:__CommandSearch_mongo_fields_dummy_key__] if fields.empty?
       mongo_query = Mongoer.build_query(opted, fields, command_fields)
       return source.where(mongo_query)
+    end
+
+    if source.respond_to?(:ancestors) && source.ancestors.any? { |x| x.to_s == 'ActiveRecord::Base' }
+      return Postgres.search(source, opted, fields, command_fields)
     end
 
     selector = Memory.build_query(opted, fields, command_fields)

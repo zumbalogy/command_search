@@ -233,7 +233,7 @@ module CommandSearch
       end
     end
 
-    def build_query(ast, fields, command_types = {})
+    def build_query(ast, fields, command_types)
       out = ast
       build_searches!(out, fields, command_types)
       build_tree!(out)

@@ -74,9 +74,11 @@ describe Hat do
     Hat.create(title: 'anne')
     Hat.create(title: 'nne')
     Hat.create(title: 'nn')
+    Hat.create(title: 'zz zyx')
     Hat.search('"ann"').count.should == 1
     Hat.search('"nn"').count.should == 1
     Hat.search('"nne"').count.should == 1
+    Hat.search('"zz"').count.should == 1
   end
 
   it 'should only be case sensitive for quoted text' do
