@@ -7,64 +7,62 @@ module CommandSearch
   module Postgres
     module_function
 
+    def str_search(out, model, node, fields)
+      fields.each_with_index do |field, idx|
+        if idx == 0
+          out = out.where("#{field} ~* ?", Regexp.escape(node[:value]))
+        else
+          out = out.or(model.where("#{field} ~* ?", Regexp.escape(node[:value])))
+        end
+      end
+      out
+    end
+
+    def quoted_search(out, model, node, fields)
+      str = node[:value] || ''
+      quoted_regex = '\m' + Regexp.escape(str) + '\y'
+      # if str[/(^\W)|(\W$)/]
+      #   head_border = '(?<=^|[^:+\w])'
+      #   tail_border = '(?=$|[^:+\w])'
+      fields.each_with_index do |field, idx|
+        if idx == 0
+          out = out.where("#{field} ~ ?", quoted_regex)
+        else
+          out = out.or(model.where("#{field} ~ ?", quoted_regex))
+        end
+      end
+      out
+    end
+
+    def command_search(out, model, node, command_types)
+      field = node[:value].first[:value]
+      search_node = node[:value].last
+      val = Regexp.escape(search_node[:value])
+      if search_node[:type] == :str
+        return out.where("#{field} ~* ?", val)
+      elsif search_node[:type] == :quoted_str
+        quoted_regex = '\m' + val + '\y'
+        return out.where("#{field} ~ ?", quoted_regex)
+      end
+    end
+
     def search(model, ast, fields, command_types)
-      return model.all if ast.empty?
-
-      out = model
-
+      out = model.all
       ast.each do |node|
-
         if node[:type] == :quoted_str
-
-          str = node[:value] || ''
-
-          # regex = "\b#{Regexp.escape(str)}\b"
-
-          quoted_regex = '\m' + str + '\y'
-
-          # if str[/(^\W)|(\W$)/]
-          #   head_border = '(?<=^|[^:+\w])'
-          #   tail_border = '(?=$|[^:+\w])'
-          #   regex = head_border + Regexp.escape(str) + tail_border
-          # end
-
-          fields.each_with_index do |field, idx|
-            if idx == 0
-              out = out.where("#{field} ~ ?", quoted_regex)
-            else
-              out = out.or(model.where("#{field} ~ ?", quoted_regex))
-            end
-          end
-
+          out = quoted_search(out, model, node, fields)
         elsif node[:type] == :str
-          fields.each_with_index do |field, idx|
-            if idx == 0
-              out = out.where("#{field} ~* ?", node[:value])
-            else
-              out = out.or(model.where("#{field} ~* ?", node[:value]))
-            end
-          end
+          out = str_search(out, model, node, fields)
         elsif node[:nest_type] == :colon
-          field = node[:value].first[:value]
-          search_node = node[:value].last
-          if search_node[:type] == :str
-            out = out.where("#{field} ~* ?", search_node[:value])
-          elsif search_node[:type] == :quoted_str
-            quoted_regex = '\m' + search_node[:value] + '\y'
-            out = out.where("#{field} ~ ?", quoted_regex)
-          end
+          out = command_search(out, model, node, command_types)
         else
           binding.pry
         end
       end
-      # begin
-      #   puts out.to_sql
-      # rescue
-      #   binding.pry
-      # end
+
+      # begin; puts out.to_sql; rescue; binding.pry; end
 
       out
-
     end
   end
 end

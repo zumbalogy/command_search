@@ -105,5 +105,41 @@ module PG_Spec
       Hat.search('title:"Italy"').count.should == 1
       Hat.search('title:"ITALY"').count.should == 1
     end
+
+    it 'should be able to handle special characters' do
+      Hat.create(title: '+')
+      Hat.create(title: 'a+')
+      Hat.create(title: 'a++')
+      Hat.create(title: '+a')
+      Hat.create(title: '+a+')
+      Hat.create(title: 'a+a')
+      Hat.create(title: '.a+.')
+      Hat.create(title: '(b+)')
+      Hat.create(title: 'c?')
+      Hat.create(title: 'x,y,z')
+      Hat.search('title:+').count.should == 8
+      Hat.search('+').count.should == 8
+      Hat.search('title:+a').count.should == 3
+      Hat.search('+a').count.should == 3
+      Hat.search('title:a+').count.should == 5
+      Hat.search('a+').count.should == 5
+      Hat.search('title:"a+"').count.should == 2
+      Hat.search('"a+"').count.should == 2
+      Hat.search('title:"b+"').count.should == 1
+      Hat.search('"b+"').count.should == 1
+      Hat.search('title:"c"').count.should == 1
+      Hat.search('"c"').count.should == 1
+      Hat.search('title:"c?"').count.should == 1
+      Hat.search('"c?"').count.should == 1
+
+      Hat.search('"x"').count.should == 1
+      Hat.search('y').count.should == 1
+      Hat.search('"y"').count.should == 1
+      Hat.search('"z"').count.should == 1
+      Hat.search('title:y').count.should == 1
+      Hat.search('title:"y"').count.should == 1
+      Hat.search('title:"z"').count.should == 1
+      Hat.search('title:"y,z"').count.should == 1
+    end
   end
 end
