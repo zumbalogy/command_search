@@ -59,7 +59,8 @@ module PG_Spec
 
   describe Hat do
 
-    before do
+    before(:each) do
+      Hat.delete_all
       Hat.create(title: 'name name1 1')
       Hat.create(title: 'name name2 2', description: 'desk desk1 1')
       Hat.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
@@ -70,7 +71,6 @@ module PG_Spec
       Hat.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
       Hat.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
     end
-
 
     it 'should be able to do an empty string query' do
       Hat.search('').count.should == 9
@@ -124,6 +124,7 @@ module PG_Spec
       Hat.search('title:a+').count.should == 5
       Hat.search('a+').count.should == 5
       Hat.search('title:"a+"').count.should == 2
+
       Hat.search('"a+"').count.should == 2
       Hat.search('title:"b+"').count.should == 1
       Hat.search('"b+"').count.should == 1
@@ -140,6 +141,28 @@ module PG_Spec
       Hat.search('title:"y"').count.should == 1
       Hat.search('title:"z"').count.should == 1
       Hat.search('title:"y,z"').count.should == 1
+    end
+
+    it 'should be able to search for a boolean' do
+      Hat.create(title: 'foo', starred: true)
+      Hat.create(title: 'bar', starred: true)
+      Hat.create(title: 'bar 2', starred: false)
+      Hat.search('starred:true').count.should == 2
+      total = Hat.search('starred:false').count + Hat.search('starred:true').count
+      Hat.all.count.should == total # TODO: update mongo to be aligned with this.
+    end
+
+    it 'should check for existance if passed a boolean for a string field' do
+      Hat.create(title: 'foo', child_id: 'foo')
+      Hat.create(title: 'batz', child_id: 'bar')
+      Hat.search('child_id:true').count.should == 2
+    end
+
+    it 'should be able to find things from the description' do
+      Hat.search('desk').count.should == 4
+      Hat.search('desk2').count.should == 1
+      Hat.search('desk2 2').count.should == 1
+      Hat.search('2').count.should == 3 # TODO: add to mongo specs
     end
   end
 end

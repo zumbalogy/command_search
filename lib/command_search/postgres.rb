@@ -7,7 +7,8 @@ module CommandSearch
   module Postgres
     module_function
 
-    def str_search(out, model, node, fields)
+    def str_search(model, node, fields)
+      out = model.all
       fields.each_with_index do |field, idx|
         if idx == 0
           out = out.where("#{field} ~* ?", Regexp.escape(node[:value]))
@@ -18,12 +19,29 @@ module CommandSearch
       out
     end
 
-    def quoted_search(out, model, node, fields)
+    def number_search(model,node, fields)
+      out = model.all
+      fields.each_with_index do |field, idx|
+        if idx == 0
+          # TODO: look into performance cost of this.
+          out = out.where("CAST(#{field} as TEXT) ~* ?", Regexp.escape(node[:value]))
+        else
+          out = out.or(model.where("CAST(#{field} as TEXT) ~* ?", Regexp.escape(node[:value])))
+        end
+      end
+      out
+    end
+
+    def quoted_search(model, node, fields)
+      out = model.all
       str = node[:value] || ''
       quoted_regex = '\m' + Regexp.escape(str) + '\y'
-      # if str[/(^\W)|(\W$)/]
-      #   head_border = '(?<=^|[^:+\w])'
-      #   tail_border = '(?=$|[^:+\w])'
+      if str[/(^\W)|(\W$)/]
+        # TODO: see if these non look ahead regexes can be used in mongo-er.
+        head_border = '(^|\s|[^:+\w])'
+        tail_border = '($|\s|[^:+\w])'
+        quoted_regex = head_border + Regexp.escape(str) + tail_border
+      end
       fields.each_with_index do |field, idx|
         if idx == 0
           out = out.where("#{field} ~ ?", quoted_regex)
@@ -34,15 +52,39 @@ module CommandSearch
       out
     end
 
-    def command_search(out, model, node, command_types)
+    def command_search(model, node, command_types)
+      out = model.all
       field = node[:value].first[:value]
       search_node = node[:value].last
       val = Regexp.escape(search_node[:value])
+
+      field_type = command_types[field.to_sym]
+      if field_type == Boolean
+        bool_val = val[0] == 't' # TODO: align how mongo and this do this.
+        if bool_val
+          return model.where.not(field => [false, nil])
+        else
+          return model.where(field => [false, nil])
+        end
+      end
+
+      if field_type.is_a?(Array) && field_type.include?(:allow_existance_boolean) && (val == 'true' || val == 'false')
+        bool_val = val == 'true' # TODO: align how mongo and this do this.
+        return model.where(field => bool_val)
+      end
+
       if search_node[:type] == :str
         return out.where("#{field} ~* ?", val)
       elsif search_node[:type] == :quoted_str
         quoted_regex = '\m' + val + '\y'
+        if search_node[:value][/(^\W)|(\W$)/]
+          head_border = '(^|\s|[^:+\w])'
+          tail_border = '($|\s|[^:+\w])'
+          quoted_regex = head_border + val + tail_border
+        end
         return out.where("#{field} ~ ?", quoted_regex)
+      elsif search_node[:type] == :number
+        binding.pry
       end
     end
 
@@ -50,11 +92,13 @@ module CommandSearch
       out = model.all
       ast.each do |node|
         if node[:type] == :quoted_str
-          out = quoted_search(out, model, node, fields)
+          out.merge!(quoted_search(model, node, fields))
         elsif node[:type] == :str
-          out = str_search(out, model, node, fields)
+          out.merge!(str_search(model, node, fields))
         elsif node[:nest_type] == :colon
-          out = command_search(out, model, node, command_types)
+          out.merge!(command_search(model, node, command_types))
+        elsif node[:type] == :number
+          out.merge!(number_search(model, node, fields))
         else
           binding.pry
         end
