@@ -68,9 +68,13 @@ module CommandSearch
         end
       end
 
-      if field_type.is_a?(Array) && field_type.include?(:allow_existance_boolean) && (val == 'true' || val == 'false')
+      if field_type.is_a?(Array) && field_type.include?(:allow_existence_boolean) && (val == 'true' || val == 'false')
         bool_val = val == 'true' # TODO: align how mongo and this do this.
-        return model.where(field => bool_val)
+        if bool_val
+          return model.where.not(field => [false, nil])
+        else
+          return model.where(field => [false, nil])
+        end
       end
 
       if search_node[:type] == :str
@@ -84,13 +88,17 @@ module CommandSearch
         end
         return out.where("#{field} ~ ?", quoted_regex)
       elsif search_node[:type] == :number
-        binding.pry
+        # TODO: make sure this is aligned with mongo
+        return out.where(field => val)
       end
     end
 
     def search(model, ast, fields, command_types)
       out = model.all
-      ast.each do |node|
+      # TODO: refactor this clean_ast variable so its nicer
+      clean_ast = ast
+      clean_ast = [ast] unless ast.is_a?(Array)
+      clean_ast.each do |node|
         if node[:type] == :quoted_str
           out.merge!(quoted_search(model, node, fields))
         elsif node[:type] == :str
@@ -99,8 +107,25 @@ module CommandSearch
           out.merge!(command_search(model, node, command_types))
         elsif node[:type] == :number
           out.merge!(number_search(model, node, fields))
+        elsif node[:nest_type] == :pipe
+          or_acc = model.all
+          node[:value].each_with_index do |child, index|
+            clause = search(model, child, fields, command_types)
+            if index == 0
+              or_acc.merge!(clause)
+            else
+              or_acc.or!(clause)
+            end
+          end
+          out.merge!(or_acc)
+        elsif node[:nest_type] == :minus
+          # TODO: check if negation can have multiple things in its value list.
+          clause = search(model, node[:value].first, fields, command_types)
+          # sql_clause = clause.to_sql.sub(/^SELECT .* FROM .* WHERE/, '')
+          # out = out.where.not(sql_clause)
+          out = out.where.not(id: clause)
         else
-          binding.pry
+          # binding.pry
         end
       end
 

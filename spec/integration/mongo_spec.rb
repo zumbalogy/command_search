@@ -259,14 +259,6 @@ describe Hat do
     Hat.search('feathers:false').count.should == 6
   end
 
-  # it 'should handle undefined commands' do
-  #   Hat.search('nam:name1').count.should == 0
-  #   Hat.search('nam:name1').selector.should == { '$or' => [
-  #                                                  { 'title' => /nam:foo/i },
-  #                                                  { 'description' => /nam:foo/i },
-  #                                                  { 'tags' => /nam:foo/i }] }
-  # end
-
   it 'should be able to find things with aliased commands' do
     Hat.search('tags:tags1').count.should == 1
     Hat.search('tag:tags1').count.should == 1
@@ -605,6 +597,14 @@ describe Hat do
   #   Hat.search('custom_h:foo').count.should == 0
   #   Hat.search('custom_h_id:foo').count.should == 0
   #   Hat.search('custom_h.id:bar').count.should == 0
+  # end
+
+  # it 'should handle undefined commands' do
+  #   Hat.search('nam:name1').count.should == 0
+  #   Hat.search('nam:name1').selector.should == { '$or' => [
+  #                                                  { 'title' => /nam:foo/i },
+  #                                                  { 'description' => /nam:foo/i },
+  #                                                  { 'tags' => /nam:foo/i }] }
   # end
 
 end
