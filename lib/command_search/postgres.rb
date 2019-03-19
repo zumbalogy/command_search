@@ -107,6 +107,11 @@ module CommandSearch
           out.merge!(command_search(model, node, command_types))
         elsif node[:type] == :number
           out.merge!(number_search(model, node, fields))
+        elsif node[:nest_type] == :paren
+          node[:value].each do |child|
+            clause = search(model, child, fields, command_types)
+            out.merge!(clause)
+          end
         elsif node[:nest_type] == :pipe
           or_acc = model.all
           node[:value].each_with_index do |child, index|
@@ -120,11 +125,13 @@ module CommandSearch
           out.merge!(or_acc)
         elsif node[:nest_type] == :minus
           # TODO: check if negation can have multiple things in its value list.
-          clause = search(model, node[:value].first, fields, command_types)
+          # TODO: look into performance of doing whole subquery as opposed to just != on each part and flipping the and/ors.
+          # or using just where.not without the "IN" and not worrying about null value handling
           # sql_clause = clause.to_sql.sub(/^SELECT .* FROM .* WHERE/, '')
           # out = out.where.not(sql_clause)
+          clause = search(model, node[:value].first, fields, command_types)
           out = out.where.not(id: clause)
-        else
+        elsif node[:nest_type] == :compare
           # binding.pry
         end
       end
