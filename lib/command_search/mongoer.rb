@@ -151,7 +151,7 @@ module CommandSearch
       raw_type = command_types[key.to_sym]
 
       if raw_type.is_a?(Array)
-        type = (raw_type - [:allow_boolean]).first
+        type = (raw_type - [:allow_boolean]).first # TODO: this should be allow_existence_boolean and is a bug and should have a failing test
       else
         type = raw_type
       end

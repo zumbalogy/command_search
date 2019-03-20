@@ -93,26 +93,63 @@ module CommandSearch
       end
     end
 
+    def compare_search(model, node, command_types)
+      out = model.all
+
+      flip_ops = {
+        '<' => '>',
+        '>' => '<',
+        '<=' => '>=',
+        '>=' => '<='
+      }
+
+      (first_node, last_node) = node[:value]
+      key = first_node[:value]
+      val = last_node[:value]
+      op = node[:nest_op]
+
+      if command_types.keys.include?(val.to_sym)
+        (key, val) = [val, key]
+        op = flip_ops[op]
+      end
+
+      raw_type = command_types[key.to_sym]
+
+      if raw_type.is_a?(Array)
+        type = (raw_type - [:allow_existence_boolean]).first
+      else
+        type = raw_type
+      end
+
+      # TODO: should guarantee that type is found. (this might be done in dealiaser).
+
+      if command_types[val.to_sym]
+        return model.where("#{key} #{op} #{val}") # TODO: sanitize this key and val variable.
+      elsif type == Numeric
+        return model.where("#{key} #{op} ?", val) # TODO: sanitize this key variable. could be original value flipped.
+      end
+    end
+
     def search(model, ast, fields, command_types)
       out = model.all
       # TODO: refactor this clean_ast variable so its nicer
       clean_ast = ast
       clean_ast = [ast] unless ast.is_a?(Array)
       clean_ast.each do |node|
-        if node[:type] == :quoted_str
+        type = node[:nest_type] || node[:type]
+        if type == :quoted_str
           out.merge!(quoted_search(model, node, fields))
-        elsif node[:type] == :str
+        elsif type == :str
           out.merge!(str_search(model, node, fields))
-        elsif node[:nest_type] == :colon
-          out.merge!(command_search(model, node, command_types))
-        elsif node[:type] == :number
+        elsif type == :number
           out.merge!(number_search(model, node, fields))
-        elsif node[:nest_type] == :paren
-          node[:value].each do |child|
-            clause = search(model, child, fields, command_types)
-            out.merge!(clause)
-          end
-        elsif node[:nest_type] == :pipe
+        elsif type == :colon
+          out.merge!(command_search(model, node, command_types))
+        elsif type == :compare
+          out.merge!(compare_search(model, node, command_types))
+        elsif type == :paren
+          node[:value].each { |x| out.merge!(search(model, x, fields, command_types)) }
+        elsif type == :pipe
           or_acc = model.all
           node[:value].each_with_index do |child, index|
             clause = search(model, child, fields, command_types)
@@ -123,7 +160,7 @@ module CommandSearch
             end
           end
           out.merge!(or_acc)
-        elsif node[:nest_type] == :minus
+        elsif type == :minus
           # TODO: check if negation can have multiple things in its value list.
           # TODO: look into performance of doing whole subquery as opposed to just != on each part and flipping the and/ors.
           # or using just where.not without the "IN" and not worrying about null value handling
@@ -131,12 +168,8 @@ module CommandSearch
           # out = out.where.not(sql_clause)
           clause = search(model, node[:value].first, fields, command_types)
           out = out.where.not(id: clause)
-        elsif node[:nest_type] == :compare
-          # binding.pry
         end
       end
-
-      # begin; puts out.to_sql; rescue; binding.pry; end
 
       out
     end
