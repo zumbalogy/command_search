@@ -5,6 +5,7 @@ module CommandSearch
     module_function
 
     def numeric_field?(field, command_types)
+      # TODO:  this could be cleaner/shared/generic or something
       raw_type = command_types[field.to_sym]
       if raw_type.is_a?(Array)
         type = (raw_type - [:allow_existence_boolean]).first

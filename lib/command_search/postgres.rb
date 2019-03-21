@@ -7,6 +7,19 @@ module CommandSearch
   module Postgres
     module_function
 
+    def convert_time(raw_val)
+      time_str = raw_val.tr('_.-', ' ')
+      if time_str == time_str.to_i.to_s
+        date_begin = Time.utc(time_str) # TODO: make mongo this way too
+        date_end = Time.utc(time_str.to_i + 1).yesterday # TODO: make mongo this way too
+      else
+        date = Chronic.parse(time_str, guess: nil) || Chronic.parse(raw_val, guess: nil)
+        date_begin = date.begin
+        date_end = date.end
+      end
+      [date_begin, date_end]
+    end
+
     def str_search(model, node, fields)
       out = model.all
       fields.each_with_index do |field, idx|
@@ -77,6 +90,11 @@ module CommandSearch
         end
       end
 
+      if [Date, Time, DateTime].include?(field_type)
+        (date_begin, date_end) = convert_time(search_node[:value])
+        return model.where("#{field} >= ?", date_begin).where("#{field} <= ?", date_end) # TODO: sanitize this key variable. could be original value flipped.
+      end
+
       if search_node[:type] == :str
         return out.where("#{field} ~* ?", val)
       elsif search_node[:type] == :quoted_str
@@ -127,6 +145,13 @@ module CommandSearch
         return model.where("#{key} #{op} #{val}") # TODO: sanitize this key and val variable.
       elsif type == Numeric
         return model.where("#{key} #{op} ?", val) # TODO: sanitize this key variable. could be original value flipped.
+      elsif [Date, Time, DateTime].include?(type)
+        (date_begin, date_end) = convert_time(val)
+        if op == '>' || op == '>='
+          return model.where("#{key} #{op} ?", date_begin) # TODO: sanitize this key variable. could be original value flipped.
+        else
+          return model.where("#{key} #{op} ?", date_end) # TODO: sanitize this key variable. could be original value flipped.
+        end
       end
     end
 
@@ -161,12 +186,11 @@ module CommandSearch
           end
           out.merge!(or_acc)
         elsif type == :minus
-          # TODO: check if negation can have multiple things in its value list.
           # TODO: look into performance of doing whole subquery as opposed to just != on each part and flipping the and/ors.
           # or using just where.not without the "IN" and not worrying about null value handling
           # sql_clause = clause.to_sql.sub(/^SELECT .* FROM .* WHERE/, '')
           # out = out.where.not(sql_clause)
-          clause = search(model, node[:value].first, fields, command_types)
+          clause = search(model, node[:value], fields, command_types)
           out = out.where.not(id: clause)
         end
       end
