@@ -9,6 +9,7 @@ jobs:
        - image: circleci/ruby:2.6.1
        - image: circleci/mongo:latest
        - image: circleci/mysql:latest
+         command: [--default-authentication-plugin=mysql_native_password]
          environment:
             MYSQL_USER: root
             MYSQL_HOST: 127.0.0.1
