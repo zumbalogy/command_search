@@ -8,6 +8,10 @@ jobs:
     docker:
        - image: circleci/ruby:2.6.1
        - image: circleci/mongo:latest
+       - image: circleci/mysql:latest
+         environment:
+            MYSQL_USER: root
+            MYSQL_ALLOW_EMPTY_PASSWORD: true
        - image: circleci/postgres:latest
          environment:
             POSTGRES_USER: command_search_user_test
