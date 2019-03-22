@@ -5,7 +5,7 @@ load(__dir__ + '/command_search/command_dealiaser.rb')
 load(__dir__ + '/command_search/optimizer.rb')
 load(__dir__ + '/command_search/memory.rb')
 load(__dir__ + '/command_search/mongoer.rb')
-load(__dir__ + '/command_search/postgres.rb')
+load(__dir__ + '/command_search/active_record.rb')
 
 class Boolean; end
 
@@ -31,7 +31,7 @@ module CommandSearch
     end
 
     if source.respond_to?(:ancestors) && source.ancestors.any? { |x| x.to_s == 'ActiveRecord::Base' }
-      return Postgres.search(source, opted, fields, command_fields)
+      return CommandSearch::ActiveRecord.search(source, opted, fields, command_fields)
     end
 
     selector = Memory.build_query(opted, fields, command_fields)
