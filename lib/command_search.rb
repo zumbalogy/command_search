@@ -3,9 +3,9 @@ load(__dir__ + '/command_search/lexer.rb')
 load(__dir__ + '/command_search/parser.rb')
 load(__dir__ + '/command_search/command_dealiaser.rb')
 load(__dir__ + '/command_search/optimizer.rb')
-load(__dir__ + '/command_search/memory.rb')
-load(__dir__ + '/command_search/mongoer.rb')
-load(__dir__ + '/command_search/active_record.rb')
+load(__dir__ + '/command_search/backends/memory.rb')
+load(__dir__ + '/command_search/backends/mongoer.rb')
+load(__dir__ + '/command_search/backends/active_record_postgres.rb')
 
 class Boolean; end
 
@@ -30,8 +30,9 @@ module CommandSearch
       return source.where(mongo_query)
     end
 
+    # TODO: make this dispatch poperly for mongo or psql or mysql
     if source.respond_to?(:ancestors) && source.ancestors.any? { |x| x.to_s == 'ActiveRecord::Base' }
-      return CommandSearch::ActiveRecord.search(source, opted, fields, command_fields)
+      return ActiveRecordPostgres.search(source, opted, fields, command_fields)
     end
 
     selector = Memory.build_query(opted, fields, command_fields)

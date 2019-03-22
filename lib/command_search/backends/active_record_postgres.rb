@@ -4,7 +4,7 @@
 require('chronic')
 
 module CommandSearch
-  module ActiveRecord
+  module ActiveRecordPostgres
     module_function
 
     def convert_time(raw_val)

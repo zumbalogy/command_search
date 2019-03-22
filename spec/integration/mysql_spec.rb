@@ -1,12 +1,12 @@
 load(__dir__ + '/../spec_helper.rb')
 require('active_record')
-require('pg')
+require 'mysql2'
 
-module PG_Spec
+module Mysql_Spec
 
-  db_config = YAML.load_file(__dir__ + '/postgres.yml')
+  db_config = YAML.load_file(__dir__ + '/mysql.yml')
   ActiveRecord::Base.remove_connection
-  ActiveRecord::Base.establish_connection(db_config['test'])
+  ActiveRecord::Base.establish_connection(db_config['development'])
 
   ActiveRecord::Schema.define do
     create_table :hats, force: true do |t|
@@ -26,6 +26,7 @@ module PG_Spec
   end
 
   class Hat < ActiveRecord::Base
+
     def self.search(query)
       head_border = '(?<=^|\s|[|(-])'
       tail_border = '(?=$|\s|[|)])'
@@ -63,8 +64,10 @@ module PG_Spec
 
   describe Hat do
 
+    before { skip('MySQL not yet supported') }
+
     before do
-      db_config = YAML.load_file(__dir__ + '/postgres.yml')
+      db_config = YAML.load_file(__dir__ + '/mysql.yml')
       ActiveRecord::Base.establish_connection(db_config['test'])
     end
 

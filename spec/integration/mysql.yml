@@ -1,0 +1,19 @@
+development:
+  adapter: mysql2
+  host: localhost
+  database: command_search_db_dev
+  pool: 5
+  username: root
+
+test:
+  adapter: mysql2
+  host: localhost
+  database: command_search_db_test
+  pool: 5
+  username: root
+
+# sudo mysql -u root -p
+#
+# USE mysql;
+# CREATE DATABASE command_search_db_dev
+# CREATE DATABASE command_search_db_test
