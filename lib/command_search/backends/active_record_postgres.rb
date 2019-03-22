@@ -7,7 +7,7 @@ module CommandSearch
     def convert_time(raw_val)
       time_str = raw_val.tr('_.-', ' ')
       if time_str == time_str.to_i.to_s
-        date_begin = Time.utc(time_str)
+        date_begin = Time.utc(time_str) # TODO: rethink the UTC of this.
         date_end = Time.utc(time_str.to_i + 1).yesterday
       else
         date = Chronic.parse(time_str, guess: nil) || Chronic.parse(raw_val, guess: nil)
@@ -149,6 +149,9 @@ module CommandSearch
         if op == '>' || op == '>='
           return model.where("#{key} #{op} ?", date_begin) # TODO: sanitize this key variable. could be original value flipped.
         else
+#            model.where("#{model.connection.quote_column_name(key)} <= '2019-03-21 19:44:27.213344'").to_sql
+# => "SELECT \"hats\".* FROM \"hats\" WHERE (\"fav_date\" <= '2019-03-21 19:44:27.213344')"
+
           return model.where("#{key} #{op} ?", date_end) # TODO: sanitize this key variable. could be original value flipped.
         end
       end
