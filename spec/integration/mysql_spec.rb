@@ -6,7 +6,7 @@ module Mysql_Spec
 
   db_config = YAML.load_file(__dir__ + '/mysql.yml')
   ActiveRecord::Base.remove_connection
-  ActiveRecord::Base.establish_connection(db_config['development'])
+  ActiveRecord::Base.establish_connection(db_config['test'])
 
   ActiveRecord::Schema.define do
     create_table :hats, force: true do |t|
