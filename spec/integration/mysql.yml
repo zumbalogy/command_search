@@ -1,13 +1,19 @@
 development:
   adapter: mysql2
-  host: localhost
+  host: 127.0.0.1
+  port: 3306
+  timeout: 5000
+  encoding: utf8
   database: command_search_db_dev
   pool: 5
   username: root
 
 test:
   adapter: mysql2
-  host: localhost
+  host: 127.0.0.1
+  port: 3306
+  timeout: 5000
+  encoding: utf8
   database: command_search_db_test
   pool: 5
   username: root
