@@ -21,8 +21,11 @@ module CommandSearch
       if ast_node[:type] == :quoted_str
         regex = /\b#{Regexp.escape(str)}\b/
         if str[/(^\W)|(\W$)/]
-          head_border = '(?<=^|[^:+\w])'
-          tail_border = '(?=$|[^:+\w])'
+          # head_border = '(?<=^|[^:+\w])'
+          # tail_border = '(?=$|[^:+\w])'
+          # TODO: test perfomance of these vs each other.
+          head_border = '(^|\s|[^:+\w])'
+          tail_border = '($|\s|[^:+\w])'
           regex = Regexp.new(head_border + Regexp.escape(str) + tail_border)
         end
       else
@@ -45,7 +48,7 @@ module CommandSearch
     end
 
     def make_boolean(str)
-      str[/\Atrue\Z/i]
+      str[0] == 't'
     end
 
     def build_command(ast_node, command_types)
@@ -89,8 +92,11 @@ module CommandSearch
           val = /\b#{Regexp.escape(raw_val)}\b/
           val = '' if raw_val == ''
           if raw_val[/(^\W)|(\W$)/]
-            head_border = '(?<=^|[^:+\w])'
-            tail_border = '(?=$|[^:+\w])'
+            # head_border = '(?<=^|[^:+\w])'
+            # tail_border = '(?=$|[^:+\w])'
+            # TODO: test the perf diff.
+            head_border = '(^|\s|[^:+\w])'
+            tail_border = '($|\s|[^:+\w])'
             val = Regexp.new(head_border + Regexp.escape(raw_val) + tail_border)
           end
         else
@@ -107,8 +113,8 @@ module CommandSearch
       elsif [Date, Time, DateTime].include?(type)
         time_str = raw_val.tr('_.-', ' ')
         if time_str == time_str.to_i.to_s
-          date_begin = Time.new(time_str)
-          date_end = Time.new(time_str.to_i + 1).yesterday
+          date_begin = Time.utc(time_str)
+          date_end = Time.utc(time_str.to_i + 1).yesterday # TODO: make a test that fails if not UTC here.
         else
           date = Chronic.parse(time_str, guess: nil) || Chronic.parse(raw_val, guess: nil)
           date_begin = date.begin
@@ -183,7 +189,7 @@ module CommandSearch
         time_str = val.tr('_.-', ' ')
 
         if time_str == time_str.to_i.to_s
-          date = [Time.new(time_str), Time.new(time_str.to_i + 1).yesterday]
+          date = [Time.utc(time_str), Time.utc(time_str.to_i + 1).yesterday] # TODO: make a test that fails if not UTC here.
         else
           date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
         end

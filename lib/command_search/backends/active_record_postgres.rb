@@ -1,6 +1,3 @@
-#  Hat.send(:where, color: "red").send(:merge, Hat.send(:where).send(:not, kind: "sombrero").send(:or, Hat.send(:where, kind: "cow"))).to_sql
-# => "SELECT \"hats\".* FROM \"hats\" WHERE \"hats\".\"color\" = 'red' AND (\"hats\".\"kind\" != 'sombrero' OR \"hats\".\"kind\" = 'cow')"
-
 require('chronic')
 
 module CommandSearch
@@ -10,8 +7,8 @@ module CommandSearch
     def convert_time(raw_val)
       time_str = raw_val.tr('_.-', ' ')
       if time_str == time_str.to_i.to_s
-        date_begin = Time.utc(time_str) # TODO: make mongo this way too
-        date_end = Time.utc(time_str.to_i + 1).yesterday # TODO: make mongo this way too
+        date_begin = Time.utc(time_str)
+        date_end = Time.utc(time_str.to_i + 1).yesterday
       else
         date = Chronic.parse(time_str, guess: nil) || Chronic.parse(raw_val, guess: nil)
         date_begin = date.begin
@@ -50,7 +47,6 @@ module CommandSearch
       str = node[:value] || ''
       quoted_regex = '\m' + Regexp.escape(str) + '\y'
       if str[/(^\W)|(\W$)/]
-        # TODO: see if these non look ahead regexes can be used in mongo-er.
         head_border = '(^|\s|[^:+\w])'
         tail_border = '($|\s|[^:+\w])'
         quoted_regex = head_border + Regexp.escape(str) + tail_border
@@ -73,7 +69,7 @@ module CommandSearch
 
       field_type = command_types[field.to_sym]
       if field_type == Boolean
-        bool_val = val[0] == 't' # TODO: align how mongo and this do this.
+        bool_val = val[0] == 't'
         if bool_val
           return model.where.not(field => [false, nil])
         else
@@ -82,7 +78,7 @@ module CommandSearch
       end
 
       if field_type.is_a?(Array) && field_type.include?(:allow_existence_boolean) && (val == 'true' || val == 'false')
-        bool_val = val == 'true' # TODO: align how mongo and this do this.
+        bool_val = val == 'true'
         if bool_val
           return model.where.not(field => [false, nil])
         else
@@ -90,23 +86,26 @@ module CommandSearch
         end
       end
 
+      if field_type.is_a?(Array)
+        field_type = (field_type - [:allow_existence_boolean]).first
+      end
+
       if [Date, Time, DateTime].include?(field_type)
         (date_begin, date_end) = convert_time(search_node[:value])
         return model.where("#{field} >= ?", date_begin).where("#{field} <= ?", date_end) # TODO: sanitize this key variable. could be original value flipped.
-      end
-
-      if search_node[:type] == :str
-        return out.where("#{field} ~* ?", val)
-      elsif search_node[:type] == :quoted_str
-        quoted_regex = '\m' + val + '\y'
-        if search_node[:value][/(^\W)|(\W$)/]
-          head_border = '(^|\s|[^:+\w])'
-          tail_border = '($|\s|[^:+\w])'
-          quoted_regex = head_border + val + tail_border
+      elsif field_type == String
+        if search_node[:type] == :quoted_str
+          quoted_regex = '\m' + val + '\y'
+          if search_node[:value][/(^\W)|(\W$)/]
+            head_border = '(^|\s|[^:+\w])'
+            tail_border = '($|\s|[^:+\w])'
+            quoted_regex = head_border + val + tail_border
+          end
+          return out.where("#{field} ~ ?", quoted_regex)
+        else
+          return out.where("#{field} ~* ?", val)
         end
-        return out.where("#{field} ~ ?", quoted_regex)
-      elsif search_node[:type] == :number
-        # TODO: make sure this is aligned with mongo
+      elsif [Numeric, Integer].include?(field_type)
         return out.where(field => val)
       end
     end
@@ -157,10 +156,8 @@ module CommandSearch
 
     def search(model, ast, fields, command_types)
       out = model.all
-      # TODO: refactor this clean_ast variable so its nicer
-      clean_ast = ast
-      clean_ast = [ast] unless ast.is_a?(Array)
-      clean_ast.each do |node|
+      ast = [ast] unless ast.is_a?(Array)
+      ast.each do |node|
         type = node[:nest_type] || node[:type]
         if type == :quoted_str
           out.merge!(quoted_search(model, node, fields))
@@ -194,7 +191,6 @@ module CommandSearch
           out = out.where.not(id: clause)
         end
       end
-
       out
     end
   end
