@@ -4,7 +4,7 @@ require 'mysql2'
 
 module Mysql_Spec
 
-  db_config = YAML.load_file(__dir__ + '/mysql.yml')
+  db_config = YAML.load_file(__dir__ + '/../assets/mysql.yml')
   ActiveRecord::Base.remove_connection
   ActiveRecord::Base.establish_connection(db_config['test'])
 
@@ -67,7 +67,6 @@ module Mysql_Spec
     before { skip('MySQL not yet supported') }
 
     before do
-      db_config = YAML.load_file(__dir__ + '/mysql.yml')
       ActiveRecord::Base.establish_connection(db_config['test'])
     end
 

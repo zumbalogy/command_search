@@ -4,7 +4,7 @@ require('pg')
 
 module PG_Spec
 
-  db_config = YAML.load_file(__dir__ + '/postgres.yml')
+  db_config = YAML.load_file(__dir__ + '/../assets/postgres.yml')
   ActiveRecord::Base.remove_connection
   ActiveRecord::Base.establish_connection(db_config['test'])
 
@@ -64,7 +64,6 @@ module PG_Spec
   describe Hat do
 
     before do
-      db_config = YAML.load_file(__dir__ + '/postgres.yml')
       ActiveRecord::Base.establish_connection(db_config['test'])
     end
 
