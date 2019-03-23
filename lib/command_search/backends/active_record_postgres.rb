@@ -17,46 +17,41 @@ module CommandSearch
       [date_begin, date_end]
     end
 
+    def build_quoted_regex(input)
+      str = Regexp.escape(input || '') # TODO: see if OR can be removed
+      if str[/(^\W)|(\W$)/]
+        head_border = '(^|\s|[^:+\w])'
+        tail_border = '($|\s|[^:+\w])'
+        return head_border + str + tail_border
+      end
+      '\m' + str + '\y'
+    end
+
     def str_search(model, node, fields)
-      out = model.all
-      fields.each_with_index do |field, idx|
-        if idx == 0
-          out = out.where("#{field} ~* ?", Regexp.escape(node[:value]))
-        else
-          out = out.or(model.where("#{field} ~* ?", Regexp.escape(node[:value])))
-        end
+      val = Regexp.escape(node[:value])
+      out = model.where("#{fields.first} ~* ?", val)
+      fields.drop(1).each do |field|
+        out.or!(model.where("#{field} ~* ?", val))
       end
       out
     end
 
-    def number_search(model,node, fields)
-      out = model.all
-      fields.each_with_index do |field, idx|
-        if idx == 0
-          # TODO: look into performance cost of this.
-          out = out.where("CAST(#{field} as TEXT) ~* ?", Regexp.escape(node[:value]))
-        else
-          out = out.or(model.where("CAST(#{field} as TEXT) ~* ?", Regexp.escape(node[:value])))
-        end
+    def number_search(model, node, fields)
+      # TODO: this might be a better way to do the mongo thing, if casting is allowed and not too slow.
+      # TODO: look into performance cost of casting.
+      val = Regexp.escape(node[:value])
+      out = model.where("CAST(#{fields.first} as TEXT) ~ ?", val)
+      fields.drop(1).each do |field|
+        out.or!(model.where("CAST(#{field} as TEXT) ~ ?", val))
       end
       out
     end
 
     def quoted_search(model, node, fields)
-      out = model.all
-      str = node[:value] || ''
-      quoted_regex = '\m' + Regexp.escape(str) + '\y'
-      if str[/(^\W)|(\W$)/]
-        head_border = '(^|\s|[^:+\w])'
-        tail_border = '($|\s|[^:+\w])'
-        quoted_regex = head_border + Regexp.escape(str) + tail_border
-      end
-      fields.each_with_index do |field, idx|
-        if idx == 0
-          out = out.where("#{field} ~ ?", quoted_regex)
-        else
-          out = out.or(model.where("#{field} ~ ?", quoted_regex))
-        end
+      val = build_quoted_regex(node[:value])
+      out = model.where("#{fields.first} ~ ?", val)
+      fields.each do |field|
+        out.or!(model.where("#{field} ~ ?", val))
       end
       out
     end
@@ -64,25 +59,18 @@ module CommandSearch
     def command_search(model, node, command_types)
       field = node[:value].first[:value]
       search_node = node[:value].last
-      val = Regexp.escape(search_node[:value])
+      val = search_node[:value]
 
-      full_field_type = command_types[field.to_sym]
+      field_type = command_types[field.to_sym]
+      existence_bool = false
 
-      if full_field_type.is_a?(Array)
-        field_type = (full_field_type - [:allow_existence_boolean]).first
-      else
-        field_type = full_field_type
+      if field_type.is_a?(Array)
+        existence_bool = field_type.include?(:allow_existence_boolean) && (val == 'true' || val == 'false')
+        field_type = (field_type - [:allow_existence_boolean]).first
       end
 
-      if field_type == Boolean
+      if field_type == Boolean || existence_bool
         bool_val = val[0] == 't'
-        if bool_val
-          model.where.not(field => [false, nil])
-        else
-          model.where(field => [false, nil])
-        end
-      elsif full_field_type.is_a?(Array) && full_field_type.include?(:allow_existence_boolean) && (val == 'true' || val == 'false')
-        bool_val = val == 'true'
         if bool_val
           model.where.not(field => [false, nil])
         else
@@ -95,15 +83,9 @@ module CommandSearch
         model.where("#{field} >= ?", date_begin).where("#{field} <= ?", date_end)
       elsif field_type == String
         if search_node[:type] == :quoted_str
-          quoted_regex = '\m' + val + '\y'
-          if search_node[:value][/(^\W)|(\W$)/]
-            head_border = '(^|\s|[^:+\w])'
-            tail_border = '($|\s|[^:+\w])'
-            quoted_regex = head_border + val + tail_border
-          end
-          model.where("#{field} ~ ?", quoted_regex)
+          model.where("#{field} ~ ?", build_quoted_regex(val))
         else
-          model.where("#{field} ~* ?", val)
+          model.where("#{field} ~* ?", Regexp.escape(val))
         end
       end
     end
@@ -161,14 +143,9 @@ module CommandSearch
         elsif type == :paren
           node[:value].each { |x| out.merge!(search(model, x, fields, command_types)) }
         elsif type == :pipe
-          or_acc = model.all
-          node[:value].each_with_index do |child, index|
-            clause = search(model, child, fields, command_types)
-            if index == 0
-              or_acc.merge!(clause)
-            else
-              or_acc.or!(clause)
-            end
+          or_acc = search(model, node[:value].first, fields, command_types)
+          node[:value].drop(1).each do |child|
+            or_acc.or!(search(model, child, fields, command_types))
           end
           out.merge!(or_acc)
         elsif type == :minus
