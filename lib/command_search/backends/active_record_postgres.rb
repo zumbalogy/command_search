@@ -92,7 +92,7 @@ module CommandSearch
 
       if [Date, Time, DateTime].include?(field_type)
         (date_begin, date_end) = convert_time(search_node[:value])
-        return model.where("#{field} >= ?", date_begin).where("#{field} <= ?", date_end) # TODO: sanitize this key variable. could be original value flipped.
+        return model.where("#{field} >= ?", date_begin).where("#{field} <= ?", date_end)
       elsif field_type == String
         if search_node[:type] == :quoted_str
           quoted_regex = '\m' + val + '\y'
@@ -140,19 +140,19 @@ module CommandSearch
 
       # TODO: should guarantee that type is found. (this might be done in dealiaser).
 
+      sanitized_key = model.connection.quote_column_name(key)
+
       if command_types[val.to_sym]
-        return model.where("#{key} #{op} #{val}") # TODO: sanitize this key and val variable.
+        sanitized_val = model.connection.quote_column_name(val)
+        return model.where("#{sanitized_key} #{op} #{sanitized_val}")
       elsif type == Numeric
-        return model.where("#{key} #{op} ?", val) # TODO: sanitize this key variable. could be original value flipped.
+        return model.where("#{sanitized_key} #{op} ?", val)
       elsif [Date, Time, DateTime].include?(type)
         (date_begin, date_end) = convert_time(val)
         if op == '>' || op == '>='
-          return model.where("#{key} #{op} ?", date_begin) # TODO: sanitize this key variable. could be original value flipped.
+          return model.where("#{sanitized_key} #{op} ?", date_begin)
         else
-#            model.where("#{model.connection.quote_column_name(key)} <= '2019-03-21 19:44:27.213344'").to_sql
-# => "SELECT \"hats\".* FROM \"hats\" WHERE (\"fav_date\" <= '2019-03-21 19:44:27.213344')"
-
-          return model.where("#{key} #{op} ?", date_end) # TODO: sanitize this key variable. could be original value flipped.
+          return model.where("#{sanitized_key} #{op} ?", date_end)
         end
       end
     end
