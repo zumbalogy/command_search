@@ -2,11 +2,7 @@ require('benchmark')
 
 include Benchmark
 
-load(__dir__ + '/../lib/command_search/lexer.rb')
-load(__dir__ + '/../lib/command_search/parser.rb')
-load(__dir__ + '/../lib/command_search/command_dealiaser.rb')
-load(__dir__ + '/../lib/command_search/optimizer.rb')
-load(__dir__ + '/../lib/command_search/memory.rb')
+load(__dir__ + '/../lib/command_search.rb')
 
 class Boolean; end
 

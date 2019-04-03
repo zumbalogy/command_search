@@ -1,6 +1,6 @@
 require('benchmark')
 
-load(__dir__ + '/../lib/command_search/lexer.rb')
+load(__dir__ + '/../lib/command_search.rb')
 
 $iterations = 1000
 
