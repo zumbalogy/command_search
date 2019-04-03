@@ -5,7 +5,7 @@ module CommandSearch
     module_function
 
     def numeric_field?(field, command_types)
-      # TODO:  this could be cleaner/shared/generic or something
+      # TODO: this could be cleaner/shared/generic or something
       raw_type = command_types[field.to_sym]
       if raw_type.is_a?(Array)
         type = (raw_type - [:allow_existence_boolean]).first
@@ -21,9 +21,6 @@ module CommandSearch
       if ast_node[:type] == :quoted_str
         regex = /\b#{Regexp.escape(str)}\b/
         if str[/(^\W)|(\W$)/]
-          # head_border = '(?<=^|[^:+\w])'
-          # tail_border = '(?=$|[^:+\w])'
-          # TODO: test perfomance of these vs each other.
           head_border = '(^|\s|[^:+\w])'
           tail_border = '($|\s|[^:+\w])'
           regex = Regexp.new(head_border + Regexp.escape(str) + tail_border)
@@ -92,9 +89,6 @@ module CommandSearch
           val = /\b#{Regexp.escape(raw_val)}\b/
           val = '' if raw_val == ''
           if raw_val[/(^\W)|(\W$)/]
-            # head_border = '(?<=^|[^:+\w])'
-            # tail_border = '(?=$|[^:+\w])'
-            # TODO: test the perf diff.
             head_border = '(^|\s|[^:+\w])'
             tail_border = '($|\s|[^:+\w])'
             val = Regexp.new(head_border + Regexp.escape(raw_val) + tail_border)
