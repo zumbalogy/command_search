@@ -17,8 +17,10 @@ module PG_Spec
       t.boolean :starred
       t.string :child_id
       t.integer :feathers
+      t.integer :feathers2
       t.integer :cost
       t.datetime :fav_date
+      t.datetime :fav_date2
     end
 
     create_table(:bat1s, force: true) { |t| t.date :fav_date }
@@ -44,8 +46,10 @@ module PG_Spec
           tags: String,
           tag: :tags,
           feathers: [Numeric, :allow_existence_boolean],
+          feathers2: [:allow_existence_boolean, Numeric],
           cost: Numeric,
-          fav_date: Time
+          fav_date: Time,
+          fav_date2: [:allow_existence_boolean, Time]
         },
         aliases: {
           /#{head_border}sort:\S+#{tail_border}/ => proc { |match|
@@ -241,9 +245,33 @@ module PG_Spec
       Hat.search('cost:-0').count.should == 1
     end
 
-    it 'should handle numeric existance checks' do
+    it 'should handle numeric existence checks' do
       Hat.search('feathers:true').count.should == 3
       Hat.search('feathers:false').count.should == 6
+
+      Hat.create(feathers2: 12)
+      Hat.create(feathers2: 1)
+      Hat.create(feathers2: 100)
+      Hat.create(feathers2: 0)
+      Hat.search('feathers2:true').count.should == 3
+      Hat.search('feathers2:false').count.should == 10
+      Hat.search('feathers2>5').count.should == 2
+      Hat.search('feathers2>-5').count.should == 4
+      Hat.search('feathers2>"-5"').count.should == 4
+      pending() # TODO: handle this
+      Hat.search('feathers2>foo').count.should == 0
+
+      Hat.create(fav_date2: Time.new(1,1,1,0,0,0,0))
+      Hat.search('fav_date2<1234').count.should == 1
+      Hat.search('fav_date2>1234').count.should == 0
+
+      Hat.search('feathers2>=-33').count.should == 4
+      Hat.search('feathers2<=-33').count.should == 0
+      Hat.create(feathers2: -33)
+      Hat.search('feathers2>=-33').count.should == 5
+      Hat.search('feathers2<=-33').count.should == 1
+      Hat.search('feathers2>-35').count.should == 5
+      Hat.search('feathers2<-30').count.should == 1
     end
 
       it 'should be able to find things with aliased commands' do

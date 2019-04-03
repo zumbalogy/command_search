@@ -144,6 +144,7 @@ describe CommandSearch::Mongoer do
 
   it 'should handle compares' do
     def q2(s); q(s, ['f1'], { num1: Numeric }); end
+    pending('might be strings soon') # TODO: make decisions for this
     q2('num1<-230').should == {'num1'=>{'$lt'=>-230}}
     q2('num1<=5.20').should == {'num1'=>{'$lte'=>5.20}}
     q2('num1>0').should == {'num1'=>{'$gt'=>0}}

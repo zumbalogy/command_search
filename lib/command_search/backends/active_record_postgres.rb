@@ -114,8 +114,10 @@ module CommandSearch
         sanitized_val = model.connection.quote_column_name(val)
         model.where("#{sanitized_key} #{op} #{sanitized_val}")
       elsif type == Numeric
+        # TODO: handle val being random string
         model.where("#{sanitized_key} #{op} ?", val)
       elsif [Date, Time, DateTime].include?(type)
+        # TODO: handle (and have a test for) invalid date being entered
         (date_begin, date_end) = convert_time(val)
         if op == '>' || op == '>='
           model.where("#{sanitized_key} #{op} ?", date_begin)

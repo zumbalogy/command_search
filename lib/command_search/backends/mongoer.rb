@@ -152,7 +152,8 @@ module CommandSearch
       raw_type = command_types[key.to_sym]
 
       if raw_type.is_a?(Array)
-        type = (raw_type - [:allow_boolean]).first # TODO: this should be allow_existence_boolean and is a bug and should have a failing test
+        # type = (raw_type - [:allow_boolean]).first # TODO: this should be allow_existence_boolean and is a bug and should have a failing test
+        type = (raw_type - [:allow_existence_boolean]).first # TODO: this should be allow_existence_boolean and is a bug and should have a failing test
       else
         type = raw_type
       end
@@ -162,12 +163,13 @@ module CommandSearch
         key = '$' + key
         val = [key, val]
         key = '$expr'
-      elsif [Numeric, Integer].include?(type)
-        if val == val.to_i.to_s
-          val = val.to_i
-        else
-          val = val.to_f
-        end
+      # elsif [Numeric, Integer].include?(type)
+      #   # TODO: these casts currently are not needed to pass all tests.
+      #   if val == val.to_i.to_s
+      #     val = val.to_i
+      #   else
+      #     val = val.to_f
+      #   end
       elsif [Date, Time, DateTime].include?(type)
         # foo <  day | day.start
         # foo <= day | day.end
