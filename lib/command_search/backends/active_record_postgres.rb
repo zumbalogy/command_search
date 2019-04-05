@@ -19,7 +19,7 @@ module CommandSearch
     end
 
     def build_quoted_regex(input)
-      str = Regexp.escape(input || '') # TODO: see if OR can be removed
+      str = Regexp.escape(input)
       if str[/(^\W)|(\W$)/]
         head_border = '(^|\s|[^:+\w])'
         tail_border = '($|\s|[^:+\w])'

@@ -12,19 +12,20 @@ module CommandSearch
       [Numeric, Integer].include?(type)
     end
 
+    def build_str_regex(raw, type)
+      str = Regexp.escape(raw)
+      return /#{str}/i unless type == :quoted_str
+      return '' if raw == ''
+      return /\b#{str}\b/ unless raw[/(^\W)|(\W$)/]
+      border_a = '(^|\s|[^:+\w])'
+      border_b = '($|\s|[^:+\w])'
+      Regexp.new(border_a + str + border_b)
+    end
+
     def build_search(ast_node, fields, command_types)
       str = ast_node[:value] || ''
       fields = [fields] unless fields.is_a?(Array)
-      if ast_node[:type] == :quoted_str
-        regex = /\b#{Regexp.escape(str)}\b/
-        if str[/(^\W)|(\W$)/]
-          head_border = '(^|\s|[^:+\w])'
-          tail_border = '($|\s|[^:+\w])'
-          regex = Regexp.new(head_border + Regexp.escape(str) + tail_border)
-        end
-      else
-        regex = /#{Regexp.escape(str)}/i
-      end
+      regex = build_str_regex(str, ast_node[:type])
 
       forms = fields.map do |field|
         if numeric_field?(field, command_types)
@@ -100,25 +101,9 @@ module CommandSearch
           val = { '$exists' => false }
         end
       elsif type == String
-        if search_type == :quoted_str
-          val = /\b#{Regexp.escape(raw_val)}\b/
-          val = '' if raw_val == ''
-          if raw_val[/(^\W)|(\W$)/]
-            head_border = '(^|\s|[^:+\w])'
-            tail_border = '($|\s|[^:+\w])'
-            val = Regexp.new(head_border + Regexp.escape(raw_val) + tail_border)
-          end
-        else
-          val = /#{Regexp.escape(raw_val)}/i
-        end
+        val = build_str_regex(raw_val, search_type)
       elsif [Numeric, Integer].include?(type)
-        if raw_val == raw_val.to_i.to_s
-          val = raw_val.to_i
-        elsif raw_val.to_f != 0 || raw_val[/\A[\.0]*0\Z/]
-          val = raw_val.to_f
-        else
-          val = raw_val
-        end
+        val = raw_val
       elsif [Date, Time, DateTime].include?(type)
         return build_time_command(key, raw_val)
       end

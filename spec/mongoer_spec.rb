@@ -95,9 +95,9 @@ describe CommandSearch::Mongoer do
     def q2(s); q(s, ['f1'], { str1: String, num1: Numeric }); end
     q2('str1:red').should == { 'str1' => /red/i }
     q2('str1:12.2').should == { 'str1' => /12\.2/i }
-    q2('num1:-230').should == { 'num1' => -230 }
-    q2('num1:-0.930').should == { 'num1' => -0.930 }
-    q2('num1:4.0').should == { 'num1' => 4.0 }
+    q2('num1:-230').should == { 'num1' => '-230' }
+    q2('num1:-0.930').should == { 'num1' => '-0.930' }
+    q2('num1:4.0').should == { 'num1' => '4.0' }
     q2('num1:red').should == { 'num1' => 'red' }
   end
 
@@ -171,10 +171,10 @@ describe CommandSearch::Mongoer do
     q2('- -a').should == { '$or' => [{ foo: /a/i }, { bar: /a/i }] }
     q2('-a').should == { '$nor' => [{ foo: /a/i }, { bar: /a/i }] }
     q2('-blue:"very green"').should == { '$nor' => [{ 'blue' => /\bvery\ green\b/ }] }
-    q2('-red:-1').should == { '$nor' => [{ 'red' => -1 }] }
-    q2('-red:0').should == { '$nor' => [{ 'red' => 0 }] }
-    q2('-red:1').should == { '$nor' => [{ 'red' => 1 }] }
-    q2('-red:66').should == { '$nor' => [{ 'red' => 66 }] }
+    q2('-red:-1').should == { '$nor' => [{ 'red' => '-1' }] }
+    q2('-red:0').should == { '$nor' => [{ 'red' => '0' }] }
+    q2('-red:1').should == { '$nor' => [{ 'red' => '1' }] }
+    q2('-red:66').should == { '$nor' => [{ 'red' => '66' }] }
     q2('1 -2 abc').should == {
       "$and" => [{ "$or" => [{ foo: /1/i },
                              { bar: /1/i }] },
@@ -188,9 +188,9 @@ describe CommandSearch::Mongoer do
                               { '$nor' => [{ foo: /abc/i },
                                            { bar: /abc/i }] }] }] }
     q2('-(red:1 blue:foo) red:1').should == {
-      '$and' => [{ '$nor' => [{ '$and' => [{ 'red' => 1 },
+      '$and' => [{ '$nor' => [{ '$and' => [{ 'red' => '1' },
                                            { 'blue' => /foo/i }] }] },
-                 {'red' => 1 }] }
+                 {'red' => '1' }] }
   end
 
   it 'should handle negating with ORs' do
