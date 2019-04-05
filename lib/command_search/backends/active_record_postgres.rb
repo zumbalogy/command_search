@@ -11,6 +11,7 @@ module CommandSearch
         date_end = Time.utc(time_str.to_i + 1).yesterday
       else
         date = Chronic.parse(time_str, guess: nil) || Chronic.parse(raw_val, guess: nil)
+        return unless date
         date_begin = date.begin
         date_end = date.end
       end
