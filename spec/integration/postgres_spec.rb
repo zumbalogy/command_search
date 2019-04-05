@@ -258,7 +258,6 @@ module PG_Spec
       Hat.search('feathers2>5').count.should == 2
       Hat.search('feathers2>-5').count.should == 4
       Hat.search('feathers2>"-5"').count.should == 4
-      pending() # TODO: handle this
       Hat.search('feathers2>foo').count.should == 0
 
       Hat.create(fav_date2: Time.new(1,1,1,0,0,0,0))

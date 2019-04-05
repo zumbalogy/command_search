@@ -130,27 +130,23 @@ describe CommandSearch::Mongoer do
     def q1(s); q(s, [], { b: Boolean }); end
     q1('b:true').should == {'$and'=>[{'b'=>{'$exists'=>true}}, {'b'=>{'$ne'=>false}}]}
     q1('b:false').should == {'$and'=>[{'b'=>{'$exists'=>true}}, {'b'=>{'$ne'=>true}}]}
-    # # TODO: Even with existance boolean, this should maybe check that the existing value is not false.
-    # def q2(s); q(s, [], { paid: :paid_at, paid_at: [Date, :allow_existence_boolean] }); end
-    # q2('paid:true').should == {'paid_at'=>{'$exists'=>true}}
-    # q2('paid:false').should == [{"paid_at"=>{"$exists"=>true}}, {"paid_at"=>{"$ne"=>false}}]
-    def q3(s); q(s, [], { foo: [String, :allow_existence_boolean] }); end
-    q3('foo:"true"').should == {'foo'=>/\btrue\b/}
-    q3('foo:false').should == {'foo'=>{'$exists'=>false}}
-    q3('foo:true').should == {'$and'=>[{'foo'=>{'$exists'=>true}}, {'foo'=>{'$ne'=>false}}]}
-    q3('foo:false|foo:error').should == {'$or'=>[{'foo'=>{'$exists'=>false}},
+    def q2(s); q(s, [], { foo: [String, :allow_existence_boolean] }); end
+    q2('foo:"true"').should == {'foo'=>/\btrue\b/}
+    q2('foo:false').should == {'foo'=>{'$exists'=>false}}
+    q2('foo:true').should == {'$and'=>[{'foo'=>{'$exists'=>true}},
+                                       {'foo'=>{'$ne'=>false}}]}
+    q2('foo:false|foo:error').should == {'$or'=>[{'foo'=>{'$exists'=>false}},
                                                  {'foo'=>/error/i}]}
   end
 
   it 'should handle compares' do
     def q2(s); q(s, ['f1'], { num1: Numeric }); end
-    pending('might be strings soon') # TODO: make decisions for this
-    q2('num1<-230').should == {'num1'=>{'$lt'=>-230}}
-    q2('num1<=5.20').should == {'num1'=>{'$lte'=>5.20}}
-    q2('num1>0').should == {'num1'=>{'$gt'=>0}}
-    q2('0<num1').should == {'num1'=>{'$gt'=>0}}
-    q2('-5>=num1').should == {'num1'=>{'$lte'=>-5}}
-    q2('num1>=1000').should == {'num1'=>{'$gte'=>1000}}
+    q2('num1<-230').should == {'num1'=>{'$lt'=>'-230'}}
+    q2('num1<=5.20').should == {'num1'=>{'$lte'=>'5.20'}}
+    q2('num1>0').should == {'num1'=>{'$gt'=>'0'}}
+    q2('0<num1').should == {'num1'=>{'$gt'=>'0'}}
+    q2('-5>=num1').should == {'num1'=>{'$lte'=>'-5'}}
+    q2('num1>=1000').should == {'num1'=>{'$gte'=>'1000'}}
   end
 
   it 'should handle time compares' do

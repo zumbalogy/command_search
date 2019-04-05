@@ -5,12 +5,9 @@ module CommandSearch
     module_function
 
     def numeric_field?(field, command_types)
-      # TODO: this could be cleaner/shared/generic or something
-      raw_type = command_types[field.to_sym]
-      if raw_type.is_a?(Array)
-        type = (raw_type - [:allow_existence_boolean]).first
-      else
-        type = raw_type
+      type = command_types[field.to_sym]
+      if type.is_a?(Array)
+        type = (type - [:allow_existence_boolean]).first
       end
       [Numeric, Integer].include?(type)
     end
@@ -163,13 +160,6 @@ module CommandSearch
         key = '$' + key
         val = [key, val]
         key = '$expr'
-      # elsif [Numeric, Integer].include?(type)
-      #   # TODO: these casts currently are not needed to pass all tests.
-      #   if val == val.to_i.to_s
-      #     val = val.to_i
-      #   else
-      #     val = val.to_f
-      #   end
       elsif [Date, Time, DateTime].include?(type)
         # foo <  day | day.start
         # foo <= day | day.end
