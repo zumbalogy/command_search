@@ -37,12 +37,30 @@ module CommandSearch
       { '$or' => forms }
     end
 
-    def is_bool_str?(str)
-      str[/\Atrue\Z|\Afalse\Z/i]
+    def is_bool_str?(str, search_type)
+      search_type != :quoted_str && str[/\Atrue\Z|\Afalse\Z/i]
     end
 
     def make_boolean(str)
       str[0] == 't'
+    end
+
+    def build_time_command(key, val)
+      time_str = val.tr('_.-', ' ')
+      if time_str == time_str.to_i.to_s
+        # TODO: make a test that fails if not UTC here.
+        date_a = Time.utc(time_str)
+        date_b = Time.utc(time_str.to_i + 1).yesterday
+      else
+        date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
+        return [{ dummy: true }, { dummy: false }] unless date
+        date_a = date.begin
+        date_b = date.end
+      end
+      [
+        { key => { '$gte' => date_a } },
+        { key => { '$lte' => date_b } }
+      ]
     end
 
     def build_command(ast_node, command_types)
@@ -55,11 +73,11 @@ module CommandSearch
       search_type = search_node[:type]
 
       if raw_type.is_a?(Array)
-        is_bool = raw_type.include?(:allow_existence_boolean) && is_bool_str?(raw_val) && search_type != :quoted_str
         type = (raw_type - [:allow_existence_boolean]).first
+        is_bool = raw_type.include?(:allow_existence_boolean) && is_bool_str?(raw_val, search_type)
       else
-        is_bool = false
         type = raw_type
+        is_bool = false
       end
 
       if type == Boolean
@@ -102,20 +120,7 @@ module CommandSearch
           val = raw_val
         end
       elsif [Date, Time, DateTime].include?(type)
-        time_str = raw_val.tr('_.-', ' ')
-        if time_str == time_str.to_i.to_s
-          date_begin = Time.utc(time_str)
-          date_end = Time.utc(time_str.to_i + 1).yesterday # TODO: make a test that fails if not UTC here.
-        else
-          date = Chronic.parse(time_str, guess: nil) || Chronic.parse(raw_val, guess: nil)
-          date_begin = date.begin
-          date_end = date.end
-        end
-        val = [
-          { key => { '$gte' => date_begin } },
-          { key => { '$lte' => date_end   } }
-        ]
-        key = '$and'
+        return build_time_command(key, raw_val)
       end
       { key => val }
     end
@@ -179,6 +184,8 @@ module CommandSearch
         else
           date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
         end
+
+        date = date || []
 
         if date_pick == :start
           val = date.first

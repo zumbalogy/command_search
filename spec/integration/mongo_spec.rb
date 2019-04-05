@@ -454,6 +454,17 @@ describe Hat do
     Hat.search('2_years_ago<fav_date').count.should == 3
   end
 
+  it 'should handle bad date inputs' do
+    Hat.search('fav_date<zxcvbn').count.should == 0
+    Hat.search('fav_date<(**4h)').count.should == 0
+    Hat.search('fav_date<=(**4h)').count.should == 0
+    Hat.search('fav_date>(**4h)').count.should == 0
+    Hat.search('fav_date>=(**4h)').count.should == 0
+    Hat.search('fav_date:').count.should == 0
+    Hat.search('fav_date:::').count.should == 0
+    Hat.search('fav_date:u48jt0').count.should == 0
+  end
+
   it 'should handle negative comparisons and ORs put together. commands too' do
     # fav_date: fav_date: 1.week.ago, 2.months.ago, fav_date: 1.year.ago
     Hat.search('fav_date<2_years_ago').count.should == 0

@@ -412,7 +412,6 @@ module PG_Spec
       end
 
       it 'should handle bad date inputs' do
-        # TODO: add this test to mongo
         Hat.search('fav_date<zxcvbn').count.should == 0
         Hat.search('fav_date<(**4h)').count.should == 0
         Hat.search('fav_date<=(**4h)').count.should == 0
