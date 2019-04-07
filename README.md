@@ -188,7 +188,7 @@ end
 
 ## Internal Details
 The lifecycle of a query is as follows: The query is alaised, lexed, parsed,
-de-aliased, optimized, and then turned into a Ruby select function or a MongoDB
+de-aliased, optimized, and then turned into a Ruby select function or a Mongo
 compatible query.
 
 In the example shown below, the time it takes to turn the string into a Mongo

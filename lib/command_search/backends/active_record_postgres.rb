@@ -32,6 +32,7 @@ module CommandSearch
       val = Regexp.escape(node[:value])
       out = model.where("#{fields.first} ~* ?", val)
       fields.drop(1).each do |field|
+        # TODO: this is slow
         out.or!(model.where("#{field} ~* ?", val))
       end
       out
@@ -113,6 +114,7 @@ module CommandSearch
 
       if command_types[val.to_sym]
         sanitized_val = model.connection.quote_column_name(val)
+        # enforcing that the key and vals are in the command_types is probably enough sanitaion here. other vals could be poison though.
         model.where("#{sanitized_key} #{op} #{sanitized_val}")
       elsif type == Numeric
         if val == val.to_i.to_s || val == val.to_f.to_s
