@@ -64,7 +64,7 @@ module Mysql_Spec
 
   describe Hat do
 
-    before { skip('MySQL not yet supported') }
+    # before { skip('MySQL not yet supported') }
 
     before do
       ActiveRecord::Base.establish_connection(db_config['test'])
