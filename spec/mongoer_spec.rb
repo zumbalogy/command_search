@@ -42,7 +42,7 @@ describe CommandSearch::Mongoer do
     def q2(s); q(s, ['f1'], { str1: String }); end
     q2('"a b"').should == { 'f1' => /\ba\ b\b/ }
     q2("str1:'a-b'").should == { 'str1' => /\ba\-b\b/ }
-    q2("str1:'a+'").should == { 'str1' => /(?<=^|[^:+\w])a\+(?=$|[^:+\w])/ }
+    q2("str1:'a+'").should == { 'str1' => /(^|\s|[^:+\w])a\+($|\s|[^:+\w])/ }
   end
 
   it 'should handle numeric type general fields' do
@@ -95,9 +95,9 @@ describe CommandSearch::Mongoer do
     def q2(s); q(s, ['f1'], { str1: String, num1: Numeric }); end
     q2('str1:red').should == { 'str1' => /red/i }
     q2('str1:12.2').should == { 'str1' => /12\.2/i }
-    q2('num1:-230').should == { 'num1' => -230 }
-    q2('num1:-0.930').should == { 'num1' => -0.930 }
-    q2('num1:4.0').should == { 'num1' => 4.0 }
+    q2('num1:-230').should == { 'num1' => '-230' }
+    q2('num1:-0.930').should == { 'num1' => '-0.930' }
+    q2('num1:4.0').should == { 'num1' => '4.0' }
     q2('num1:red').should == { 'num1' => 'red' }
   end
 
@@ -130,26 +130,23 @@ describe CommandSearch::Mongoer do
     def q1(s); q(s, [], { b: Boolean }); end
     q1('b:true').should == {'$and'=>[{'b'=>{'$exists'=>true}}, {'b'=>{'$ne'=>false}}]}
     q1('b:false').should == {'$and'=>[{'b'=>{'$exists'=>true}}, {'b'=>{'$ne'=>true}}]}
-    # # TODO: Even with existance boolean, this should maybe check that the existing value is not false.
-    # def q2(s); q(s, [], { paid: :paid_at, paid_at: [Date, :allow_existence_boolean] }); end
-    # q2('paid:true').should == {'paid_at'=>{'$exists'=>true}}
-    # q2('paid:false').should == [{"paid_at"=>{"$exists"=>true}}, {"paid_at"=>{"$ne"=>false}}]
-    def q3(s); q(s, [], { foo: [String, :allow_existence_boolean] }); end
-    q3('foo:"true"').should == {'foo'=>/\btrue\b/}
-    q3('foo:false').should == {'foo'=>{'$exists'=>false}}
-    q3('foo:true').should == {'$and'=>[{'foo'=>{'$exists'=>true}}, {'foo'=>{'$ne'=>false}}]}
-    q3('foo:false|foo:error').should == {'$or'=>[{'foo'=>{'$exists'=>false}},
+    def q2(s); q(s, [], { foo: [String, :allow_existence_boolean] }); end
+    q2('foo:"true"').should == {'foo'=>/\btrue\b/}
+    q2('foo:false').should == {'foo'=>{'$exists'=>false}}
+    q2('foo:true').should == {'$and'=>[{'foo'=>{'$exists'=>true}},
+                                       {'foo'=>{'$ne'=>false}}]}
+    q2('foo:false|foo:error').should == {'$or'=>[{'foo'=>{'$exists'=>false}},
                                                  {'foo'=>/error/i}]}
   end
 
   it 'should handle compares' do
     def q2(s); q(s, ['f1'], { num1: Numeric }); end
-    q2('num1<-230').should == {'num1'=>{'$lt'=>-230}}
-    q2('num1<=5.20').should == {'num1'=>{'$lte'=>5.20}}
-    q2('num1>0').should == {'num1'=>{'$gt'=>0}}
-    q2('0<num1').should == {'num1'=>{'$gt'=>0}}
-    q2('-5>=num1').should == {'num1'=>{'$lte'=>-5}}
-    q2('num1>=1000').should == {'num1'=>{'$gte'=>1000}}
+    q2('num1<-230').should == {'num1'=>{'$lt'=>'-230'}}
+    q2('num1<=5.20').should == {'num1'=>{'$lte'=>'5.20'}}
+    q2('num1>0').should == {'num1'=>{'$gt'=>'0'}}
+    q2('0<num1').should == {'num1'=>{'$gt'=>'0'}}
+    q2('-5>=num1').should == {'num1'=>{'$lte'=>'-5'}}
+    q2('num1>=1000').should == {'num1'=>{'$gte'=>'1000'}}
   end
 
   it 'should handle time compares' do
@@ -174,10 +171,10 @@ describe CommandSearch::Mongoer do
     q2('- -a').should == { '$or' => [{ foo: /a/i }, { bar: /a/i }] }
     q2('-a').should == { '$nor' => [{ foo: /a/i }, { bar: /a/i }] }
     q2('-blue:"very green"').should == { '$nor' => [{ 'blue' => /\bvery\ green\b/ }] }
-    q2('-red:-1').should == { '$nor' => [{ 'red' => -1 }] }
-    q2('-red:0').should == { '$nor' => [{ 'red' => 0 }] }
-    q2('-red:1').should == { '$nor' => [{ 'red' => 1 }] }
-    q2('-red:66').should == { '$nor' => [{ 'red' => 66 }] }
+    q2('-red:-1').should == { '$nor' => [{ 'red' => '-1' }] }
+    q2('-red:0').should == { '$nor' => [{ 'red' => '0' }] }
+    q2('-red:1').should == { '$nor' => [{ 'red' => '1' }] }
+    q2('-red:66').should == { '$nor' => [{ 'red' => '66' }] }
     q2('1 -2 abc').should == {
       "$and" => [{ "$or" => [{ foo: /1/i },
                              { bar: /1/i }] },
@@ -191,9 +188,9 @@ describe CommandSearch::Mongoer do
                               { '$nor' => [{ foo: /abc/i },
                                            { bar: /abc/i }] }] }] }
     q2('-(red:1 blue:foo) red:1').should == {
-      '$and' => [{ '$nor' => [{ '$and' => [{ 'red' => 1 },
+      '$and' => [{ '$nor' => [{ '$and' => [{ 'red' => '1' },
                                            { 'blue' => /foo/i }] }] },
-                 {'red' => 1 }] }
+                 {'red' => '1' }] }
   end
 
   it 'should handle negating with ORs' do
