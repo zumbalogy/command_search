@@ -6,6 +6,7 @@ group :test, :development do
   gem 'pry'
   gem 'mongoid'
   gem 'benchmark-ips'
+  gem 'ruby-prof'
 end
 
 group :test do
