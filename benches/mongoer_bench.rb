@@ -4,11 +4,9 @@ include Benchmark
 
 load(__dir__ + '/../lib/command_search.rb')
 
-class Boolean; end
-
 $iterations = 1000
 
-def mongo(input, fields, command_fields)
+def bench(input, fields, command_fields)
   Benchmark.benchmark(CAPTION, 60, FORMAT, 'Total:') do |bm|
     a = bm.report("Alias: #{input.inspect}") { $iterations.times {
       $lexed = CommandSearch::Aliaser.alias(input, {'foo' => 'bar'})
@@ -38,10 +36,10 @@ end
 fields = [:title, :description, :tags]
 command_fields = { has_child_id: Boolean, title: String, name: :title }
 
-mongo('', [], {})
-mongo('', fields, command_fields)
-mongo('foo bar', fields, command_fields)
-mongo('-(a)|"b"', fields, command_fields)
-mongo('(price<=200 discount)|price<=99.99', fields, command_fields)
-mongo('name:foo tile -(foo bar)', fields, command_fields)
-mongo('name:foo tile -(foo bar)|"hello world" foo>1.2', fields, command_fields)
+bench('', [], {})
+bench('', fields, command_fields)
+bench('foo bar', fields, command_fields)
+bench('-(a)|"b"', fields, command_fields)
+bench('(price<=200 discount)|price<=99.99', fields, command_fields)
+bench('name:foo tile -(foo bar)', fields, command_fields)
+bench('name:foo tile -(foo bar)|"hello world" foo>1.2', fields, command_fields)
