@@ -460,7 +460,7 @@ describe CommandSearch::Memory do
   it 'should not throw errors in the presence of "naughty strings"' do
     # https://github.com/minimaxir/big-list-of-naughty-strings
     require('json')
-    file = File.read(__dir__ + '/blns.json')
+    file = File.read(__dir__ + '/../assets/blns.json')
     list = JSON.parse(file)
     check = true
     list.each do |str|
