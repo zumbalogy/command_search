@@ -12,8 +12,10 @@ class Hat
   field :starred,     type: Boolean
   field :child_id,    type: String
   field :feathers,    type: Integer
+  field :feathers2,   type: Integer
   field :cost,        type: Integer
   field :fav_date,    type: Time
+  field :fav_date2,   type: Time
 
   def self.search(query)
     head_border = '(?<=^|\s|[|(-])'
@@ -33,8 +35,10 @@ class Hat
         tags: String,
         tag: :tags,
         feathers: [Numeric, :allow_existence_boolean],
+        feathers2: [:allow_existence_boolean, Numeric],
         cost: Numeric,
-        fav_date: Time
+        fav_date: Time,
+        fav_date2: [:allow_existence_boolean, Time]
       },
       aliases: {
         /#{head_border}sort:\S+#{tail_border}/ => proc { |match|
@@ -74,9 +78,11 @@ describe Hat do
     Hat.create(title: 'anne')
     Hat.create(title: 'nne')
     Hat.create(title: 'nn')
+    Hat.create(title: 'zz zyx')
     Hat.search('"ann"').count.should == 1
     Hat.search('"nn"').count.should == 1
     Hat.search('"nne"').count.should == 1
+    Hat.search('"zz"').count.should == 1
   end
 
   it 'should only be case sensitive for quoted text' do
@@ -246,24 +252,43 @@ describe Hat do
     Hat.search('title:name1').selector.should == { 'title' => /name1/i }
     Hat.search('title:name500').count.should == 0
     Hat.search('feathers:5').count.should == 1
+    Hat.search('feathers:05').count.should == 1
+    Hat.search('feathers:5.0').count.should == 1
+    Hat.search('feathers:005.000').count.should == 1
     Hat.search('cost:0').count.should == 1
     Hat.search('cost:0.0').count.should == 1
     Hat.search('cost:-0.0').count.should == 1
     Hat.search('cost:-0').count.should == 1
   end
 
-  it 'should handle numeric existance checks' do
+  it 'should handle numeric existence checks' do
     Hat.search('feathers:true').count.should == 3
     Hat.search('feathers:false').count.should == 6
-  end
 
-  # it 'should handle undefined commands' do
-  #   Hat.search('nam:name1').count.should == 0
-  #   Hat.search('nam:name1').selector.should == { '$or' => [
-  #                                                  { 'title' => /nam:foo/i },
-  #                                                  { 'description' => /nam:foo/i },
-  #                                                  { 'tags' => /nam:foo/i }] }
-  # end
+    Hat.create(feathers2: 12)
+    Hat.create(feathers2: 1)
+    Hat.create(feathers2: 100)
+    Hat.create(feathers2: 0)
+    Hat.search('feathers2:true').count.should == 4 # TODO: consider if zero should be false-y here. postgres thinks zero is falsey.
+    Hat.search('feathers2:false').count.should == 9
+    Hat.search('feathers2>5').count.should == 2
+    Hat.search('feathers2>-5').count.should == 4
+    Hat.search('feathers2>"-5"').count.should == 4
+    Hat.search('feathers2>foo').count.should == 0
+
+    Hat.create(fav_date2: Time.new(1,1,1,0,0,0,0))
+    pending
+    Hat.search('fav_date2<1234').count.should == 1
+    Hat.search('fav_date2>1234').count.should == 0
+    Hat.search('feathers2>=-33').count.should == 4
+    Hat.search('feathers2<=-33').count.should == 0
+
+    Hat.create(feathers2: -33)
+    Hat.search('feathers2>=-33').count.should == 5
+    Hat.search('feathers2<=-33').count.should == 1
+    Hat.search('feathers2>-35').count.should == 5
+    Hat.search('feathers2<-30').count.should == 1
+  end
 
   it 'should be able to find things with aliased commands' do
     Hat.search('tags:tags1').count.should == 1
@@ -431,6 +456,18 @@ describe Hat do
     Hat.search('fav_date<2_years_ago').count.should == 0
     Hat.search('2_years_ago>fav_date').count.should == 0
     Hat.search('2_years_ago<fav_date').count.should == 3
+  end
+
+  it 'should handle bad date inputs' do
+    pending
+    Hat.search('fav_date<zxcvbn').count.should == 0
+    Hat.search('fav_date<(**4h)').count.should == 0
+    Hat.search('fav_date<=(**4h)').count.should == 0
+    Hat.search('fav_date>(**4h)').count.should == 0
+    Hat.search('fav_date>=(**4h)').count.should == 0
+    Hat.search('fav_date:').count.should == 0
+    Hat.search('fav_date:::').count.should == 0
+    Hat.search('fav_date:u48jt0').count.should == 0
   end
 
   it 'should handle negative comparisons and ORs put together. commands too' do
@@ -603,6 +640,14 @@ describe Hat do
   #   Hat.search('custom_h:foo').count.should == 0
   #   Hat.search('custom_h_id:foo').count.should == 0
   #   Hat.search('custom_h.id:bar').count.should == 0
+  # end
+
+  # it 'should handle undefined commands' do
+  #   Hat.search('nam:name1').count.should == 0
+  #   Hat.search('nam:name1').selector.should == { '$or' => [
+  #                                                  { 'title' => /nam:foo/i },
+  #                                                  { 'description' => /nam:foo/i },
+  #                                                  { 'tags' => /nam:foo/i }] }
   # end
 
 end
