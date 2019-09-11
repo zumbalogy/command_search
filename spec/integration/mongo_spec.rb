@@ -620,6 +620,9 @@ describe Hat do
     Hat.search('description:""').count.should == 1
     Hat.create(description: '')
     Hat.search('description:""').count.should == 2
+
+    Hat.search('feathers:4545').count.should == 0
+    Hat.search('feathers:hello').count.should == 0
   end
 
   # it 'should error gracefully' do

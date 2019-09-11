@@ -53,7 +53,7 @@ module CommandSearch
         date_b = Time.new(time_str.to_i + 1).yesterday
       else
         date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
-        return [{ dummy: true }, { dummy: false }] unless date
+        return [{ CommandSeachDummyDate: true }, { CommandSeachDummyDate: false }] unless date
         date_a = date.begin
         date_b = date.end
       end
