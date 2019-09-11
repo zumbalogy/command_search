@@ -5,6 +5,7 @@ gem 'chronic'
 group :test, :development do
   gem 'pry'
   gem 'mongoid'
+  gem 'benchmark-ips'
 end
 
 group :test do
