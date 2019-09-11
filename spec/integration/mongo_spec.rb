@@ -277,7 +277,6 @@ describe Hat do
     Hat.search('feathers2>foo').count.should == 0
 
     Hat.create(fav_date2: Time.new(1,1,1,0,0,0,0))
-    pending
     Hat.search('fav_date2<1234').count.should == 1
     Hat.search('fav_date2>1234').count.should == 0
     Hat.search('feathers2>=-33').count.should == 4
@@ -459,7 +458,6 @@ describe Hat do
   end
 
   it 'should handle bad date inputs' do
-    pending
     Hat.search('fav_date<zxcvbn').count.should == 0
     Hat.search('fav_date<(**4h)').count.should == 0
     Hat.search('fav_date<=(**4h)').count.should == 0
