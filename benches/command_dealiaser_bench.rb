@@ -1,21 +1,19 @@
-require('benchmark')
+require('benchmark/ips')
 
 load(__dir__ + '/../lib/command_search.rb')
 
-$iterations = 1000
-
-Benchmark.bmbm() do |bm|
+Benchmark.ips() do |bm|
   $bm = bm
 
   def dealias(input, command_fields)
     lexed = CommandSearch::Lexer.lex(input)
     parsed = CommandSearch::Parser.parse!(lexed)
-    $bm.report("Decompose: #{input.inspect}") { $iterations.times {
+    $bm.report("Decompose: #{input.inspect}") {
       CommandSearch::CommandDealiaser.decompose_unaliasable(parsed, command_fields)
-    } }
-    $bm.report('Dealias') { $iterations.times {
+    }
+    $bm.report('Dealias') {
       CommandSearch::CommandDealiaser.dealias(parsed, command_fields)
-    } }
+    }
   end
 
   dealias('', {})

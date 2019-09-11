@@ -1,5 +1,4 @@
 require('benchmark/ips')
-require('pry')
 
 load(__dir__ + '/../lib/command_search.rb')
 
