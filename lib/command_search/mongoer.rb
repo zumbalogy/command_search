@@ -49,9 +49,8 @@ module CommandSearch
     def build_time_command(key, val)
       time_str = val.tr('_.-', ' ')
       if time_str == time_str.to_i.to_s
-        # TODO: make a test that fails if not UTC here.
-        date_a = Time.utc(time_str)
-        date_b = Time.utc(time_str.to_i + 1).yesterday
+        date_a = Time.new(time_str)
+        date_b = Time.new(time_str.to_i + 1).yesterday
       else
         date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
         return [{ dummy: true }, { dummy: false }] unless date
@@ -164,7 +163,7 @@ module CommandSearch
         time_str = val.tr('_.-', ' ')
 
         if time_str == time_str.to_i.to_s
-          date = [Time.utc(time_str), Time.utc(time_str.to_i + 1).yesterday] # TODO: make a test that fails if not UTC here.
+          date = [Time.new(time_str), Time.new(time_str.to_i + 1).yesterday]
         else
           date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
         end

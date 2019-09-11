@@ -53,3 +53,6 @@ multiple NORs under same parent can be merged together.
 consider that it might make the api simpler just to make everything "allow existence boolean"
 
 https://apidock.com/rails/v4.2.7/ActiveRecord/QueryMethods/readonly
+
+
+the public search function should maybe take a timezone (or an option for "current", or such)
