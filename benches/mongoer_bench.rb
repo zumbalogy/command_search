@@ -9,7 +9,7 @@ Benchmark.ips do |bm|
   def bench(input, fields = nil, command_fields = nil)
     fields ||= [:title, :description, :tags]
     command_fields ||= { has_child_id: Boolean, title: String, name: :title }
-    $bm.report(input) do
+    $bm.report(input.inspect) do
       lexed = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
       lexed = CommandSearch::Lexer.lex(input)
       parsed = CommandSearch::Parser.parse!(lexed)
