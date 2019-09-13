@@ -15,9 +15,13 @@ module CommandSearch
 
     def unnest_unaliased(node, aliases)
       type = node[:nest_type]
-      values = node[:value].map { |x| x[:value].to_sym }
-      return node if type == :colon && aliases[values.first]
-      return node if type == :compare && (values & aliases.keys).any?
+      if type == :colon
+        val = node[:value][0][:value].to_sym
+        return node if aliases[val]
+      elsif type == :compare
+        return node if node[:value].any? { |child| aliases[child[:value].to_sym] }
+      end
+      values = node[:value].map { |x| x[:value] }
       str_values = values.join(node[:nest_op])
       { type: :str, value: str_values }
     end

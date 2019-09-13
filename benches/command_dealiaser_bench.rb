@@ -48,4 +48,6 @@ Benchmark.ips() do |bm|
     z2: 'zzz'
   }
   dealias('fo:bar a:a b:b c:c ' * 2, aliases)
+  dealias('fo:bar a:a b:b c<4 ' * 2, aliases)
+  dealias('fo:bar a<b b<=34 c<4 ' * 2, aliases)
 end

@@ -35,6 +35,7 @@ describe CommandSearch::CommandDealiaser do
 
   it 'should set unaliased commands to normal searches' do
     dealias('foo foo:bar', {}).should_not == parse('foo foo:bar')
+    # TODO: more tests around this
     dealias('a:b', {}).should == [{ type: :str, value: 'a:b' }]
   end
 

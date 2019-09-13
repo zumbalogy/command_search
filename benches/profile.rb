@@ -5,7 +5,7 @@ load(__dir__ + '/../lib/command_search.rb')
 # RubyProf.measure_mode = RubyProf::WALL_TIME
 # RubyProf.measure_mode = RubyProf::PROCESS_TIME
 # RubyProf.measure_mode = RubyProf::ALLOCATIONS
-# RubyProf.measure_mode = RubyProf::MEMORY
+RubyProf.measure_mode = RubyProf::MEMORY
 
 def bench(input, fields = nil, command_fields = nil)
   fields ||= [:title, :description, :tags]
@@ -31,10 +31,10 @@ result = RubyProf.profile do
   end
 end
 
-printer = RubyProf::GraphPrinter.new(result)
-# printer = RubyProf::GraphHtmlPrinter.new(result)
+# printer = RubyProf::GraphPrinter.new(result)
+printer = RubyProf::GraphHtmlPrinter.new(result)
 # printer = RubyProf::CallStackPrinter.new(result)
 
-printer.print(STDOUT, min_percent: 5)
+printer.print(STDOUT, min_percent: 0)
 
 # File.open('tmp/profile_data.html', 'w') { |file| printer.print(file) }
