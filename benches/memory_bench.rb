@@ -2,8 +2,6 @@ require('benchmark/ips')
 
 load(__dir__ + '/../lib/command_search.rb')
 
-class Boolean; end
-
 $hats = [
   { title: 'name name1 1' },
   { title: 'name name2 2', description: 'desk desk1 1' },
@@ -29,13 +27,13 @@ Benchmark.ips() do |bm|
     cleaned = nil
     opted = nil
     query = nil
-    $bm.report(input.inspect) { lexed = CommandSearch::Lexer.lex(input) }
-    $bm.report('p')           { parsed = CommandSearch::Parser.parse!(lexed) }
-    $bm.report('d')           { dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields) }
-    $bm.report('c')           { cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields) }
-    $bm.report('o')           { opted = CommandSearch::Optimizer.optimize(cleaned) }
-    $bm.report('q')           { query = CommandSearch::Memory.build_query(opted, fields, command_fields) }
-    $bm.report('_____select') { $hats.select(&query).count }
+    $bm.report(input.inspect[0..99])   { lexed = CommandSearch::Lexer.lex(input) }
+    $bm.report('p')                    { parsed = CommandSearch::Parser.parse!(lexed) }
+    $bm.report('d')                    { dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields) }
+    $bm.report('c')                    { cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields) }
+    $bm.report('o')                    { opted = CommandSearch::Optimizer.optimize(cleaned) }
+    $bm.report('q')                    { query = CommandSearch::Memory.build_query(opted, fields, command_fields) }
+    $bm.report('_____select')          { $hats.select(&query).count }
   end
 
   bench('', [], {})
@@ -45,4 +43,5 @@ Benchmark.ips() do |bm|
   bench('name:foo tile -(foo bar)')
   bench('name:foo tile -(foo bar)|"hello world" foo>1.2')
   bench('name:foo tile a|a|a foo:bar -(foo bar)|"hello world" foo>1.2' * 1000)
+  bench('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 1200)
 end

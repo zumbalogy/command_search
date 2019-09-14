@@ -51,6 +51,11 @@ combination.
 | Negate  | `-`                  | `-error`, `-(sat\|sun)`                |
 
 ## Limitations
+The logic can be non-linear and slow (100ms+) for queries that exceed 10,000
+characters (even on non-embedded hardware). In public APIs or performance
+sensitive use cases, long inputs should be truncated or otherwise taken into
+account.
+
 Date/Time searches are only parsed into dates for command searches that
 specify (`:`) or compare (`<`, `>`, `<=`, `>=`).
 

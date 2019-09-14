@@ -30,6 +30,7 @@ result = RubyProf.profile do
     run('name:foo tile -(foo bar)|"hello world" foo>1.2')
   end
   run('name:foo tile a|a|a foo:bar -(foo bar)|"hello world" foo>1.2' * 100)
+  run('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 1200)
 end
 
 # printer = RubyProf::GraphPrinter.new(result)

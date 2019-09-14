@@ -8,7 +8,7 @@ Benchmark.ips do |bm|
   def bench(input, fields = nil, command_fields = nil)
     fields ||= [:title, :description, :tags]
     command_fields ||= { has_child_id: Boolean, title: String, name: :title }
-    $bm.report(input.inspect) do
+    $bm.report(input.inspect.length) do
       aliased = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
       lexed = CommandSearch::Lexer.lex(aliased)
       parsed = CommandSearch::Parser.parse!(lexed)
@@ -26,4 +26,8 @@ Benchmark.ips do |bm|
   bench('(price<=200 discount)|price<=99.99')
   bench('name:foo tile -(foo bar)')
   bench('name:foo tile -(foo bar)|"hello world" foo>1.2')
+
+  bench('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 300)
+  bench('()()()())(((((()())(()())))))(()()))))()())))(()((((())(()()(((((())()()()|||||()(HODF)_)))((((()||_())|||_()(*&^&(::sdfd' * 300)
+  bench('s dfhjlds hlsdf hhh " sdf " a:b -4 -g sdjflh sdlkfhj lhdlfhl fdlfhldsfhg hsdljkjdfsld fhsdjklhhello "sdfdsfnj hklj" foo:556' * 300)
 end
