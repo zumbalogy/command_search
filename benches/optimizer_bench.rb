@@ -1,25 +1,23 @@
-require('benchmark')
+require('benchmark/ips')
 
-load(__dir__ + '/../lib/command_search/lexer.rb')
-load(__dir__ + '/../lib/command_search/parser.rb')
-load(__dir__ + '/../lib/command_search/command_dealiaser.rb')
-load(__dir__ + '/../lib/command_search/optimizer.rb')
+load(__dir__ + '/../lib/command_search.rb')
 
-$iterations = 1000
-
-Benchmark.bmbm() do |bm|
+Benchmark.ips() do |bm|
   $bm = bm
 
-  def optimize(input)
-    title = "Optimize: #{input.inspect}"
+  def bench(input)
+    title = "Optimize #{input.length}: #{input.inspect[0..24]}"
     lexed = CommandSearch::Lexer.lex(input)
     parsed = CommandSearch::Parser.parse!(lexed)
-    $bm.report(title) { $iterations.times { CommandSearch::Optimizer.optimize(parsed) } }
+    $bm.report(title) { CommandSearch::Optimizer.optimize(parsed) }
   end
 
-  optimize('')
-  optimize(' -(a|a|b|c)')
-  optimize(' -(a|a|b|c)' * 2)
-  optimize(' -(a|a|b|c)' * 4)
-  optimize(' -(a|a|b|c)' * 8)
+  bench('')
+  bench('a|b|(a|b|c)|')
+  bench('a|a a|b|(a|b|c)|')
+  bench('a (b c) a|a a|b|(a|b|c)|')
+  bench('(((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|')
+  bench('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|')
+  bench('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 100)
+  bench('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 1000)
 end

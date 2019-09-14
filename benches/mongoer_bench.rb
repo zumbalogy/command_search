@@ -1,52 +1,33 @@
-require('benchmark')
+require('benchmark/ips')
 
-include Benchmark
+load(__dir__ + '/../lib/command_search.rb')
 
-load(__dir__ + '/../lib/command_search/aliaser.rb')
-load(__dir__ + '/../lib/command_search/lexer.rb')
-load(__dir__ + '/../lib/command_search/parser.rb')
-load(__dir__ + '/../lib/command_search/command_dealiaser.rb')
-load(__dir__ + '/../lib/command_search/optimizer.rb')
-load(__dir__ + '/../lib/command_search/mongoer.rb')
+Benchmark.ips do |bm|
+  $bm = bm
 
-class Boolean; end
-
-$iterations = 1000
-
-def mongo(input, fields, command_fields)
-  Benchmark.benchmark(CAPTION, 60, FORMAT, 'Total:') do |bm|
-    a = bm.report("Alias: #{input.inspect}") { $iterations.times {
-      $lexed = CommandSearch::Aliaser.alias(input, {'foo' => 'bar'})
-    }}
-    l = bm.report('L') { $iterations.times {
-      $lexed = CommandSearch::Lexer.lex(input)
-    }}
-    p = bm.report('P') { $iterations.times {
-      $parsed = CommandSearch::Parser.parse!($lexed)
-    }}
-    d = bm.report('D') { $iterations.times {
-      $dealiased = CommandSearch::CommandDealiaser.dealias($parsed, command_fields)
-    }}
-    u = bm.report('U') { $iterations.times {
-      $cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable($dealiased, command_fields)
-    }}
-    o = bm.report('O') { $iterations.times {
-      $opted = CommandSearch::Optimizer.optimize($cleaned)
-    }}
-    m = bm.report('M') { $iterations.times {
-      CommandSearch::Mongoer.build_query($opted, fields, command_fields)
-    }}
-    [l + p + d + u + o + m]
+  def bench(input, fields = nil, command_fields = nil)
+    fields ||= [:title, :description, :tags]
+    command_fields ||= { has_child_id: Boolean, title: String, name: :title }
+    $bm.report(input.inspect.length) do
+      aliased = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
+      lexed = CommandSearch::Lexer.lex(aliased)
+      parsed = CommandSearch::Parser.parse!(lexed)
+      dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields)
+      cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
+      opted = CommandSearch::Optimizer.optimize(cleaned)
+      CommandSearch::Mongoer.build_query(opted, fields, command_fields)
+    end
   end
+
+  bench('', [], {})
+  bench('')
+  bench('foo bar')
+  bench('-(a)|"b"')
+  bench('(price<=200 discount)|price<=99.99')
+  bench('name:foo tile -(foo bar)')
+  bench('name:foo tile -(foo bar)|"hello world" foo>1.2')
+
+  bench('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 300)
+  bench('()()()())(((((()())(()())))))(()()))))()())))(()((((())(()()(((((())()()()|||||()(HODF)_)))((((()||_())|||_()(*&^&(::sdfd' * 300)
+  bench('s dfhjlds hlsdf hhh " sdf " a:b -4 -g sdjflh sdlkfhj lhdlfhl fdlfhldsfhg hsdljkjdfsld fhsdjklhhello "sdfdsfnj hklj" foo:556' * 300)
 end
-
-fields = [:title, :description, :tags]
-command_fields = { has_child_id: Boolean, title: String, name: :title }
-
-mongo('', [], {})
-mongo('', fields, command_fields)
-mongo('foo bar', fields, command_fields)
-mongo('-(a)|"b"', fields, command_fields)
-mongo('(price<=200 discount)|price<=99.99', fields, command_fields)
-mongo('name:foo tile -(foo bar)', fields, command_fields)
-mongo('name:foo tile -(foo bar)|"hello world" foo>1.2', fields, command_fields)

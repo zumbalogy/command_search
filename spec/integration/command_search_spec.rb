@@ -2,7 +2,7 @@ load(__dir__ + '/../spec_helper.rb')
 
 require('mongoid')
 
-Mongoid.load!(__dir__ + '/mongoid.yml', :test)
+Mongoid.load!(__dir__ + '/../assets/mongoid.yml', :test)
 
 class Bird
   include Mongoid::Document
@@ -29,6 +29,11 @@ $birds = [
   { title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
 ]
 
+def search_all(query, options, expected)
+  CommandSearch.search(Bird, query, options).count.should == expected
+  CommandSearch.search($birds, query, options).count.should == expected
+end
+
 describe CommandSearch do
 
   before do
@@ -53,15 +58,10 @@ describe CommandSearch do
         name: :title
       }
     }
-    query = 'name:3|tags2'
-    CommandSearch.search(Bird, query, options).count.should == 2
-    CommandSearch.search($birds, query, options).count.should == 2
-    CommandSearch.search(Bird, 'name:name4', options).count.should == 1
-    CommandSearch.search($birds, 'name:name4', options).count.should == 1
-    CommandSearch.search(Bird, 'name:-name4', options).count.should == 0
-    CommandSearch.search($birds, 'name:-name4', options).count.should == 0
-    CommandSearch.search(Bird, 'badKey:foo', options).count.should == 0
-    CommandSearch.search($birds, 'badKey:foo', options).count.should == 0
+    search_all('name:3|tags2', options, 2)
+    search_all('name:name4', options, 1)
+    search_all('name:-name4', options, 0)
+    search_all('badKey:foo', options, 0)
   end
 
   it 'should handle invalid keys' do
@@ -72,9 +72,7 @@ describe CommandSearch do
         title: String
       }
     }
-    query = 'name:3|tags2'
-    CommandSearch.search($birds, query, options).count.should == 1
-    CommandSearch.search(Bird, query, options).count.should == 1
+    search_all('name:3|tags2', options, 1)
   end
 
   it 'should be able to work without command fields' do
@@ -84,9 +82,7 @@ describe CommandSearch do
       { title: 'bird:1' },
       { 'title' => 'title:2' }
     ]
-    query = '3|tags2'
-    CommandSearch.search(Bird, query, options).count.should == 2
-    CommandSearch.search($birds, query, options).count.should == 2
+    search_all('3|tags2', options, 2)
     CommandSearch.search(birds2, 'bird:1', options).count.should == 1
     CommandSearch.search(birds2, 'title:2', options).count.should == 1
     CommandSearch.search(birds2, 'bird:1', options2).count.should == 1
@@ -101,54 +97,49 @@ describe CommandSearch do
         name: :title
       }
     }
-    CommandSearch.search(Bird, 'name:3', options).count.should == 1
-    CommandSearch.search($birds, 'name:3', options).count.should == 1
-    CommandSearch.search(Bird, '3', options).count.should == 0
-    CommandSearch.search($birds, '3', options).count.should == 0
-    CommandSearch.search($birds, 'feathers>4', options).count.should == 0
-    CommandSearch.search(Bird, 'feathers>4', options).count.should == 0
+    search_all('name:3', options, 1)
+    search_all('3', options, 0)
+    search_all('feathers>4', options, 0)
+  end
+
+  it 'should handle existence booleans' do
+    options = {
+      command_fields: {
+        title: [String, :allow_existence_boolean]
+      }
+    }
+    search_all('title:3', options, 1)
+    search_all('title:true', options, 7)
+    search_all('title:false', options, 2)
   end
 
   it 'should be able to handle unbalanced compares' do
     options = { command_fields: { feathers: Numeric } }
-    CommandSearch.search($birds, 'feathers>', options).count.should == 0
-    CommandSearch.search($birds, '>4', options).count.should == 0
-    CommandSearch.search($birds, '4<', options).count.should == 0
-    CommandSearch.search($birds, '4>=', options).count.should == 0
-    CommandSearch.search(Bird, 'feathers>', options).count.should == 0
-    CommandSearch.search(Bird, '>4', options).count.should == 0
-    CommandSearch.search(Bird, '4<', options).count.should == 0
-    CommandSearch.search(Bird, '4>=', options).count.should == 0
-    CommandSearch.search($birds, 'feathers>>', options).count.should == 0
-    CommandSearch.search($birds, '=<feathers>>', options).count.should == 0
-    CommandSearch.search(Bird, 'feathers>>', options).count.should == 0
-    CommandSearch.search(Bird, '=<feathers>>', options).count.should == 0
+    search_all('4<', options, 0)
+    search_all('4>', options, 0)
+    search_all('<4', options, 0)
+    search_all('>4', options, 0)
+    search_all('4<=', options, 0)
+    search_all('4>=', options, 0)
+    search_all('<=4', options, 0)
+    search_all('>=4', options, 0)
+    search_all('feathers>>', options, 0)
+    search_all('=<feathers>>', options, 0)
   end
 
   it 'should be able to handle a field declared as Numeric or Interger' do
-    options = { command_fields: { feathers: Numeric } }
-    CommandSearch.search(Bird, 'feathers>0', options).count.should == 3
-    CommandSearch.search(Bird, 'feathers>0.0', options).count.should == 3
-    CommandSearch.search(Bird, 'feathers>0.1', options).count.should == 3
-    CommandSearch.search(Bird, 'feathers>4', options).count.should == 2
-    CommandSearch.search(Bird, 'feathers>4.0', options).count.should == 2
-    CommandSearch.search(Bird, 'feathers>4.2', options).count.should == 2
-    CommandSearch.search($birds, 'feathers>4', options).count.should == 2
-    CommandSearch.search($birds, 'feathers>4.0', options).count.should == 2
-    CommandSearch.search($birds, 'feathers>4.2', options).count.should == 2
-    options2 = { command_fields: { feathers: Integer } }
-    CommandSearch.search(Bird, 'feathers>0', options2).count.should == 3
-    CommandSearch.search(Bird, 'feathers>0.0', options2).count.should == 3
-    CommandSearch.search(Bird, 'feathers>0.1', options2).count.should == 3
-    CommandSearch.search(Bird, 'feathers>4', options2).count.should == 2
-    CommandSearch.search(Bird, 'feathers>4.0', options2).count.should == 2
-    CommandSearch.search(Bird, 'feathers>4.2', options2).count.should == 2
-    CommandSearch.search($birds, 'feathers>0', options2).count.should == 3
-    CommandSearch.search($birds, 'feathers>0.0', options2).count.should == 3
-    CommandSearch.search($birds, 'feathers>0.1', options2).count.should == 3
-    CommandSearch.search($birds, 'feathers>4', options2).count.should == 2
-    CommandSearch.search($birds, 'feathers>4.0', options2).count.should == 2
-    CommandSearch.search($birds, 'feathers>4.2', options2).count.should == 2
+    def helper(query, total)
+      options = { command_fields: { feathers: Numeric } }
+      options2 = { command_fields: { feathers: Integer } }
+      search_all(query, options, total)
+      search_all(query, options2, total)
+    end
+    helper('feathers>0', 3)
+    helper('feathers>0.0', 3)
+    helper('feathers>0.1', 3)
+    helper('feathers>4', 2)
+    helper('feathers>4.0', 2)
+    helper('feathers>4.2', 2)
   end
 
   it 'should handle wacky inputs' do
@@ -160,12 +151,12 @@ describe CommandSearch do
         name: :title
       }
     }
-    CommandSearch.search($birds, '|desk', options).count.should == 4
-    CommandSearch.search($birds,  'desk|', options).count.should == 4
-    CommandSearch.search($birds, '|desk|', options).count.should == 4
-    CommandSearch.search(Bird,   '|desk', options).count.should == 4
-    CommandSearch.search(Bird,    'desk|', options).count.should == 4
-    CommandSearch.search(Bird,   '|desk|', options).count.should == 4
+    search_all('|desk', options, 4)
+    search_all('desk|', options, 4)
+    search_all('|desk|', options, 4)
+    search_all('|desk', options, 4)
+    search_all('desk|', options, 4)
+    search_all('|desk|', options, 4)
   end
 
   it 'should handle long command alias chains' do
@@ -180,9 +171,7 @@ describe CommandSearch do
         zzz: :bar
       }
     }
-    query = 'zzz:3|tags2'
-    CommandSearch.search(Bird, query, options).count.should == 2
-    CommandSearch.search($birds, query, options).count.should == 2
+    search_all('zzz:3|tags2', options, 2)
   end
 
   it 'should handle alaises' do

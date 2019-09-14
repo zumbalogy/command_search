@@ -1,23 +1,19 @@
-require('benchmark')
+require('benchmark/ips')
 
-load(__dir__ + '/../lib/command_search/lexer.rb')
-load(__dir__ + '/../lib/command_search/parser.rb')
-load(__dir__ + '/../lib/command_search/command_dealiaser.rb')
+load(__dir__ + '/../lib/command_search.rb')
 
-$iterations = 1000
-
-Benchmark.bmbm() do |bm|
+Benchmark.ips() do |bm|
   $bm = bm
 
   def dealias(input, command_fields)
     lexed = CommandSearch::Lexer.lex(input)
     parsed = CommandSearch::Parser.parse!(lexed)
-    $bm.report("Decompose: #{input.inspect}") { $iterations.times {
+    $bm.report("Decompose: #{input.inspect}") {
       CommandSearch::CommandDealiaser.decompose_unaliasable(parsed, command_fields)
-    } }
-    $bm.report('Dealias') { $iterations.times {
+    }
+    $bm.report('Dealias') {
       CommandSearch::CommandDealiaser.dealias(parsed, command_fields)
-    } }
+    }
   end
 
   dealias('', {})
@@ -52,4 +48,6 @@ Benchmark.bmbm() do |bm|
     z2: 'zzz'
   }
   dealias('fo:bar a:a b:b c:c ' * 2, aliases)
+  dealias('fo:bar a:a b:b c<4 ' * 2, aliases)
+  dealias('fo:bar a<b b<=34 c<4 ' * 2, aliases)
 end

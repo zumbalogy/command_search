@@ -450,7 +450,6 @@ describe CommandSearch::Memory do
     CommandSearch.search([{}], "=4Ts2em(5sZ ]]&x<-", { fields: [:foo] })
     CommandSearch.search([{}], "<|SOUv~Y74+Fm+Yva`64", { fields: [:foo] })
     CommandSearch.search([{}], "4:O0E%~Z<@?O]e'h@<'k^", { fields: [:foo] })
-
     CommandSearch.search([{}], '(-sdf:sdfdf>sd\'s":f-', { fields: [:foo] })
     CommandSearch.search([{}], '""sdfdsfhellosdf|dsfsdf::>>><><', { fields: [:foo] })
 
@@ -460,7 +459,7 @@ describe CommandSearch::Memory do
   it 'should not throw errors in the presence of "naughty strings"' do
     # https://github.com/minimaxir/big-list-of-naughty-strings
     require('json')
-    file = File.read(__dir__ + '/blns.json')
+    file = File.read(__dir__ + '/../assets/blns.json')
     list = JSON.parse(file)
     check = true
     list.each do |str|

@@ -51,6 +51,11 @@ combination.
 | Negate  | `-`                  | `-error`, `-(sat\|sun)`                |
 
 ## Limitations
+The logic can be non-linear and slow (100ms+) for queries that exceed 10,000
+characters (even on non-embedded hardware). In public APIs or performance
+sensitive use cases, long inputs should be truncated or otherwise taken into
+account.
+
 Date/Time searches are only parsed into dates for command searches that
 specify (`:`) or compare (`<`, `>`, `<=`, `>=`).
 
@@ -192,8 +197,7 @@ de-aliased, optimized, and then turned into a Ruby select function or a MongoDB
 compatible query.
 
 In the example shown below, the time it takes to turn the string into a Mongo
-query is under 0.2ms and smaller queries such as "foo bar:baz" should take less
-than 70µs (2015 i7-6500U Ruby 2.2.2).
+query is under 70µs (2017 i7-8550u @ 1.8GHz Ruby 2.6.0).
 
 The lexer breaks a query into pieces.
 ```ruby
@@ -240,7 +244,7 @@ The optimizer will then tidy up some of the logic with rules such as:
 * 'a a' => 'a'
 * 'a|a' => 'a'
 
-It will then be turned into a Ruby function to be used in a select, or a mongo
+It will then be turned into a Ruby function to be used in a select, or a Mongo
 compatible query.
 
 ```ruby

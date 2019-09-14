@@ -1,9 +1,9 @@
-require('benchmark')
+require('benchmark/ips')
 require('mongoid')
 
 load(__dir__ + '/../lib/command_search.rb')
 
-Mongoid.load!(__dir__ + '/../spec/integration/mongoid.yml', :test)
+Mongoid.load!(__dir__ + '/../spec/assets/mongoid.yml', :test)
 
 class Bird
   include Mongoid::Document
@@ -34,71 +34,42 @@ Bird.destroy_all
 
 1000.times do |i|
   Bird.create({ title: 'name ' + i.to_s, description: i.to_s, cost: rand, feathers: i })
-end
-
-1000.times do |i|
   $birds.push({ title: 'name ' + i.to_s, description: i.to_s, cost: rand, feathers: i })
 end
 
-$iterations = 100
-
-Benchmark.bmbm() do |bm|
+Benchmark.ips() do |bm|
   $bm = bm
 
-  def mem(query, options)
-    title = "Mem: #{query.inspect} #{options.to_s.tr('=>', ' ')}"
-    $bm.report(title) { $iterations.times { CommandSearch.search($birds, query, options).count } }
+  def both(query, options)
+    title = "#{query.inspect} #{options.to_s.tr('=>', ' ')}"
+    $bm.report('Mem:' + title) { CommandSearch.search($birds, query, options).count }
+    $bm.report('Mongo:' + title) { CommandSearch.search(Bird, query, options).count }
   end
 
-  def mongo(query, options)
-    title = "Mongo: #{query.inspect} #{options.to_s.tr('=>', ' ')}"
-    $bm.report(title) { $iterations.times { CommandSearch.search(Bird, query, options).count } }
-  end
+  both('', {})
+  both('', { fields: [] })
+  both('name', { })
+  both('name', { fields: [:title, :description, :tags] })
+  both('name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
+  both('title:name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
 
-  mem('', {})
-  mem('', { fields: [] })
-  mem('name', { })
-  mem('name', { fields: [:title, :description, :tags] })
-  mem('name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
-  mem('title:name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
-
-  mem('name', {
+  both('name', {
     fields: [:title, :description, :tags],
     command_fields: { has_child_id: Boolean, title: String, name: :title }
   })
-  mem('title:name', {
+  both('title:name', {
     fields: [:title, :description, :tags],
     command_fields: { has_child_id: Boolean, title: String, name: :title }
   })
-  mem('name title:name', {
+  both('name title:name', {
     fields: [:title, :description, :tags],
     command_fields: { has_child_id: Boolean, title: String, name: :title }
   })
-  mem('name title:name', {
+  both('name title:name', {
     fields: [:title, :description, :tags, :foo, :bar, :baz, :a, :b, :c],
     command_fields: { has_child_id: Boolean, title: String, name: :title }
   })
-
-  mongo('', {})
-  mongo('', { fields: [] })
-  mongo('name', { })
-  mongo('name', { fields: [:title, :description, :tags] })
-  mongo('name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
-  mongo('title:name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
-
-  mongo('name', {
-    fields: [:title, :description, :tags],
-    command_fields: { has_child_id: Boolean, title: String, name: :title }
-  })
-  mongo('title:name', {
-    fields: [:title, :description, :tags],
-    command_fields: { has_child_id: Boolean, title: String, name: :title }
-  })
-  mongo('name title:name', {
-    fields: [:title, :description, :tags],
-    command_fields: { has_child_id: Boolean, title: String, name: :title }
-  })
-  mongo('name title:name', {
+  both('(price<=200 discount)|price<=99.99', {
     fields: [:title, :description, :tags, :foo, :bar, :baz, :a, :b, :c],
     command_fields: { has_child_id: Boolean, title: String, name: :title }
   })

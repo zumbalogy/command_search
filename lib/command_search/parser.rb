@@ -2,40 +2,42 @@ module CommandSearch
   module Parser
     module_function
 
-    def parens_rindex(input)
-      open_i = input.rindex { |x| x[:value] == '(' && x[:type] == :paren }
-      return unless open_i
-      close_offset = input.drop(open_i).index { |x| x[:value] == ')' && x[:type] == :paren }
-      return unless close_offset
-      [open_i, close_offset + open_i]
-    end
-
     def group_parens!(input)
-      while parens_rindex(input)
-        (a, b) = parens_rindex(input)
-        val = input[(a + 1)..(b - 1)]
-        input[a..b] = { type: :nest, nest_type: :paren, value: val }
+      i = 0
+      opening_idxs = []
+      while i < input.length
+        next i += 1 unless input[i][:type] == :paren
+        if input[i][:value] == '('
+          opening_idxs.push(i)
+        elsif opening = opening_idxs.pop()
+          val = input[(opening + 1)..(i - 1)]
+          input[opening..i] = { type: :nest, nest_type: :paren, value: val }
+          i -= (val.length + 1)
+        end
+        i += 1
       end
     end
 
     def cluster!(type, input, cluster_type = :binary)
       binary = (cluster_type == :binary)
-      input.compact!
-      # rindex (vs index) important for nested prefixes
-      while (i = input.rindex { |x| x[:type] == type })
-        val = [input[i + 1]]
-        val.unshift(input[i - 1]) if binary && i > 0
-        front_offset = 0
-        front_offset = 1 if binary && i > 0
-        input[(i - front_offset)..(i + 1)] = {
-          type: :nest,
-          nest_type: type,
-          nest_op: input[i][:value],
-          value: val
-        }
-      end
-      input.each do |x|
-        cluster!(type, x[:value], cluster_type) if x[:type] == :nest
+      i = input.length - 1
+      while i >= 0
+        if input[i][:type] == type
+          val = [input[i + 1]]
+          val.compact!
+          val.unshift(input[i - 1]) if binary && i > 0
+          front_offset = 0
+          front_offset = 1 if binary && i > 0
+          input[(i - front_offset)..(i + 1)] = {
+            type: :nest,
+            nest_type: type,
+            nest_op: input[i][:value],
+            value: val
+          }
+          i -= 1 if binary
+        end
+        cluster!(type, input[i][:value], cluster_type) if input[i][:type] == :nest
+        i -= 1
       end
     end
 

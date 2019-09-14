@@ -5,28 +5,27 @@ module CommandSearch
     module_function
 
     def numeric_field?(field, command_types)
-      raw_type = command_types[field.to_sym]
-      if raw_type.is_a?(Array)
-        type = (raw_type - [:allow_existence_boolean]).first
-      else
-        type = raw_type
+      type = command_types[field.to_sym]
+      if type.is_a?(Array)
+        type = (type - [:allow_existence_boolean]).first
       end
       [Numeric, Integer].include?(type)
+    end
+
+    def build_str_regex(raw, type)
+      str = Regexp.escape(raw)
+      return /#{str}/i unless type == :quoted_str
+      return '' if raw == ''
+      return /\b#{str}\b/ unless raw[/(^\W)|(\W$)/]
+      border_a = '(^|\s|[^:+\w])'
+      border_b = '($|\s|[^:+\w])'
+      Regexp.new(border_a + str + border_b)
     end
 
     def build_search(ast_node, fields, command_types)
       str = ast_node[:value] || ''
       fields = [fields] unless fields.is_a?(Array)
-      if ast_node[:type] == :quoted_str
-        regex = /\b#{Regexp.escape(str)}\b/
-        if str[/(^\W)|(\W$)/]
-          head_border = '(?<=^|[^:+\w])'
-          tail_border = '(?=$|[^:+\w])'
-          regex = Regexp.new(head_border + Regexp.escape(str) + tail_border)
-        end
-      else
-        regex = /#{Regexp.escape(str)}/i
-      end
+      regex = build_str_regex(str, ast_node[:type])
 
       forms = fields.map do |field|
         if numeric_field?(field, command_types)
@@ -39,12 +38,29 @@ module CommandSearch
       { '$or' => forms }
     end
 
-    def is_bool_str?(str)
-      str[/\Atrue\Z|\Afalse\Z/i]
+    def is_bool_str?(str, search_type)
+      search_type != :quoted_str && str[/\Atrue\Z|\Afalse\Z/i]
     end
 
     def make_boolean(str)
-      str[/\Atrue\Z/i]
+      str[0] == 't'
+    end
+
+    def build_time_command(key, val)
+      time_str = val.tr('_.-', ' ')
+      if time_str == time_str.to_i.to_s
+        date_a = Time.new(time_str)
+        date_b = Time.new(time_str.to_i + 1).yesterday
+      else
+        date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
+        return [{ CommandSeachDummyDate: true }, { CommandSeachDummyDate: false }] unless date
+        date_a = date.begin
+        date_b = date.end
+      end
+      [
+        { key => { '$gte' => date_a } },
+        { key => { '$lte' => date_b } }
+      ]
     end
 
     def build_command(ast_node, command_types)
@@ -57,11 +73,11 @@ module CommandSearch
       search_type = search_node[:type]
 
       if raw_type.is_a?(Array)
-        is_bool = raw_type.include?(:allow_existence_boolean) && is_bool_str?(raw_val) && search_type != :quoted_str
         type = (raw_type - [:allow_existence_boolean]).first
+        is_bool = raw_type.include?(:allow_existence_boolean) && is_bool_str?(raw_val, search_type)
       else
-        is_bool = false
         type = raw_type
+        is_bool = false
       end
 
       if type == Boolean
@@ -84,40 +100,11 @@ module CommandSearch
           val = { '$exists' => false }
         end
       elsif type == String
-        if search_type == :quoted_str
-          val = /\b#{Regexp.escape(raw_val)}\b/
-          val = '' if raw_val == ''
-          if raw_val[/(^\W)|(\W$)/]
-            head_border = '(?<=^|[^:+\w])'
-            tail_border = '(?=$|[^:+\w])'
-            val = Regexp.new(head_border + Regexp.escape(raw_val) + tail_border)
-          end
-        else
-          val = /#{Regexp.escape(raw_val)}/i
-        end
+        val = build_str_regex(raw_val, search_type)
       elsif [Numeric, Integer].include?(type)
-        if raw_val == raw_val.to_i.to_s
-          val = raw_val.to_i
-        elsif raw_val.to_f != 0 || raw_val[/\A[\.0]*0\Z/]
-          val = raw_val.to_f
-        else
-          val = raw_val
-        end
+        val = raw_val
       elsif [Date, Time, DateTime].include?(type)
-        time_str = raw_val.tr('_.-', ' ')
-        if time_str == time_str.to_i.to_s
-          date_begin = Time.new(time_str)
-          date_end = Time.new(time_str.to_i + 1).yesterday
-        else
-          date = Chronic.parse(time_str, guess: nil) || Chronic.parse(raw_val, guess: nil)
-          date_begin = date.begin
-          date_end = date.end
-        end
-        val = [
-          { key => { '$gte' => date_begin } },
-          { key => { '$lte' => date_end   } }
-        ]
-        key = '$and'
+        return build_time_command(key, raw_val)
       end
       { key => val }
     end
@@ -151,7 +138,7 @@ module CommandSearch
       raw_type = command_types[key.to_sym]
 
       if raw_type.is_a?(Array)
-        type = (raw_type - [:allow_boolean]).first
+        type = (raw_type - [:allow_existence_boolean]).first
       else
         type = raw_type
       end
@@ -161,12 +148,6 @@ module CommandSearch
         key = '$' + key
         val = [key, val]
         key = '$expr'
-      elsif [Numeric, Integer].include?(type)
-        if val == val.to_i.to_s
-          val = val.to_i
-        else
-          val = val.to_f
-        end
       elsif [Date, Time, DateTime].include?(type)
         # foo <  day | day.start
         # foo <= day | day.end
@@ -186,6 +167,8 @@ module CommandSearch
         else
           date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
         end
+
+        date = date || []
 
         if date_pick == :start
           val = date.first
@@ -233,7 +216,7 @@ module CommandSearch
       end
     end
 
-    def build_query(ast, fields, command_types = {})
+    def build_query(ast, fields, command_types)
       out = ast
       build_searches!(out, fields, command_types)
       build_tree!(out)

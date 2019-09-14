@@ -1,15 +1,14 @@
-require('benchmark')
+require('benchmark/ips')
 
-load(__dir__ + '/../lib/command_search/lexer.rb')
+load(__dir__ + '/../lib/command_search.rb')
 
-$iterations = 1000
-
-Benchmark.bmbm() do |bm|
+Benchmark.ips do |bm|
   $bm = bm
 
   def lex(input)
-    title = "Lex: #{input.inspect}"
-    $bm.report(title) { $iterations.times { CommandSearch::Lexer.lex(input) } }
+    title = "Lex #{input.length}: #{input.inspect}"
+    title = title[0..18] + '…' if title.length > 18
+    $bm.report(title) { CommandSearch::Lexer.lex(input) }
   end
 
   lex('')

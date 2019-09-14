@@ -1,16 +1,6 @@
-require('benchmark')
+require('benchmark/ips')
 
-include Benchmark
-
-load(__dir__ + '/../lib/command_search/lexer.rb')
-load(__dir__ + '/../lib/command_search/parser.rb')
-load(__dir__ + '/../lib/command_search/command_dealiaser.rb')
-load(__dir__ + '/../lib/command_search/optimizer.rb')
-load(__dir__ + '/../lib/command_search/memory.rb')
-
-class Boolean; end
-
-$iterations = 1000
+load(__dir__ + '/../lib/command_search.rb')
 
 $hats = [
   { title: 'name name1 1' },
@@ -21,34 +11,37 @@ $hats = [
   { tags: "multi tag, 'quoted tag'" },
   { title: 'same_name', feathers: 2, cost: 0, fav_date: '2.months.ago' },
   { title: 'same_name', feathers: 5, cost: 4, fav_date: '1.year.ago' },
+  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' },
   { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' }
-]
+] * 100
 
-def mem(input, fields, command_fields)
-  Benchmark.benchmark(CAPTION, 60, FORMAT, 'Total:') do |bm|
-    l = bm.report("Lex: #{input.inspect}") { $iterations.times {
-      $lexed = CommandSearch::Lexer.lex(input)
-    }}
-    $parsed = CommandSearch::Parser.parse!($lexed)
-    $dealiased = CommandSearch::CommandDealiaser.dealias($parsed, command_fields)
-    $cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable($dealiased, command_fields)
-    $opted = CommandSearch::Optimizer.optimize($cleaned)
-    m = bm.report('M') { $iterations.times {
-      $query = CommandSearch::Memory.build_query($opted, fields, command_fields)
-    }}
-    q = bm.report('Q') { $iterations.times {
-      $hats.select(&$query).count
-    }}
-    [l + m + q]
+Benchmark.ips() do |bm|
+  $bm = bm
+
+  def bench(input, fields = nil, command_fields = nil)
+    fields ||= [:title, :description, :tags]
+    command_fields ||= { has_child_id: Boolean, title: String, name: :title }
+    lexed = nil
+    parsed = nil
+    dealiased = nil
+    cleaned = nil
+    opted = nil
+    query = nil
+    $bm.report(input.inspect[0..99])   { lexed = CommandSearch::Lexer.lex(input) }
+    $bm.report('p')                    { parsed = CommandSearch::Parser.parse!(lexed) }
+    $bm.report('d')                    { dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields) }
+    $bm.report('c')                    { cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields) }
+    $bm.report('o')                    { opted = CommandSearch::Optimizer.optimize(cleaned) }
+    $bm.report('q')                    { query = CommandSearch::Memory.build_query(opted, fields, command_fields) }
+    $bm.report('_____select')          { $hats.select(&query).count }
   end
+
+  bench('', [], {})
+  bench('')
+  bench('foo bar')
+  bench('-(a)|"b"')
+  bench('name:foo tile -(foo bar)')
+  bench('name:foo tile -(foo bar)|"hello world" foo>1.2')
+  bench('name:foo tile a|a|a foo:bar -(foo bar)|"hello world" foo>1.2' * 1000)
+  bench('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 1200)
 end
-
-fields = [:title, :description, :tags]
-command_fields = { has_child_id: Boolean, title: String, name: :title }
-
-mem('', [], {})
-mem('', fields, command_fields)
-mem('foo bar', fields, command_fields)
-mem('-(a)|"b"', fields, command_fields)
-mem('name:foo tile -(foo bar)', fields, command_fields)
-mem('name:foo tile -(foo bar)|"hello world" foo>1.2', fields, command_fields)

@@ -48,3 +48,20 @@ Handling dynamic types in mongo is something to think about.
 
 q2('-(-1 2 -abc)').should == q2('-(-1) -(2) abc') is currently equivalent logically, but not the same exact query .
 multiple NORs under same parent can be merged together.
+
+
+consider that it might make the api simpler just to make everything "allow existence boolean"
+
+https://apidock.com/rails/v4.2.7/ActiveRecord/QueryMethods/readonly
+
+
+Deciding what to do about UTC vs local time handling.
+the public search function should maybe take a timezone (or an option for "current", or such)
+
+Making the public facing CommandSearch.search function better and more flexible.
+
+Writing a function that can decompose NOTs in the internal AST. (The mongo backend used to do this, and this branch had it a little for postgres for a bit, but it less clean than proper recursion (though maybe more permanent) and each backend should not need it's own logic for it.)
+
+Having further steps to process the AST for easier consumption by the backends. This potentially includes casting dates, handling erroneous input, cleaning and/marking commands and compares.
+
+Further cleaning up the test suite.

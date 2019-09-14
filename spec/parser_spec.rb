@@ -128,6 +128,19 @@ describe CommandSearch::Parser do
              value: [
                {type: :str, value: 'x'},
                {type: :str, value: 'yy'}]}]}]}]
+    parse('(a|b c)|z').should ==  [
+      {type: :nest,
+       nest_type: :pipe,
+       nest_op: '|',
+       value: [{type: :nest,
+                nest_type: :paren,
+                value: [{type: :nest,
+                         nest_type: :pipe,
+                         nest_op: '|',
+                         value: [{type: :str, value: 'a'},
+                                 {type: :str, value: 'b'}]},
+                         {type: :str, value: 'c'}]},
+                {type: :str, value: 'z'}]}]
   end
 
   it 'should handle unbalanced ORs' do
@@ -137,7 +150,7 @@ describe CommandSearch::Parser do
         nest_type: :pipe,
         nest_op: '|',
         value: [
-          {type: :str, value: 'a'}
+          { type: :str, value: 'a' }
         ]
       }
     ]
@@ -147,7 +160,19 @@ describe CommandSearch::Parser do
         nest_type: :pipe,
         nest_op: '|',
         value: [
-          {type: :str, value: 'a'}
+          { type: :str, value: 'a' }
+        ]
+      }
+    ]
+    parse('-|').should == [
+      {
+        nest_op: '-',
+        nest_type: :minus,
+        type: :nest,
+        value: [
+          {
+            nest_op: '|',
+            nest_type: :pipe, type: :nest, value: []}
         ]
       }
     ]
