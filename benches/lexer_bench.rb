@@ -4,8 +4,6 @@ load(__dir__ + '/../lib/command_search.rb')
 
 Benchmark.ips do |bm|
 
-  bm.config(time: 0.2, warmup: 0.1)
-
   $bm = bm
 
   def lex(input)

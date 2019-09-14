@@ -43,7 +43,7 @@ Benchmark.ips() do |bm|
   def both(query, options)
     title = "#{query.inspect} #{options.to_s.tr('=>', ' ')}"
     $bm.report('Mem:' + title) { CommandSearch.search($birds, query, options).count }
-    $bm.report('Mongo' + title) { CommandSearch.search(Bird, query, options).count }
+    $bm.report('Mongo:' + title) { CommandSearch.search(Bird, query, options).count }
   end
 
   both('', {})

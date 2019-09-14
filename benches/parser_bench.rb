@@ -1,16 +1,14 @@
-require('benchmark')
+require('benchmark/ips')
 
 load(__dir__ + '/../lib/command_search.rb')
 
-$iterations = 1000
-
-Benchmark.bmbm() do |bm|
+Benchmark.ips() do |bm|
   $bm = bm
 
   def parse(input)
     title = "Parse: #{input.inspect}"
     lexed = CommandSearch::Lexer.lex(input)
-    $bm.report(title) { $iterations.times { CommandSearch::Parser.parse!(lexed) } }
+    $bm.report(title) { CommandSearch::Parser.parse!(lexed) }
   end
 
   parse('')
