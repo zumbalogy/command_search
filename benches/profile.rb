@@ -7,7 +7,7 @@ load(__dir__ + '/../lib/command_search.rb')
 # RubyProf.measure_mode = RubyProf::ALLOCATIONS
 RubyProf.measure_mode = RubyProf::MEMORY
 
-def bench(input, fields = nil, command_fields = nil)
+def run(input, fields = nil, command_fields = nil)
   fields ||= [:title, :description, :tags]
   command_fields ||= { has_child_id: Boolean, title: String, name: :title }
   lexed = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
@@ -21,19 +21,20 @@ end
 
 result = RubyProf.profile do
   1000.times do
-    bench('', [], {})
-    bench('')
-    bench('foo bar')
-    bench('-(a)|"b"')
-    bench('(price<=200 discount)|price<=99.99')
-    bench('name:foo tile -(foo bar)')
-    bench('name:foo tile -(foo bar)|"hello world" foo>1.2')
+    run('', [], {})
+    run('')
+    run('foo bar')
+    run('-(a)|"b"')
+    run('(price<=200 discount)|price<=99.99')
+    run('name:foo tile -(foo bar)')
+    run('name:foo tile -(foo bar)|"hello world" foo>1.2')
   end
+  run('name:foo tile a|a|a foo:bar -(foo bar)|"hello world" foo>1.2' * 100)
 end
 
 # printer = RubyProf::GraphPrinter.new(result)
-printer = RubyProf::GraphHtmlPrinter.new(result)
-# printer = RubyProf::CallStackPrinter.new(result)
+# printer = RubyProf::GraphHtmlPrinter.new(result)
+printer = RubyProf::CallStackPrinter.new(result)
 
 printer.print(STDOUT, min_percent: 0)
 

@@ -44,4 +44,5 @@ Benchmark.ips() do |bm|
   bench('-(a)|"b"')
   bench('name:foo tile -(foo bar)')
   bench('name:foo tile -(foo bar)|"hello world" foo>1.2')
+  bench('name:foo tile a|a|a foo:bar -(foo bar)|"hello world" foo>1.2' * 1000)
 end

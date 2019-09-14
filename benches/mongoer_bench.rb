@@ -9,8 +9,8 @@ Benchmark.ips do |bm|
     fields ||= [:title, :description, :tags]
     command_fields ||= { has_child_id: Boolean, title: String, name: :title }
     $bm.report(input.inspect) do
-      lexed = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
-      lexed = CommandSearch::Lexer.lex(input)
+      aliased = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
+      lexed = CommandSearch::Lexer.lex(aliased)
       parsed = CommandSearch::Parser.parse!(lexed)
       dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields)
       cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
