@@ -3,7 +3,6 @@ require('benchmark/ips')
 load(__dir__ + '/../lib/command_search.rb')
 
 Benchmark.ips do |bm|
-
   $bm = bm
 
   def lex(input)
