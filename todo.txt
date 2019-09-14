@@ -65,3 +65,11 @@ Writing a function that can decompose NOTs in the internal AST. (The mongo backe
 Having further steps to process the AST for easier consumption by the backends. This potentially includes casting dates, handling erroneous input, cleaning and/marking commands and compares.
 
 Further cleaning up the test suite.
+
+
+# things get bad, in the parser, grouping parens, after 100k text length here. 100k => 5s, 170k => 38s
+# input = ('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 1200)
+# puts input.length
+# lexed = CommandSearch::Lexer.lex(input)
+# parsed = CommandSearch::Parser.parse!(lexed)
+# CommandSearch::Optimizer.optimize(parsed)
