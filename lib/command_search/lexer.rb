@@ -46,3 +46,7 @@ module CommandSearch
     end
   end
 end
+
+
+# TODO: using start_with? with a regex is only avialable as of Ruby 2.6.0	2018-12-25,  which is not great.
+# but, Ruby 2.4 is now under the state of the security maintenance phase, until the end of March of 2020
