@@ -39,4 +39,4 @@ printer = RubyProf::CallStackPrinter.new(result)
 
 printer.print(STDOUT, min_percent: 0)
 
-# File.open('tmp/profile_data.html', 'w') { |file| printer.print(file) }
+# File.open('profile_data.html', 'w') { |file| printer.print(file) }
