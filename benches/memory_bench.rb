@@ -21,19 +21,15 @@ Benchmark.ips() do |bm|
   def bench(input, fields = nil, command_fields = nil)
     fields ||= [:title, :description, :tags]
     command_fields ||= { has_child_id: Boolean, title: String, name: :title }
-    lexed = nil
-    parsed = nil
-    dealiased = nil
-    cleaned = nil
-    opted = nil
-    query = nil
-    $bm.report(input.inspect[0..99])   { lexed = CommandSearch::Lexer.lex(input) }
-    $bm.report('p')                    { parsed = CommandSearch::Parser.parse!(lexed) }
-    $bm.report('d')                    { dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields) }
-    $bm.report('c')                    { cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields) }
-    $bm.report('o')                    { opted = CommandSearch::Optimizer.optimize(cleaned) }
-    $bm.report('q')                    { query = CommandSearch::Memory.build_query(opted, fields, command_fields) }
-    $bm.report('_____select')          { $hats.select(&query).count }
+    $bm.report(input.inspect[0..99]) do
+      lexed = CommandSearch::Lexer.lex(input)
+      parsed = CommandSearch::Parser.parse!(lexed)
+      dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields)
+      cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
+      opted = CommandSearch::Optimizer.optimize(cleaned)
+      query = CommandSearch::Memory.build_query(opted, fields, command_fields)
+      $hats.select(&query).count
+    end
   end
 
   bench('', [], {})
