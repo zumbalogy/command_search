@@ -3,6 +3,7 @@ require('benchmark/ips')
 load(__dir__ + '/../lib/command_search.rb')
 
 Benchmark.ips do |bm|
+  bm.config(time: 1, warmup: 0.2)
   $bm = bm
 
   def lex(input)

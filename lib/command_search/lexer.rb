@@ -10,8 +10,8 @@ module CommandSearch
         type = :str
         tail = input[i..-1]
         if tail.start_with?(/\s+/)
-          match = Regexp.last_match[0]
-          type = :space
+          i += Regexp.last_match[0].length
+          next
         elsif tail.start_with?(/"(.*?)"/)
           i += 2
           match = Regexp.last_match[1]
