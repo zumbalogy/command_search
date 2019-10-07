@@ -39,7 +39,7 @@ jobs:
 
       - run:
           name: run benchmarks
-          command: bundle exec ruby benches/circleci_bench.rb
+          command: bundle exec ruby benches/mongoer_bench.rb
 
       - run:
           name: run tests
