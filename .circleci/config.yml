@@ -38,10 +38,6 @@ jobs:
       # - run: bundle exec rake db:schema:load
 
       - run:
-          name: run benchmarks
-          command: bundle exec ruby benches/mongoer_bench.rb
-
-      - run:
           name: run tests
           command: |
             mkdir /tmp/test-results
@@ -51,6 +47,10 @@ jobs:
                               --out /tmp/test-results/rspec.xml \
                               --format progress \
                               $TEST_FILES
+
+      - run:
+          name: run benchmarks
+          command: bundle exec ruby benches/mongoer_bench.rb
 
       - store_test_results:
           path: /tmp/test-results
