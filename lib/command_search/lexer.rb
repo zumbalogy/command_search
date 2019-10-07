@@ -6,36 +6,41 @@ module CommandSearch
       out = []
       i = 0
       while i < input.length
-        match = nil
-        case input[i..-1]
-        when /\A\s+/
+        match = input[i]
+        type = :str
+        tail = input[i..-1]
+        if tail.start_with?(/\s+/)
+          match = Regexp.last_match[0]
           type = :space
-        when /\A"(.*?)"/
+        elsif tail.start_with?(/"(.*?)"/)
+          i += 2
           match = Regexp.last_match[1]
           type = :quoted_str
-        when /\A'(.*?)'/
+        elsif tail.start_with?(/'(.*?)'/)
+          i += 2
           match = Regexp.last_match[1]
           type = :quoted_str
-        when /\A\-?\d+(\.\d+)?(?=$|[\s"':|<>()])/
+        elsif tail.start_with?(/\-?\d+(\.\d+)?(?=$|[\s"':|<>()])/)
+          match = Regexp.last_match[0]
           type = :number
-        when /\A-/
+        elsif match == '-'
           type = :minus
-        when /\A[^\s:"|<>()]+/
-          type = :str
-        when /\A\|+/
-          type = :pipe
-        when /\A[()]/
-          type = :paren
-        when /\A:/
+        elsif match == ':'
           type = :colon
-        when /\A[<>]=?/
+        elsif tail.start_with?(/[^\s:"|<>()]+/)
+          match = Regexp.last_match[0]
+        elsif match == '|'
+          match = tail[/\|+/]
+          type = :pipe
+        elsif tail.start_with?(/[()]/)
+          match = Regexp.last_match[0]
+          type = :paren
+        elsif tail.start_with?(/[<>]=?/)
+          match = Regexp.last_match[0]
           type = :compare
-        when /\A./
-          type = :str
         end
-        match = match || Regexp.last_match[0]
         out.push(type: type, value: match)
-        i += Regexp.last_match[0].length
+        i += match.length
       end
       out
     end
