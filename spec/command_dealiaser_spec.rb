@@ -1,16 +1,16 @@
 load(__dir__ + '/./spec_helper.rb')
 
-def parse(x)
-  tokens = CommandSearch::Lexer.lex(x)
-  CommandSearch::Parser.parse!(tokens)
-end
-
-def dealias(x, aliases)
-  dealiased = CommandSearch::CommandDealiaser.dealias(parse(x), aliases)
-  CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, aliases)
-end
-
 describe CommandSearch::CommandDealiaser do
+
+  def parse(x)
+    tokens = CommandSearch::Lexer.lex(x)
+    CommandSearch::Parser.parse!(tokens)
+  end
+
+  def dealias(x, aliases)
+    dealiased = CommandSearch::CommandDealiaser.dealias(parse(x), aliases)
+    CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, aliases)
+  end
 
   it 'should not change general searches or unaliased commands' do
     aliases = { f00: :foo, foo: String, gray: :grey, grey: Numeric }

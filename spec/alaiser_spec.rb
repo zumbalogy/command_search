@@ -1,24 +1,24 @@
 load(__dir__ + '/./spec_helper.rb')
 
-$current_user_id = '59guwJphUhqfd2A'
-
-$aliases = {
-  'red' => 'blue',
-  'hello world' => 'hello earth',
-  'A+' => 'grade>=97',
-  'user:me' => -> (match) { "user:#{$current_user_id}" },
-  /coo+l/ => 'ice cold',
-  /minutes:\d+/ => -> (match) { "seconds:#{match.split(':').last.to_i * 60}" },
-  [] => 'bad_val',
-  [2] => 'bad_val2',
-  'bad_key' => []
-}
-
-def a(input, input_aliases = $aliases)
-  CommandSearch::Aliaser.alias(input, input_aliases)
-end
-
 describe CommandSearch::Aliaser do
+
+  $current_user_id = '59guwJphUhqfd2A'
+
+  $aliases = {
+    'red' => 'blue',
+    'hello world' => 'hello earth',
+    'A+' => 'grade>=97',
+    'user:me' => -> (match) { "user:#{$current_user_id}" },
+    /coo+l/ => 'ice cold',
+    /minutes:\d+/ => -> (match) { "seconds:#{match.split(':').last.to_i * 60}" },
+    [] => 'bad_val',
+    [2] => 'bad_val2',
+    'bad_key' => []
+  }
+
+  def a(input, input_aliases = $aliases)
+    CommandSearch::Aliaser.alias(input, input_aliases)
+  end
 
   it 'should handle no aliases' do
     a('', {}).should == ''

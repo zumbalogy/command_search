@@ -23,16 +23,16 @@
 
 load(__dir__ + '/./spec_helper.rb')
 
-def parse(x)
-  tokens = CommandSearch::Lexer.lex(x)
-  CommandSearch::Parser.parse!(tokens)
-end
-
-def opt(x)
-  CommandSearch::Optimizer.optimize(parse(x))
-end
-
 describe CommandSearch::Optimizer do
+
+  def parse(x)
+    tokens = CommandSearch::Lexer.lex(x)
+    CommandSearch::Parser.parse!(tokens)
+  end
+
+  def opt(x)
+    CommandSearch::Optimizer.optimize(parse(x))
+  end
 
   it 'should work and be a no-op in some cases' do
     opt('foo 1 2 a b').should == CommandSearch::Optimizer.optimize(opt('foo 1 2 a b'))
@@ -335,6 +335,27 @@ describe CommandSearch::Optimizer do
           nest_type: :minus,
           nest_op: '-',
           value: [{type: :str, value: 'foo'}]}]}]
+    opt('-(-a b)').should == [{
+      :nest_op=>"-",
+      :nest_type=>:minus,
+      :type=>:nest,
+      :value=>[
+        {:nest_op=>"-",
+         :nest_type=>:minus,
+         :type=>:nest,
+         :value=>[{:type=>:str, :value=>"a"}]},
+        {:type=>:str, :value=>"b"}]}]
+    opt('-(a -b)').should == [{
+      :nest_op=>"-",
+      :nest_type=>:minus,
+      :type=>:nest,
+      :value=>[
+        {:type=>:str, :value=>"a"},
+        {:nest_op=>"-",
+         :nest_type=>:minus,
+         :type=>:nest,
+         :value=>[
+           {:type=>:str, :value=>"b"}]}]}]
   end
 
   # it 'should handle fancier logic' do

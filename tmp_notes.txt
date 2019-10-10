@@ -1,0 +1,14 @@
+preproccesor todo:
+sort all the command search options and all, clean those up or something.
+this is mostyl for allow_existance_boolean stuff
+
+
+cast booleans
+
+can i do regex casting too?
+
+cast dates
+-- accept timezone arg
+
+
+// make sure tests for mongoer and mongo and memory use the preprocessor

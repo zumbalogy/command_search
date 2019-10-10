@@ -1,11 +1,12 @@
 load(__dir__ + '/./spec_helper.rb')
 
-def parse(x)
-  tokens = CommandSearch::Lexer.lex(x)
-  CommandSearch::Parser.parse!(tokens)
-end
-
 describe CommandSearch::Parser do
+
+  def parse(x)
+    tokens = CommandSearch::Lexer.lex(x)
+    CommandSearch::Parser.parse!(tokens)
+  end
+
   it 'should not parse simple strings more than the lexer' do
     lexed = CommandSearch::Lexer.lex('foo 1 2 a b "1 ()"').select { |x| x[:type] != :space }
     lexed.should == parse('foo 1 2 a b "1 ()"')

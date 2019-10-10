@@ -3,8 +3,10 @@ load(__dir__ + '/command_search/lexer.rb')
 load(__dir__ + '/command_search/parser.rb')
 load(__dir__ + '/command_search/command_dealiaser.rb')
 load(__dir__ + '/command_search/optimizer.rb')
-load(__dir__ + '/command_search/mongoer.rb')
-load(__dir__ + '/command_search/memory.rb')
+load(__dir__ + '/command_search/preprocessor.rb')
+
+load(__dir__ + '/command_search/backends/memory.rb')
+load(__dir__ + '/command_search/backends/mongoer.rb')
 
 class Boolean; end
 
@@ -22,6 +24,7 @@ module CommandSearch
     dealiased = CommandDealiaser.dealias(parsed, command_fields)
     cleaned = CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
     opted = Optimizer.optimize(cleaned)
+    # preprocessed = Preprocessor.preprocess(opted, fields, command_fields)
 
     if source.respond_to?(:mongo_client) && source.queryable
       fields = [:__CommandSearch_mongo_fields_dummy_key__] if fields.empty?

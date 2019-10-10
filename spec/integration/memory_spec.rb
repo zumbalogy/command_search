@@ -1,39 +1,39 @@
 load(__dir__ + '/../spec_helper.rb')
 
-$hats = [
-  { title: 'name name1 1', description: '' },
-  { title: 'name name2 2', description: 'desk desk1 1' },
-  { title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1' },
-  { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
-  { description: "desk new \n line" },
-  { tags: "multi tag, 'quoted tag'" },
-  { title: 'same_name', feathers: 2, cost: 0, fav_date: Chronic.parse('2 months ago') },
-  { title: 'same_name', feathers: 5, cost: 4, fav_date: Chronic.parse('1 year ago') },
-  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: Chronic.parse('1 week ago') }
-]
-
-def search(query, list = $hats)
-  options = {
-    fields: [:title, :description, :tags],
-    command_fields: {
-      has_child_id: Boolean,
-      title: String,
-      name: :title,
-      description: String,
-      desc: :description,
-      starred: Boolean,
-      star: :starred,
-      tags: String,
-      tag: :tags,
-      feathers: [Numeric, :allow_existence_boolean],
-      cost: Numeric,
-      fav_date: Time
-    }
-  }
-  CommandSearch.search(list, query, options)
-end
-
 describe CommandSearch::Memory do
+
+  $hats = [
+    { title: 'name name1 1', description: '' },
+    { title: 'name name2 2', description: 'desk desk1 1' },
+    { title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1' },
+    { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
+    { description: "desk new \n line" },
+    { tags: "multi tag, 'quoted tag'" },
+    { title: 'same_name', feathers: 2, cost: 0, fav_date: Chronic.parse('2 months ago') },
+    { title: 'same_name', feathers: 5, cost: 4, fav_date: Chronic.parse('1 year ago') },
+    { title: "someone's iHat", feathers: 8, cost: 100, fav_date: Chronic.parse('1 week ago') }
+  ]
+
+  def search(query, list = $hats)
+    options = {
+      fields: [:title, :description, :tags],
+      command_fields: {
+        has_child_id: Boolean,
+        title: String,
+        name: :title,
+        description: String,
+        desc: :description,
+        starred: Boolean,
+        star: :starred,
+        tags: String,
+        tag: :tags,
+        feathers: [Numeric, :allow_existence_boolean],
+        cost: Numeric,
+        fav_date: Time
+      }
+    }
+    CommandSearch.search(list, query, options)
+  end
 
   it 'should be able to do an empty string query' do
     search('').count.should == $hats.count
@@ -501,7 +501,7 @@ describe CommandSearch::Memory do
     check.should == true
   end
 
-  # it 'should handle searching ones that are not specified and also wierd hash ones' do
+  # it 'should handle searching ones that are not specified and also weird hash ones' do
   #   search('custom_s:penn').count.should == 1
   #   search('penn').count.should == 0
   #   search('custom_s:"penn station"').count.should == 1

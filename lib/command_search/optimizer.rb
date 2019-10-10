@@ -11,8 +11,9 @@ module CommandSearch
         next [] if node[:value] == []
         next node[:value] if type != :minus && node[:value].count < 2
         next node[:value] if type == :paren && parent_type != :pipe
+        only_child = node[:value].count == 1
         child = node[:value].first
-        next child[:value] if type == :minus && child[:nest_type] == :minus
+        next child[:value] if type == :minus && only_child && child[:nest_type] == :minus
         if type == :paren || type == :pipe
           denest!(node[:value], node[:nest_type])
           node[:value].uniq!

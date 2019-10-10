@@ -3,58 +3,59 @@ require('mongoid')
 
 Mongoid.load!(__dir__ + '/../assets/mongoid.yml', :test)
 
-class Hat
-  include Mongoid::Document
-  field :title,       type: String
-  field :description, type: String
-  field :state,       type: String
-  field :tags,        type: String
-  field :starred,     type: Boolean
-  field :child_id,    type: String
-  field :feathers,    type: Integer
-  field :feathers2,   type: Integer
-  field :cost,        type: Integer
-  field :fav_date,    type: Time
-  field :fav_date2,   type: Time
+describe Hat do
 
-  def self.search(query)
-    head_border = '(?<=^|\s|[|(-])'
-    tail_border = '(?=$|\s|[|)])'
-    sortable_field_names = ['title', 'description']
-    sort_field = nil
-    options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        child_id: Boolean,
-        title: String,
-        name: :title,
-        description: String,
-        desc: :description,
-        starred: Boolean,
-        star: :starred,
-        tags: String,
-        tag: :tags,
-        feathers: [Numeric, :allow_existence_boolean],
-        feathers2: [:allow_existence_boolean, Numeric],
-        cost: Numeric,
-        fav_date: Time,
-        fav_date2: [:allow_existence_boolean, Time]
-      },
-      aliases: {
-        /#{head_border}sort:\S+#{tail_border}/ => proc { |match|
-          match_sort = match.sub(/^sort:/, '')
-          sort_field = match_sort if sortable_field_names.include?(match_sort)
-          nil
+  class Hat
+    include Mongoid::Document
+    field :title,       type: String
+    field :description, type: String
+    field :state,       type: String
+    field :tags,        type: String
+    field :starred,     type: Boolean
+    field :child_id,    type: String
+    field :feathers,    type: Integer
+    field :feathers2,   type: Integer
+    field :cost,        type: Integer
+    field :fav_date,    type: Time
+    field :fav_date2,   type: Time
+
+    def self.search(query)
+      head_border = '(?<=^|\s|[|(-])'
+      tail_border = '(?=$|\s|[|)])'
+      sortable_field_names = ['title', 'description']
+      sort_field = nil
+      options = {
+        fields: [:title, :description, :tags],
+        command_fields: {
+          child_id: Boolean,
+          title: String,
+          name: :title,
+          description: String,
+          desc: :description,
+          starred: Boolean,
+          star: :starred,
+          tags: String,
+          tag: :tags,
+          feathers: [Numeric, :allow_existence_boolean],
+          feathers2: [:allow_existence_boolean, Numeric],
+          cost: Numeric,
+          fav_date: Time,
+          fav_date2: [:allow_existence_boolean, Time]
+        },
+        aliases: {
+          /#{head_border}sort:\S+#{tail_border}/ => proc { |match|
+            match_sort = match.sub(/^sort:/, '')
+            sort_field = match_sort if sortable_field_names.include?(match_sort)
+            nil
+          }
         }
       }
-    }
-    results = CommandSearch.search(Hat, query, options)
-    results = results.order_by(sort_field => :asc) if sort_field
-    return results
+      results = CommandSearch.search(Hat, query, options)
+      results = results.order_by(sort_field => :asc) if sort_field
+      return results
+    end
   end
-end
 
-describe Hat do
   before do
     Mongoid.purge!
     Hat.create(title: 'name name1 1')
