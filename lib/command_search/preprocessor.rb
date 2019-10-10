@@ -7,10 +7,7 @@ module CommandSearch
         type = node[:nest_type]
 
         if level.odd?
-          if !type || type == :colon
-            node[:negate] = true
-            next node
-          end
+          node[:negate] = true if !type || type == :colon
           if type == :compare
             flip = {
               '>' => '<=',
@@ -19,61 +16,28 @@ module CommandSearch
               '<=' => '>'
             }
             node[:nest_op] = flip[node[:nest_op]]
-            next node
-          end
-        end
-
-        next node unless type
-
-        if type == :paren
-          negation!(node[:value], level)
-          if level.odd?
-            new_val = {
-              type: :nest,
-              nest_type: :pipe,
-              value: node[:value]
-            }
-            next new_val
-          else
-            next node
-          end
-        end
-
-        if type == :pipe
-          negation!(node[:value], level)
-          if level.odd?
-            new_val = {
-              type: :nest,
-              nest_type: :paren,
-              value: node[:value]
-            }
-            next new_val
-          else
-            next node
           end
         end
 
         if type == :minus
-          if level.even?
-            if node[:value].count == 1
-              next negation!(node[:value], level + 1)
-            else
-              negation!(node[:value], level + 1)
-              new_val = {
-                type: :nest,
-                nest_type: :pipe,
-                nest_op: '|',
-                value: node[:value]
-              }
-              next new_val
-            end
-          else
-            next negation!(node[:value], level + 1)
-          end
-        else
-          negation!(node[:value], level)
-          next node
+          negation!(node[:value], level + 1)
+          next node[:value] if level.odd? || node[:value].count == 1
+          next {
+            type: :nest,
+            nest_type: :pipe,
+            nest_op: '|',
+            value: node[:value]
+          }
         end
+
+        next node unless type == :paren || type == :pipe
+        negation!(node[:value], level)
+        next node if level.even?
+        {
+          type: :nest,
+          value: node[:value],
+          nest_type: (type == :paren ? :pipe : :paren)
+        }
       end
       ast.flatten!
       ast

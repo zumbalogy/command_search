@@ -19,6 +19,9 @@ describe CommandSearch::Preprocessor do
   end
 
   it 'should unroll negation' do
+    n('-(a|b)').should == [{negate: true, type: :str, value: 'a'}, {negate: true, type: :str, value: 'b'}]
+    n('(-a -b)').should == [{negate: true, type: :str, value: 'a'}, {negate: true, type: :str, value: 'b'}]
+
     n('-a').should_not == n('a')
     n('-(-a)').should == n('a')
     n('-(-(-a))').should == n('-a')
