@@ -2,20 +2,20 @@ module CommandSearch
   module CommandDealiaser
     module_function
 
-    def is_bool_str?(type, node)
-      return true if type == Boolean
-      return false unless type.is_a?(Array) && type.include?(:allow_existence_boolean)
-      return false unless node[:type] == :str
-      # TODO: tests with quoted string
-      node[:value][/\Atrue\Z|\Afalse\Z/i]
-    end
-
-    def make_bool(str)
-      !!str[0][/t/i]
+    def cast_bool(type, node)
+      if type == Boolean
+        node[:type] = Boolean
+        node[:value] = !!node[:value][0][/t/i]
+        return
+      end
+      return unless type.is_a?(Array) && type.include?(:allow_existence_boolean)
+      return unless node[:type] == :str && node[:value][/\Atrue\Z|\Afalse\Z/i]
+      node[:type] = :existence
+      node[:value] = !!node[:value][0][/t/i]
     end
 
     def cast_type(type, node)
-      return node[:value] = make_bool(node[:value]) if is_bool_str?(type, node)
+      cast_bool(type, node)
     end
 
     def dealias_key(key, aliases)
@@ -52,6 +52,22 @@ module CommandSearch
         x[:value] = dealias_values(x[:value], aliases)
         x
       end
+      # here I will take all the :allow_existence_booleans out of the alaises. but should be frozen.
+      # maybe seperate step
+      # maybe combine all these steps and call it normalize or such.
+    end
+
+    def clean_command_fields(aliases)
+      out = {}
+      aliases.each do |k, v|
+        next if v.is_a?(Symbol)
+        if v.is_a?(Array)
+          out[k] = (v - [:allow_existence_boolean]).first
+          next
+        end
+        next out[k] = v
+      end
+      out
     end
 
     def decompose_unaliasable(ast, aliases)

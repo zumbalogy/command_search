@@ -6,9 +6,6 @@ module CommandSearch
 
     def numeric_field?(field, command_types)
       type = command_types[field.to_sym]
-      if type.is_a?(Array)
-        type = (type - [:allow_existence_boolean]).first
-      end
       [Numeric, Integer].include?(type)
     end
 
@@ -38,14 +35,6 @@ module CommandSearch
       { '$or' => forms }
     end
 
-    def is_bool_str?(str, search_type)
-      search_type != :quoted_str && str[/\Atrue\Z|\Afalse\Z/i]
-    end
-
-    def make_boolean(str)
-      str[0] == 't'
-    end
-
     def build_time_command(key, val)
       time_str = val.tr('_.-', ' ')
       if time_str == time_str.to_i.to_s
@@ -66,31 +55,20 @@ module CommandSearch
     def build_command(ast_node, command_types)
       (field_node, search_node) = ast_node[:value]
       key = field_node[:value]
-      raw_type = command_types[key.to_sym]
-      type = raw_type
+      type = command_types[key.to_sym]
 
       raw_val = search_node[:value]
       search_type = search_node[:type]
 
-      if raw_type.is_a?(Array)
-        type = (raw_type - [:allow_existence_boolean]).first
-        is_bool = raw_type.include?(:allow_existence_boolean) && is_bool_str?(raw_val, search_type)
-      else
-        type = raw_type
-        is_bool = false
-      end
-
-      if type == Boolean
-        bool = make_boolean(raw_val)
+      if search_type == Boolean
         val = [
           { key => { '$exists' => true } },
-          { key => { '$ne' => !bool } }
+          { key => { '$ne' => !raw_val } }
         ]
         key = '$and'
-      elsif is_bool
+      elsif search_type == :existence
         # These queries return true for empty arrays.
-        bool = make_boolean(raw_val)
-        if bool
+        if raw_val
           val = [
             { key => { '$exists' => true } },
             { key => { '$ne' => false } }
@@ -135,13 +113,7 @@ module CommandSearch
       end
 
       mongo_op = mongo_op_map[op]
-      raw_type = command_types[key.to_sym]
-
-      if raw_type.is_a?(Array)
-        type = (raw_type - [:allow_existence_boolean]).first
-      else
-        type = raw_type
-      end
+      type = command_types[key.to_sym]
 
       if command_types[val.to_sym]
         val = '$' + val

@@ -23,16 +23,17 @@ module CommandSearch
     parsed = Parser.parse!(tokens)
     dealiased = CommandDealiaser.dealias(parsed, command_fields)
     cleaned = CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
+    cleaned_cmd_fields = CommandDealiaser.clean_command_fields(command_fields)
     opted = Optimizer.optimize(cleaned)
-    # preprocessed = Preprocessor.preprocess(opted, fields, command_fields)
+    # preprocessed = Preprocessor.preprocess(opted, fields, cleaned_cmd_fields)
 
     if source.respond_to?(:mongo_client) && source.queryable
       fields = [:__CommandSearch_mongo_fields_dummy_key__] if fields.empty?
-      mongo_query = Mongoer.build_query(opted, fields, command_fields)
+      mongo_query = Mongoer.build_query(opted, fields, cleaned_cmd_fields)
       return source.where(mongo_query)
     end
 
-    selector = Memory.build_query(opted, fields, command_fields)
+    selector = Memory.build_query(opted, fields, cleaned_cmd_fields)
     source.select(&selector)
   end
 end

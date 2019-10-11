@@ -6,18 +6,15 @@ module CommandSearch
 
     def command_check(item, val, command_types)
       cmd = val[0][:value].to_sym
+      cmd_type = command_types[cmd]
+
       cmd_search = val[1][:value]
-      raw_cmd_type = [command_types[cmd]].flatten
-      allow_existence_boolean = raw_cmd_type.include?(:allow_existence_boolean)
-      cmd_type = (raw_cmd_type - [:allow_existence_boolean]).first
-      if cmd_type == Boolean
-        if cmd_search[/true/i]
-          item[cmd]
-        else
-          item[cmd] == false
-        end
-      elsif allow_existence_boolean && (cmd_search[/true/i] || cmd_search[/false/i])
-        if cmd_search[/true/i]
+      val_type = val[1][:type]
+
+      if val_type == Boolean
+        !!item[cmd] == cmd_search
+      elsif val_type == :existence
+        if cmd_search
           item[cmd]
         else
           item[cmd] == nil
@@ -50,8 +47,7 @@ module CommandSearch
     def compare_check(item, node, command_types)
       children = node[:value]
       cmd = children.find { |c| command_types[c[:value].to_sym] }
-      raw_cmd_type = [command_types[cmd[:value].to_sym]].flatten
-      cmd_type = (raw_cmd_type - [:allow_existence_boolean]).first
+      cmd_type = command_types[cmd[:value].to_sym]
 
       args = children.map do |child|
         child_val = child[:value]
