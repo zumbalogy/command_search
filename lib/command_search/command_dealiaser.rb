@@ -31,15 +31,12 @@ module CommandSearch
         if input_times
           search_node[:value] = [input_times.first, input_times.last]
         else
-          search_node[:value] = :__commandSeachDummyDate__
+          search_node[:value] = nil
+          return
         end
       end
 
       if node[:nest_type] == :compare
-        if search_node[:value] == :__commandSeachDummyDate__
-          search_node[:value] = nil
-          return
-        end
         date_start_map = {
           '<' => :start,
           '>' => :end,

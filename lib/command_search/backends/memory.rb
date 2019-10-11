@@ -15,7 +15,7 @@ module CommandSearch
       elsif !item.key?(cmd)
         return false
       elsif val_type == Time
-        item_time ||= item[cmd].to_time
+        item_time = item[cmd].to_time
         cmd_search.first <= item_time && item_time < cmd_search.last
       elsif val[1][:type] == :quoted_str
         regex = /\b#{Regexp.escape(cmd_search)}\b/
@@ -38,7 +38,7 @@ module CommandSearch
       search = node[:value].last
       item_val = item[cmd_val.to_sym] || item[cmd_val.to_s]
       if search[:value].is_a?(Time)
-          item_val = item_val.to_time if item_val.class == DateTime || item_val.class == Date
+        item_val = item_val.to_time if item_val
         search_val = search[:value]
       else
         search_val = item[search[:value].to_sym] || item[search[:value].to_s] || search[:value]

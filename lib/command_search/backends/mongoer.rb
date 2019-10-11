@@ -37,7 +37,6 @@ module CommandSearch
       search_type = search_node[:type]
       search_type = Boolean if search_type == :existence && raw_val == true
 
-
       if search_type == Boolean
         # These queries can return true for empty arrays.
         val = [
@@ -52,9 +51,7 @@ module CommandSearch
       elsif type == Numeric
         val = raw_val
       elsif type == Time
-        if raw_val == :__commandSeachDummyDate__
-          return [{ CommandSeachDummyDate: true }, { CommandSeachDummyDate: false }]
-        end
+        return [{ CommandSearchNilTime: true }, { CommandSearchNilTime: false }] unless raw_val
         return [
           { key => { '$gte' => raw_val[0] } },
           { key => { '$lt' => raw_val[1] } }
