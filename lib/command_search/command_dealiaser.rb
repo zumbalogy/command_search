@@ -65,6 +65,9 @@ module CommandSearch
           out[k] = (v - [:allow_existence_boolean]).first
           next
         end
+        v = Numeric if v == Integer
+        v = Time if v == Date
+        v = Time if v == DateTime
         next out[k] = v
       end
       out

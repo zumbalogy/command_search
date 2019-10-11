@@ -21,7 +21,7 @@ module CommandSearch
         end
       elsif !item.key?(cmd)
         return false
-      elsif [Date, Time, DateTime].include?(cmd_type)
+      elsif cmd_type == Time
         item_time = item[cmd].to_time
         if cmd_search == cmd_search.to_i.to_s
           Time.new(cmd_search) <= item_time && item_time < Time.new(cmd_search.to_i + 1)
@@ -54,9 +54,9 @@ module CommandSearch
         item_val = item[child_val.to_s] || item[child_val.to_sym]
         item_val ||= child_val unless child == cmd
         next unless item_val
-        next item_val.to_time if child == cmd && [Date, Time, DateTime].include?(cmd_type)
+        next item_val.to_time if child == cmd && cmd_type == Time
         next item_val if child == cmd
-        if [Date, Time, DateTime].include?(cmd_type)
+        if cmd_type == Time
           date_start_map = {
             '<' => :start,
             '>' => :end,

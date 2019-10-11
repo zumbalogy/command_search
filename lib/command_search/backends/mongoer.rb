@@ -4,12 +4,7 @@ module CommandSearch
   module Mongoer
     module_function
 
-    def numeric_field?(field, command_types)
-      type = command_types[field.to_sym]
-      [Numeric, Integer].include?(type)
-    end
-
-    def build_str_regex(raw, type)
+    def build_regex(raw, type)
       str = Regexp.escape(raw)
       return /#{str}/i unless type == :quoted_str
       return '' if raw == ''
@@ -19,16 +14,16 @@ module CommandSearch
       Regexp.new(border_a + str + border_b)
     end
 
-    def build_search(ast_node, fields, command_types)
-      str = ast_node[:value] || ''
+    def build_search(node, fields, command_types)
+      str = node[:value] || ''
       fields = [fields] unless fields.is_a?(Array)
-      regex = build_str_regex(str, ast_node[:type])
 
       forms = fields.map do |field|
-        if numeric_field?(field, command_types)
+        type = command_types[field.to_sym]
+        if type == Numeric
           { field => str }
         else
-          { field => regex }
+          { field => build_regex(str, node[:type]) }
         end
       end
       return forms if forms.count < 2
@@ -78,10 +73,10 @@ module CommandSearch
           val = { '$exists' => false }
         end
       elsif type == String
-        val = build_str_regex(raw_val, search_type)
-      elsif [Numeric, Integer].include?(type)
+        val = build_regex(raw_val, search_type)
+      elsif type == Numeric
         val = raw_val
-      elsif [Date, Time, DateTime].include?(type)
+      elsif type == Time
         return build_time_command(key, raw_val)
       end
       { key => val }
@@ -120,7 +115,7 @@ module CommandSearch
         key = '$' + key
         val = [key, val]
         key = '$expr'
-      elsif [Date, Time, DateTime].include?(type)
+      elsif type == Time
         # foo <  day | day.start
         # foo <= day | day.end
         # foo >  day | day.end
