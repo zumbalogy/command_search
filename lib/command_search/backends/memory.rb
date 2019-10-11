@@ -17,15 +17,10 @@ module CommandSearch
       elsif val_type == Time
         item_time = item[cmd].to_time
         cmd_search.first <= item_time && item_time < cmd_search.last
-      elsif val[1][:type] == :quoted_str
-        regex = /\b#{Regexp.escape(cmd_search)}\b/
-        regex = /\A\Z/ if cmd_search == ''
-        if cmd_search[/(^\W)|(\W$)/]
-          head_border = '(?<=^|[^:+\w])'
-          tail_border = '(?=$|[^:+\w])'
-          regex = Regexp.new(head_border + Regexp.escape(cmd_search) + tail_border)
-        end
-        item[cmd][regex]
+      elsif cmd_search.is_a?(Regexp)
+        item[cmd][cmd_search]
+      elsif cmd_search == ''
+        item[cmd] == cmd_search # TODO: could maybe just make this a regex too.
       else
         item[cmd].to_s[/#{Regexp.escape(cmd_search)}/i]
       end

@@ -44,7 +44,7 @@ describe CommandSearch::Preprocessor do
       nest_op: ':',
       nest_type: :colon,
       type: :nest,
-      value: [{type: :str, value: 's'}, {type: :number, value: '5'}]
+      value: [{type: :str, value: 's'}, {type: :number, value: /5/i}]
     }]
     n('a:-5').should == opt('a:-5')
   end

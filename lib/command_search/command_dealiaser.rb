@@ -54,7 +54,9 @@ module CommandSearch
     end
 
     def cast_regex(type, node)
-      return unless type == String && (node[:type] == :str || node[:type] == :quoted_str)
+      return unless type == String
+      # TODO: this is ugly, and also only is for commands.
+      return unless node[:type] == :str || node[:type] == :quoted_str || node[:type] == :number
       raw = node[:value]
       str = Regexp.escape(raw)
       return node[:value] = /#{str}/i unless node[:type] == :quoted_str
@@ -71,7 +73,7 @@ module CommandSearch
       clean_type = type
       clean_type = (type - [:allow_existence_boolean]).first if type.is_a?(Array)
       cast_time(clean_type, node)
-      # cast_regex(type, search_node) # TODO
+      cast_regex(clean_type, search_node)
     end
 
     def flip_operator!(node, aliases)

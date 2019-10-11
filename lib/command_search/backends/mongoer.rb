@@ -43,8 +43,6 @@ module CommandSearch
         key = '$and'
       elsif search_type == :existence
         val = { '$exists' => false }
-      elsif type == String
-        val = build_regex(val, search_type)
       elsif type == Time
         return [{ CommandSearchNilTime: true }, { CommandSearchNilTime: false }] unless val
         return [
@@ -62,16 +60,13 @@ module CommandSearch
         '<=' => '$lte',
         '>=' => '$gte'
       }
-
       keys = command_types.keys
       (first_node, last_node) = ast_node[:value]
       key = first_node[:value]
       val = last_node[:value]
       op = ast_node[:nest_op]
-
       mongo_op = mongo_op_map[op]
       type = command_types[key.to_sym]
-
       if val.class == String && command_types[val.to_sym]
         val = '$' + val
         key = '$' + key
