@@ -12,3 +12,10 @@ cast dates
 
 
 // make sure tests for mongoer and mongo and memory use the preprocessor
+
+
+
+
+for the preprocessor?
+# it 'should unroll negations with dates' do
+# end

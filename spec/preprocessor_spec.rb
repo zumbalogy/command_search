@@ -3,7 +3,7 @@ load(__dir__ + '/./spec_helper.rb')
 describe CommandSearch::Preprocessor do
 
   Field_default = []
-  Cmd_default = { a: Boolean }
+  Cmd_default = { a: Boolean, s: String }
 
   def opt(x, fields = Field_default, command_fields = Cmd_default)
     tokens = CommandSearch::Lexer.lex(x)
@@ -38,13 +38,13 @@ describe CommandSearch::Preprocessor do
     n('-(a|b)|-(c|d)').should == n('(-a -b)|(-c -d)')
   end
 
-  it 'should negate colon commands corretly' do
-    n('-a:5').should == [{
+  it 'should negate colon commands correctly' do
+    n('-s:5').should == [{
       negate: true,
       nest_op: ':',
       nest_type: :colon,
       type: :nest,
-      value: [{type: :str, value: 'a'}, {type: :number, value: '5'}]
+      value: [{type: :str, value: 's'}, {type: :number, value: '5'}]
     }]
     n('a:-5').should == opt('a:-5')
   end
@@ -55,19 +55,5 @@ describe CommandSearch::Preprocessor do
     n('-a>=1').should == n('a<1')
     n('-a<=1').should == n('a>1')
   end
-
-
-  # it 'should unroll negations with dates' do
-  # end
-
-
-  # it 'should cast booleans' do
-  # end
-
-  # it 'should cast dates' do
-  # end
-
-  # it 'should cast regexes' do
-  # end
 
 end

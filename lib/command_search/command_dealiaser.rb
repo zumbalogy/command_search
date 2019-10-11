@@ -2,6 +2,22 @@ module CommandSearch
   module CommandDealiaser
     module_function
 
+    def is_bool_str?(type, node)
+      return true if type == Boolean
+      return false unless type.is_a?(Array) && type.include?(:allow_existence_boolean)
+      return false unless node[:type] == :str
+      # TODO: tests with quoted string
+      node[:value][/\Atrue\Z|\Afalse\Z/i]
+    end
+
+    def make_bool(str)
+      !!str[0][/t/i]
+    end
+
+    def cast_type(type, node)
+      return node[:value] = make_bool(node[:value]) if is_bool_str?(type, node)
+    end
+
     def dealias_key(key, aliases)
       key = aliases[key.to_sym] while aliases[key.to_sym].is_a?(Symbol)
       key.to_s
@@ -9,6 +25,8 @@ module CommandSearch
 
     def dealias_values((key_node, search_node), aliases)
       new_key = dealias_key(key_node[:value], aliases)
+      type = aliases[new_key.to_sym]
+      cast_type(type, search_node) if type
       key_node[:value] = new_key
       [key_node, search_node]
     end
