@@ -1,5 +1,3 @@
-require('chronic')
-
 module CommandSearch
   module Mongoer
     module_function
@@ -30,65 +28,42 @@ module CommandSearch
       { '$or' => forms }
     end
 
-    def build_time_command(key, val)
-      time_str = val.tr('_.-', ' ')
-      if time_str == time_str.to_i.to_s
-        date_a = Time.new(time_str)
-        date_b = Time.new(time_str.to_i + 1).yesterday
-      else
-        date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
-        return [{ CommandSeachDummyDate: true }, { CommandSeachDummyDate: false }] unless date
-        date_a = date.begin
-        date_b = date.end
-      end
-      [
-        { key => { '$gte' => date_a } },
-        { key => { '$lte' => date_b } }
-      ]
-    end
-
-    def build_command(ast_node, command_types)
-      (field_node, search_node) = ast_node[:value]
+    def build_command(node, command_types)
+      (field_node, search_node) = node[:value]
       key = field_node[:value]
       type = command_types[key.to_sym]
 
       raw_val = search_node[:value]
       search_type = search_node[:type]
+      search_type = Boolean if search_type == :existence && raw_val == true
+
 
       if search_type == Boolean
+        # These queries can return true for empty arrays.
         val = [
           { key => { '$exists' => true } },
           { key => { '$ne' => !raw_val } }
         ]
         key = '$and'
       elsif search_type == :existence
-        # These queries return true for empty arrays.
-        if raw_val
-          val = [
-            { key => { '$exists' => true } },
-            { key => { '$ne' => false } }
-          ]
-          key = '$and'
-        else
-          val = { '$exists' => false }
-        end
+        val = { '$exists' => false }
       elsif type == String
         val = build_regex(raw_val, search_type)
       elsif type == Numeric
         val = raw_val
       elsif type == Time
-        return build_time_command(key, raw_val)
+        if raw_val == :__commandSeachDummyDate__
+          return [{ CommandSeachDummyDate: true }, { CommandSeachDummyDate: false }]
+        end
+        return [
+          { key => { '$gte' => raw_val[0] } },
+          { key => { '$lt' => raw_val[1] } }
+        ]
       end
       { key => val }
     end
 
     def build_compare(ast_node, command_types)
-      flip_ops = {
-        '<' => '>',
-        '>' => '<',
-        '<=' => '>=',
-        '>=' => '<='
-      }
       mongo_op_map = {
         '<' => '$lt',
         '>' => '$gt',
@@ -102,46 +77,15 @@ module CommandSearch
       val = last_node[:value]
       op = ast_node[:nest_op]
 
-      if keys.include?(val.to_sym)
-        (key, val) = [val, key]
-        op = flip_ops[op]
-      end
-
       mongo_op = mongo_op_map[op]
       type = command_types[key.to_sym]
 
-      if command_types[val.to_sym]
+
+      if val && val.class != Time && command_types[val.to_sym]
         val = '$' + val
         key = '$' + key
         val = [key, val]
         key = '$expr'
-      elsif type == Time
-        # foo <  day | day.start
-        # foo <= day | day.end
-        # foo >  day | day.end
-        # foo >= day | day.start
-        date_start_map = {
-          '<' => :start,
-          '>' => :end,
-          '<=' => :end,
-          '>=' => :start
-        }
-        date_pick = date_start_map[op]
-        time_str = val.tr('_.-', ' ')
-
-        if time_str == time_str.to_i.to_s
-          date = [Time.new(time_str), Time.new(time_str.to_i + 1).yesterday]
-        else
-          date = Chronic.parse(time_str, guess: nil) || Chronic.parse(val, guess: nil)
-        end
-
-        date = date || []
-
-        if date_pick == :start
-          val = date.first
-        elsif date_pick == :end
-          val = date.last
-        end
       end
       { key => { mongo_op => val } }
     end

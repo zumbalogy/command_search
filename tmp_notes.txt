@@ -19,3 +19,12 @@ cast dates
 for the preprocessor?
 # it 'should unroll negations with dates' do
 # end
+
+
+rename command_dealiaser to normalizer and put the sql preprocess stuff there?
+
+
+make sure compares are in order in normalizer?
+this might already be done in parser or somewhere,
+in which case theres some lines in mongoer that can
+maybe be removed

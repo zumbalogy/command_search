@@ -1,5 +1,3 @@
-require('chronic')
-
 module CommandSearch
   module Memory
     module_function
@@ -7,29 +5,18 @@ module CommandSearch
     def command_check(item, val, command_types)
       cmd = val[0][:value].to_sym
       cmd_type = command_types[cmd]
-
       cmd_search = val[1][:value]
       val_type = val[1][:type]
-
+      val_type = Boolean if val_type == :existence && cmd_search == true
       if val_type == Boolean
         !!item[cmd] == cmd_search
       elsif val_type == :existence
-        if cmd_search
-          item[cmd]
-        else
-          item[cmd] == nil
-        end
+        item[cmd] == nil
       elsif !item.key?(cmd)
         return false
-      elsif cmd_type == Time
-        item_time = item[cmd].to_time
-        if cmd_search == cmd_search.to_i.to_s
-          Time.new(cmd_search) <= item_time && item_time < Time.new(cmd_search.to_i + 1)
-        else
-          time_str = cmd_search.gsub(/[\._-]/, ' ')
-          input_times = Chronic.parse(time_str, { guess: nil }) || Chronic.parse(cmd_search, { guess: nil })
-          input_times.first <= item_time && item_time < input_times.last
-        end
+      elsif val_type == Time
+        item_time ||= item[cmd].to_time
+        cmd_search.first <= item_time && item_time < cmd_search.last
       elsif val[1][:type] == :quoted_str
         regex = /\b#{Regexp.escape(cmd_search)}\b/
         regex = /\A\Z/ if cmd_search == ''
@@ -45,38 +32,18 @@ module CommandSearch
     end
 
     def compare_check(item, node, command_types)
-      children = node[:value]
-      cmd = children.find { |c| command_types[c[:value].to_sym] }
+      cmd = node[:value].first
+      cmd_val = cmd[:value]
       cmd_type = command_types[cmd[:value].to_sym]
-
-      args = children.map do |child|
-        child_val = child[:value]
-        item_val = item[child_val.to_s] || item[child_val.to_sym]
-        item_val ||= child_val unless child == cmd
-        next unless item_val
-        next item_val.to_time if child == cmd && cmd_type == Time
-        next item_val if child == cmd
-        if cmd_type == Time
-          date_start_map = {
-            '<' => :start,
-            '>' => :end,
-            '<=' => :end,
-            '>=' => :start
-          }
-          date_pick = date_start_map[node[:nest_op]]
-          time_str = item_val.gsub(/[\._-]/, ' ')
-          next Time.new(time_str) if time_str == time_str.to_i.to_s
-
-          date = Chronic.parse(time_str, { guess: nil }) || Chronic.parse(item_val, { guess: nil })
-          if date_pick == :start
-            date.first
-          else
-            date.last
-          end
-        else
-          item_val
-        end
+      search = node[:value].last
+      item_val = item[cmd_val.to_sym] || item[cmd_val.to_s]
+      if search[:value].is_a?(Time)
+          item_val = item_val.to_time if item_val.class == DateTime || item_val.class == Date
+        search_val = search[:value]
+      else
+        search_val = item[search[:value].to_sym] || item[search[:value].to_s] || search[:value]
       end
+      args = [item_val, search_val]
       return unless args.all?
       fn = node[:nest_op].to_sym.to_proc
       fn.call(*args.map(&:to_f))

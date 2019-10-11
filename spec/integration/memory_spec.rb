@@ -437,10 +437,11 @@ describe CommandSearch::Memory do
     list4 = [{ foo: Time.new('1995') }, { foo: Time.new(1995, 12, 12) }, { foo: Time.new('1996') }]
     CommandSearch.search(list4, 'foo:"1995"', { command_fields: { foo: DateTime } }).count.should == 2
     CommandSearch.search(list4, 'foo>=1995', { command_fields: { foo: DateTime } }).count.should == 3
+    CommandSearch.search(list4, 'foo>1995', { command_fields: { foo: DateTime } }).count.should == 1
     CommandSearch.search(list4, 'foo>=1995-02-03', { command_fields: { foo: DateTime } }).count.should == 2
-    # command_search thinks 'foo<=1995' is the same as 'foo<=1995-1-1'.
-    CommandSearch.search(list4, 'foo<=1995', { command_fields: { foo: DateTime } }).count.should == 1
-    CommandSearch.search(list4, '-foo<=1995', { command_fields: { foo: DateTime } }).count.should == 2
+    CommandSearch.search(list4, 'foo<=1995', { command_fields: { foo: DateTime } }).count.should == 2
+    CommandSearch.search(list4, 'foo<1995', { command_fields: { foo: DateTime } }).count.should == 0
+    CommandSearch.search(list4, '-foo<=1995', { command_fields: { foo: DateTime } }).count.should == 1
   end
 
   it 'should not throw errors' do

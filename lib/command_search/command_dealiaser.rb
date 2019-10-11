@@ -1,3 +1,5 @@
+require('chronic')
+
 module CommandSearch
   module CommandDealiaser
     module_function
@@ -14,8 +16,66 @@ module CommandSearch
       node[:value] = !!node[:value][0][/t/i]
     end
 
+    def cast_time(type, node)
+      type = (type - [:allow_existence_boolean]).first if type.is_a?(Array)
+      return unless [Time, Date, DateTime].include?(type)
+      search_node = node[:value][1]
+      search_node[:type] = Time # TODO: clean all this up.
+      str = search_node[:value]
+
+      if str == str.to_i.to_s
+        search_node[:value] = [Time.new(str), Time.new(str.to_i + 1)]
+      else
+        time_str = str.tr('._-', ' ')
+        input_times = Chronic.parse(time_str, { guess: nil }) || Chronic.parse(str, { guess: nil })
+        if input_times
+          search_node[:value] = [input_times.first, input_times.last]
+        else
+          search_node[:value] = :__commandSeachDummyDate__
+        end
+      end
+
+      if node[:nest_type] == :compare
+        if search_node[:value] == :__commandSeachDummyDate__
+          search_node[:value] = nil
+          return
+        end
+        date_start_map = {
+          '<' => :start,
+          '>' => :end,
+          '<=' => :end,
+          '>=' => :start
+        }
+        op = node[:nest_op]
+        date_pick = date_start_map[op]
+        if date_pick == :start
+          search_node[:value] = search_node[:value].first
+        else
+          search_node[:value] = search_node[:value].last
+          search_node[:value] -= 1
+        end
+      end
+    end
+
     def cast_type(type, node)
-      cast_bool(type, node)
+      search_node = node[:value][1]
+      cast_bool(type, search_node)
+      cast_time(type, node)
+    end
+
+    def flip_operator!(node, aliases)
+      # TODO: make this take precidence for first item. and write specs for that
+      return unless node[:nest_type] == :compare
+      if (!aliases[node[:value][0][:value].to_sym] && aliases[node[:value][1][:value].to_sym])
+        flip_ops = {
+          '<' => '>',
+          '>' => '<',
+          '<=' => '>=',
+          '>=' => '<='
+        }
+        node[:nest_op] = flip_ops[node[:nest_op]]
+        node[:value].reverse!
+      end
     end
 
     def dealias_key(key, aliases)
@@ -23,10 +83,11 @@ module CommandSearch
       key.to_s
     end
 
-    def dealias_values((key_node, search_node), aliases)
+    def dealias_values(node, aliases)
+      (key_node, search_node) = node[:value]
       new_key = dealias_key(key_node[:value], aliases)
       type = aliases[new_key.to_sym]
-      cast_type(type, search_node) if type
+      cast_type(type, node) if type
       key_node[:value] = new_key
       [key_node, search_node]
     end
@@ -45,16 +106,14 @@ module CommandSearch
     end
 
     def dealias(ast, aliases)
-      ast.map! do |x|
-        next x unless x[:nest_type]
-        dealias(x[:value], aliases)
-        next x unless [:colon, :compare].include?(x[:nest_type])
-        x[:value] = dealias_values(x[:value], aliases)
-        x
+      ast.map! do |node|
+        next node unless node[:nest_type]
+        dealias(node[:value], aliases)
+        next node unless [:colon, :compare].include?(node[:nest_type])
+        flip_operator!(node, aliases)
+        node[:value] = dealias_values(node, aliases)
+        node
       end
-      # here I will take all the :allow_existence_booleans out of the alaises. but should be frozen.
-      # maybe seperate step
-      # maybe combine all these steps and call it normalize or such.
     end
 
     def clean_command_fields(aliases)
