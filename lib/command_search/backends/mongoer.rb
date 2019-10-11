@@ -15,7 +15,6 @@ module CommandSearch
     def build_search(node, fields, command_types)
       str = node[:value] || ''
       fields = [fields] unless fields.is_a?(Array)
-
       forms = fields.map do |field|
         type = command_types[field.to_sym]
         if type == Numeric
@@ -32,29 +31,25 @@ module CommandSearch
       (field_node, search_node) = node[:value]
       key = field_node[:value]
       type = command_types[key.to_sym]
-
-      raw_val = search_node[:value]
+      val = search_node[:value]
       search_type = search_node[:type]
-      search_type = Boolean if search_type == :existence && raw_val == true
-
+      search_type = Boolean if search_type == :existence && val == true
       if search_type == Boolean
         # These queries can return true for empty arrays.
         val = [
           { key => { '$exists' => true } },
-          { key => { '$ne' => !raw_val } }
+          { key => { '$ne' => !val } }
         ]
         key = '$and'
       elsif search_type == :existence
         val = { '$exists' => false }
       elsif type == String
-        val = build_regex(raw_val, search_type)
-      elsif type == Numeric
-        val = raw_val
+        val = build_regex(val, search_type)
       elsif type == Time
-        return [{ CommandSearchNilTime: true }, { CommandSearchNilTime: false }] unless raw_val
+        return [{ CommandSearchNilTime: true }, { CommandSearchNilTime: false }] unless val
         return [
-          { key => { '$gte' => raw_val[0] } },
-          { key => { '$lt' => raw_val[1] } }
+          { key => { '$gte' => val[0] } },
+          { key => { '$lt' => val[1] } }
         ]
       end
       { key => val }
@@ -77,8 +72,7 @@ module CommandSearch
       mongo_op = mongo_op_map[op]
       type = command_types[key.to_sym]
 
-
-      if val && val.class != Time && command_types[val.to_sym]
+      if val.class == String && command_types[val.to_sym]
         val = '$' + val
         key = '$' + key
         val = [key, val]

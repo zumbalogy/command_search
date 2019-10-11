@@ -47,7 +47,7 @@ module CommandSearch
         left = input[i][:type]
         right = input[i + 2][:type]
         if types.include?(left) && types.include?(right)
-          input.insert(i + 1, input[i + 1])
+          input.insert(i + 1, input[i + 1].clone())
         end
         i += 1
       end

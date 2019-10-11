@@ -28,3 +28,6 @@ make sure compares are in order in normalizer?
 this might already be done in parser or somewhere,
 in which case theres some lines in mongoer that can
 maybe be removed
+
+
+is there currently injection via saying its numeric and then passing in as a string/whatnot?

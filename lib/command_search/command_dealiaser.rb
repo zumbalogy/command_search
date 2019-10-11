@@ -17,7 +17,6 @@ module CommandSearch
     end
 
     def cast_time(type, node)
-      type = (type - [:allow_existence_boolean]).first if type.is_a?(Array)
       return unless [Time, Date, DateTime].include?(type)
       search_node = node[:value][1]
       search_node[:type] = Time # TODO: clean all this up.
@@ -54,10 +53,25 @@ module CommandSearch
       end
     end
 
+    def cast_regex(type, node)
+      return unless type == String && (node[:type] == :str || node[:type] == :quoted_str)
+      raw = node[:value]
+      str = Regexp.escape(raw)
+      return node[:value] = /#{str}/i unless node[:type] == :quoted_str
+      return node[:value] = '' if raw == ''
+      return node[:value] = /\b#{str}\b/ unless raw[/(^\W)|(\W$)/]
+      border_a = '(^|\s|[^:+\w])'
+      border_b = '($|\s|[^:+\w])'
+      node[:value] = Regexp.new(border_a + str + border_b)
+    end
+
     def cast_type(type, node)
       search_node = node[:value][1]
       cast_bool(type, search_node)
-      cast_time(type, node)
+      clean_type = type
+      clean_type = (type - [:allow_existence_boolean]).first if type.is_a?(Array)
+      cast_time(clean_type, node)
+      # cast_regex(type, search_node) # TODO
     end
 
     def flip_operator!(node, aliases)
