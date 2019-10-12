@@ -20,7 +20,7 @@ module CommandSearch
       elsif cmd_search.is_a?(Regexp)
         item[cmd][cmd_search]
       elsif cmd_search == ''
-        item[cmd] == cmd_search # TODO: could maybe just make this a regex too.
+        item[cmd] == cmd_search
       else
         item[cmd].to_s[/#{Regexp.escape(cmd_search)}/i]
       end
@@ -51,17 +51,7 @@ module CommandSearch
         val = node[:value]
         case node[:nest_type]
         when nil
-          if node[:type] == :quoted_str
-            regex = /\b#{Regexp.escape(val)}\b/
-            if val[/(^\W)|(\W$)/]
-              head_border = '(?<=^|[^:+\w])'
-              tail_border = '(?=$|[^:+\w])'
-              regex = Regexp.new(head_border + Regexp.escape(val) + tail_border)
-            end
-            field_vals.any? { |x| x.to_s[regex] }
-          else
-            field_vals.any? { |x| x.to_s[/#{Regexp.escape(val)}/i] }
-          end
+          field_vals.any? { |x| x.to_s[val] }
         when :colon
           command_check(item, val, command_types)
         when :compare

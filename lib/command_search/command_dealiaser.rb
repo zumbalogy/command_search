@@ -54,7 +54,7 @@ module CommandSearch
     end
 
     def cast_regex(type, node)
-      return unless type == String
+      return unless type == String # is this safe from :allow_existene bool?
       # TODO: this is ugly, and also only is for commands.
       return unless node[:type] == :str || node[:type] == :quoted_str || node[:type] == :number
       raw = node[:value]
@@ -116,6 +116,25 @@ module CommandSearch
       values = node[:value].map { |x| x[:value] }
       str_values = values.join(node[:nest_op])
       { type: :str, value: str_values }
+    end
+
+    def cast_all_types(ast, aliases)
+      ast.map! do |node|
+        if node[:type] == :str
+          cast_regex(String, node)
+        end
+        if node[:type] == :quoted_str
+          cast_regex(String, node)
+        end
+        if node[:type] == :number
+          node[:raw_value] = node[:value]
+          cast_regex(String, node)
+        end
+        cast_all_types(node[:value], aliases) if node[:nest_type] == :pipe
+        cast_all_types(node[:value], aliases) if node[:nest_type] == :paren
+        cast_all_types(node[:value], aliases) if node[:nest_type] == :minus
+        node
+      end
     end
 
     def dealias(ast, aliases)

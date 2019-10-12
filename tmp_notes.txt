@@ -31,3 +31,6 @@ maybe be removed
 
 
 is there currently injection via saying its numeric and then passing in as a string/whatnot?
+
+
+add new dealiser casting stuff to benchmarks

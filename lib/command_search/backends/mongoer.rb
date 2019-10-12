@@ -2,25 +2,14 @@ module CommandSearch
   module Mongoer
     module_function
 
-    def build_regex(raw, type)
-      str = Regexp.escape(raw)
-      return /#{str}/i unless type == :quoted_str
-      return '' if raw == ''
-      return /\b#{str}\b/ unless raw[/(^\W)|(\W$)/]
-      border_a = '(^|\s|[^:+\w])'
-      border_b = '($|\s|[^:+\w])'
-      Regexp.new(border_a + str + border_b)
-    end
-
     def build_search(node, fields, command_types)
-      str = node[:value] || ''
-      fields = [fields] unless fields.is_a?(Array)
+      val = node[:value]
       forms = fields.map do |field|
         type = command_types[field.to_sym]
         if type == Numeric
-          { field => str }
+          { field => node[:raw_value] } # TODO: a more generic system for this, thats still sanitary?
         else
-          { field => build_regex(str, node[:type]) }
+          { field => val }
         end
       end
       return forms if forms.count < 2

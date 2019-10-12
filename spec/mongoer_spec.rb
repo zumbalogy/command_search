@@ -5,9 +5,17 @@ describe CommandSearch::Mongoer do
   def q(x, fields, command_types = {})
     tokens = CommandSearch::Lexer.lex(x)
     parsed = CommandSearch::Parser.parse!(tokens)
+
+
     dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_types)
     cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_types)
+    casted = CommandSearch::CommandDealiaser.cast_all_types(cleaned, command_types)
+
     cleaned_cmds = CommandSearch::CommandDealiaser.clean_command_fields(command_types)
+
+
+
+
     opted = CommandSearch::Optimizer.optimize(cleaned)
     CommandSearch::Mongoer.build_query(opted, fields, cleaned_cmds)
   end

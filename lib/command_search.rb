@@ -23,6 +23,11 @@ module CommandSearch
     parsed = Parser.parse!(tokens)
     dealiased = CommandDealiaser.dealias(parsed, command_fields)
     cleaned = CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
+
+
+    casted = CommandSearch::CommandDealiaser.cast_all_types(cleaned, command_fields)
+
+
     cleaned_cmd_fields = CommandDealiaser.clean_command_fields(command_fields)
     opted = Optimizer.optimize(cleaned)
     # preprocessed = Preprocessor.preprocess(opted, fields, cleaned_cmd_fields)
