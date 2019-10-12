@@ -22,6 +22,8 @@ module Kernel
   alias :debugger :bb
 end
 
+Pry.commands.alias_command('bb', 'disable-pry')
+Pry.commands.alias_command('kill', 'disable-pry')
 
 RSpec.configure do |config|
   config.expect_with(:rspec) { |c| c.syntax = :should }

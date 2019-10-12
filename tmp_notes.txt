@@ -1,18 +1,8 @@
-preproccesor todo:
-sort all the command search options and all, clean those up or something.
-this is mostyl for allow_existance_boolean stuff
-
-
-cast booleans
-
-can i do regex casting too?
-
 cast dates
 -- accept timezone arg
 
 
 // make sure tests for mongoer and mongo and memory use the preprocessor
-
 
 
 
@@ -24,13 +14,6 @@ for the preprocessor?
 rename command_dealiaser to normalizer and put the sql preprocess stuff there?
 
 
-make sure compares are in order in normalizer?
-this might already be done in parser or somewhere,
-in which case theres some lines in mongoer that can
-maybe be removed
-
-
-is there currently injection via saying its numeric and then passing in as a string/whatnot?
 
 
 add new dealiser casting stuff to benchmarks

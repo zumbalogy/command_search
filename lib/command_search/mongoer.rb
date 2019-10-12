@@ -79,33 +79,27 @@ module CommandSearch
 
     def build_tree!(ast)
       mongo_types = { paren: '$and', pipe: '$or', minus: '$nor' }
-      ast.each do |node|
-        next node unless node[:nest_type]
-        build_tree!(node[:value])
+      ast.map! do |node|
         key = mongo_types[node[:nest_type]]
+        next node unless key
+        build_tree!(node[:value])
         if key == '$nor' && node[:value].count > 1
-          node[key] = [{ '$and' => node[:value] }]
+          node = { key => [{ '$and' => node[:value] }] }
         else
-          node[key] = node[:value]
+          node = { key => node[:value] }
         end
         node['$or'].map! { |x| x['$or'] || x }.flatten! if node['$or']
         node['$nor'].map! { |x| x['$or'] || x }.flatten! if node['$nor']
-        node.delete(:nest_type)
-        node.delete(:nest_op)
-        node.delete(:value)
-        node.delete(:type)
-        # should this delete number_value or like whitelist things?
+        node
       end
     end
 
     def build_query(ast, fields, command_types)
-      out = ast
-      build_searches!(out, fields, command_types)
-      build_tree!(out)
-      out = {} if out == []
-      out = out.first if out.count == 1
-      out = { '$and' => out } if out.count > 1
-      out
+      build_searches!(ast, fields, command_types)
+      build_tree!(ast)
+      return {} if ast == []
+      return ast.first if ast.count == 1
+      { '$and' => ast }
     end
   end
 end

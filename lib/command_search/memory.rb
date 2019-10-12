@@ -30,15 +30,15 @@ module CommandSearch
       cmd = node[:value].first
       cmd_val = cmd[:value]
       cmd_type = command_types[cmd[:value].to_sym]
-      search = node[:value].last
       item_val = item[cmd_val.to_sym] || item[cmd_val.to_s]
-      if search[:value].is_a?(Time)
+      search = node[:value].last
+      val = search[:value]
+      if val.is_a?(Time)
         item_val = item_val.to_time if item_val
-        search_val = search[:value]
-      else
-        search_val = item[search[:value].to_sym] || item[search[:value].to_s] || search[:value]
+      elsif search[:type] == :str && command_types[val.to_sym]
+        val = item[val.to_sym] || item[val.to_s]
       end
-      args = [item_val, search_val]
+      args = [item_val, val]
       return unless args.all?
       fn = node[:nest_op].to_sym.to_proc
       fn.call(*args.map(&:to_f))
