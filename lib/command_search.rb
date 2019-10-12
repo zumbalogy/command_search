@@ -5,8 +5,11 @@ load(__dir__ + '/command_search/command_dealiaser.rb')
 load(__dir__ + '/command_search/optimizer.rb')
 load(__dir__ + '/command_search/preprocessor.rb')
 
-load(__dir__ + '/command_search/backends/memory.rb')
-load(__dir__ + '/command_search/backends/mongoer.rb')
+# TODO:
+# load(__dir__ + '/command_search/backends/memory.rb')
+# load(__dir__ + '/command_search/backends/mongoer.rb')
+load(__dir__ + '/command_search/memory.rb')
+load(__dir__ + '/command_search/mongoer.rb')
 
 class Boolean; end
 
