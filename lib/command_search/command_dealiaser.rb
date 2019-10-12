@@ -127,7 +127,7 @@ module CommandSearch
           cast_regex(String, node)
         end
         if node[:type] == :number
-          node[:raw_value] = node[:value]
+          node[:number_value] = node[:value]
           cast_regex(String, node)
         end
         cast_all_types(node[:value], aliases) if node[:nest_type] == :pipe

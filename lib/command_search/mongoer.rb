@@ -7,7 +7,7 @@ module CommandSearch
       forms = fields.map do |field|
         type = command_types[field.to_sym]
         if type == Numeric
-          { field => node[:raw_value] } # TODO: a more generic system for this, thats still sanitary?
+          { field => node[:number_value] }
         else
           { field => val }
         end
@@ -16,10 +16,9 @@ module CommandSearch
       { '$or' => forms }
     end
 
-    def build_command(node, command_types)
+    def build_command(node)
       (field_node, search_node) = node[:value]
       key = field_node[:value]
-      type = command_types[key.to_sym]
       val = search_node[:value]
       search_type = search_node[:type]
       search_type = Boolean if search_type == :existence && val == true
@@ -32,7 +31,7 @@ module CommandSearch
         key = '$and'
       elsif search_type == :existence
         val = { '$exists' => false }
-      elsif type == Time
+      elsif search_type == Time
         return [{ CommandSearchNilTime: true }, { CommandSearchNilTime: false }] unless val
         return [
           { key => { '$gte' => val[0] } },
@@ -42,34 +41,30 @@ module CommandSearch
       { key => val }
     end
 
-    def build_compare(ast_node, command_types)
-      mongo_op_map = {
+    def build_compare(node, command_types)
+      op_map = {
         '<' => '$lt',
         '>' => '$gt',
         '<=' => '$lte',
         '>=' => '$gte'
       }
-      keys = command_types.keys
-      (first_node, last_node) = ast_node[:value]
-      key = first_node[:value]
-      val = last_node[:value]
-      op = ast_node[:nest_op]
-      mongo_op = mongo_op_map[op]
-      type = command_types[key.to_sym]
+      key = node[:value][0][:value]
+      val = node[:value][1][:value]
+      op = op_map[node[:nest_op]]
       if val.class == String && command_types[val.to_sym]
         val = '$' + val
         key = '$' + key
         val = [key, val]
         key = '$expr'
       end
-      { key => { mongo_op => val } }
+      { key => { op => val } }
     end
 
     def build_searches!(ast, fields, command_types)
       ast.map! do |x|
         type = x[:nest_type]
         if type == :colon
-          build_command(x, command_types)
+          build_command(x)
         elsif type == :compare
           build_compare(x, command_types)
         elsif [:paren, :pipe, :minus].include?(type)
@@ -99,6 +94,7 @@ module CommandSearch
         node.delete(:nest_op)
         node.delete(:value)
         node.delete(:type)
+        # should this delete number_value or like whitelist things?
       end
     end
 
