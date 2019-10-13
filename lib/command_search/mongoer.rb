@@ -42,15 +42,10 @@ module CommandSearch
     end
 
     def build_compare(node, command_types)
-      op_map = {
-        '<' => '$lt',
-        '>' => '$gt',
-        '<=' => '$lte',
-        '>=' => '$gte'
-      }
+      op_map = { '<' => '$lt', '>' => '$gt', '<=' => '$lte', '>=' => '$gte' }
+      op = op_map[node[:nest_op]]
       key = node[:value][0][:value]
       val = node[:value][1][:value]
-      op = op_map[node[:nest_op]]
       if val.class == String && command_types[val.to_sym]
         val = '$' + val
         key = '$' + key
@@ -61,43 +56,30 @@ module CommandSearch
     end
 
     def build_searches!(ast, fields, command_types)
-      ast.map! do |x|
-        type = x[:nest_type]
+      mongo_types = { paren: '$and', pipe: '$or', minus: '$nor' }
+      ast.map! do |node|
+        type = node[:nest_type]
         if type == :colon
-          build_command(x)
+          build_command(node)
         elsif type == :compare
-          build_compare(x, command_types)
-        elsif [:paren, :pipe, :minus].include?(type)
-          build_searches!(x[:value], fields, command_types)
-          x
+          build_compare(node, command_types)
+        elsif key = mongo_types[type]
+          build_searches!(node[:value], fields, command_types)
+          val = node[:value]
+          if key == '$nor' && val.count > 1
+            next { key => [{ '$and' => val }] }
+          end
+          val.map! { |x| x['$or'] || x }.flatten! unless key == '$and'
+          { key => val }
         else
-          build_search(x, fields, command_types)
+          build_search(node, fields, command_types)
         end
       end
       ast.flatten!
     end
 
-    def build_tree!(ast)
-      # TODO: combine build_searches and build_tree
-      mongo_types = { paren: '$and', pipe: '$or', minus: '$nor' }
-      ast.map! do |node|
-        key = mongo_types[node[:nest_type]]
-        next node unless key
-        build_tree!(node[:value])
-        if key == '$nor' && node[:value].count > 1
-          node = { key => [{ '$and' => node[:value] }] }
-        else
-          node = { key => node[:value] }
-        end
-        node['$or'].map! { |x| x['$or'] || x }.flatten! if node['$or']
-        node['$nor'].map! { |x| x['$or'] || x }.flatten! if node['$nor']
-        node
-      end
-    end
-
     def build_query(ast, fields, command_types)
       build_searches!(ast, fields, command_types)
-      build_tree!(ast)
       return {} if ast == []
       return ast.first if ast.count == 1
       { '$and' => ast }
