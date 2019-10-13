@@ -1,15 +1,18 @@
 load(__dir__ + '/./spec_helper.rb')
 
-describe CommandSearch::CommandDealiaser do
+describe CommandSearch::Normalizer do
 
   def parse(x)
-    tokens = CommandSearch::Lexer.lex(x)
-    CommandSearch::Parser.parse!(tokens)
+    ast = CommandSearch::Lexer.lex(x)
+    CommandSearch::Parser.parse!(ast)
+    CommandSearch::Optimizer.optimize(ast)
+    ast
   end
 
   def dealias(x, aliases)
-    dealiased = CommandSearch::CommandDealiaser.dealias(parse(x), aliases)
-    CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, aliases)
+    ast = parse(x)
+    CommandSearch::Normalizer.normalize!(ast, aliases)
+    ast
   end
 
   # it 'should cast regular expressions' do
@@ -39,9 +42,9 @@ describe CommandSearch::CommandDealiaser do
 
   it 'should set unaliased commands to normal searches' do
     dealias('foo foo:bar', {}).should_not == parse('foo foo:bar')
-    dealias('a:b', {}).should == [{ type: :str, value: 'a:b' }]
-    dealias('-foo:bar', {})[0][:value].should == [{type: :str, value: 'foo:bar'}]
-    dealias('-foo:bar|baz', {})[0][:value][0][:value].should == [{type: :str, value: 'foo:bar'}]
+    dealias('a:b', {}).should == [{ type: :str, value: /a:b/i }]
+    dealias('-foo:bar', {})[0][:value].should == [{type: :str, value: /foo:bar/i }]
+    dealias('-foo:bar|baz', {})[0][:value][0][:value].should == [{type: :str, value: /foo:bar/i }]
   end
 
   it 'should cast booleans' do
@@ -141,11 +144,11 @@ describe CommandSearch::CommandDealiaser do
       nest_op: ':',
       value: [{type: :str, value: 'b'}, {type: :str, value: 'foo'}]}
     ]
-    c('c:true').should == [{type: :str, value: 'c:true'}]
-    c('c:false').should == [{type: :str, value: 'c:false'}]
-    c('-c:true')[0][:value].should == [{type: :str, value: 'c:true'}]
-    c('-c:false')[0][:value].should == [{type: :str, value: 'c:false'}]
-    c('c:-true').should == [{type: :str, value: 'c:-true'}]
-    c('c:-false').should == [{type: :str, value: 'c:-false'}]
+    c('c:true').should == [{type: :str, value: /c:true/i}]
+    c('c:false').should == [{type: :str, value: /c:false/i}]
+    c('-c:true')[0][:value].should == [{type: :str, value: /c:true/i}]
+    c('-c:false')[0][:value].should == [{type: :str, value: /c:false/i}]
+    c('c:-true').should == [{type: :str, value: /c:\-true/i}]
+    c('c:-false').should == [{type: :str, value: /c:\-false/i}]
   end
 end

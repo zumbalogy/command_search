@@ -1,7 +1,7 @@
 require('chronic')
 
 module CommandSearch
-  module CommandDealiaser
+  module Normalizer
     module_function
 
     def cast_bool(type, node)
@@ -118,7 +118,7 @@ module CommandSearch
       { type: :str, value: str_values }
     end
 
-    def cast_all_types(ast, aliases)
+    def cast_all_types!(ast, aliases)
       ast.map! do |node|
         # new_key = dealias_key(key_node[:value], aliases)
         # type = aliases[new_key.to_sym]
@@ -139,17 +139,17 @@ module CommandSearch
         #
         # end
 
-        cast_all_types(node[:value], aliases) if node[:nest_type] == :pipe
-        cast_all_types(node[:value], aliases) if node[:nest_type] == :paren
-        cast_all_types(node[:value], aliases) if node[:nest_type] == :minus
+        cast_all_types!(node[:value], aliases) if node[:nest_type] == :pipe
+        cast_all_types!(node[:value], aliases) if node[:nest_type] == :paren
+        cast_all_types!(node[:value], aliases) if node[:nest_type] == :minus
         node
       end
     end
 
-    def dealias(ast, aliases)
+    def dealias!(ast, aliases)
       ast.map! do |node|
         next node unless node[:nest_type]
-        dealias(node[:value], aliases)
+        dealias!(node[:value], aliases)
         next node unless [:colon, :compare].include?(node[:nest_type])
         flip_operator!(node, aliases)
         node[:value] = dealias_values(node, aliases)
@@ -173,13 +173,22 @@ module CommandSearch
       out
     end
 
-    def decompose_unaliasable(ast, aliases)
+    def decompose_unaliasable!(ast, aliases)
       ast.map! do |x|
         next x unless x[:nest_type]
-        decompose_unaliasable(x[:value], aliases)
+        decompose_unaliasable!(x[:value], aliases)
         next x unless [:colon, :compare].include?(x[:nest_type])
         unnest_unaliased(x, aliases)
       end
+    end
+
+
+    def normalize!(ast, command_fields)
+      dealias!(ast, command_fields)
+      decompose_unaliasable!(ast, command_fields)
+      cast_all_types!(ast, command_fields)
+
+      cleaned_cmd_fields = clean_command_fields(command_fields)
     end
   end
 end

@@ -14,13 +14,12 @@ def pp(*inputs)
   end
 end
 
-module Kernel
-  def bb
-    Pry.start(binding.of_caller(1))
-  end
-  alias :debug :bb
-  alias :debugger :bb
+def bb
+  Pry.start(binding.of_caller(1))
 end
+
+alias :debug :bb
+alias :debugger :bb
 
 Pry.commands.alias_command('bb', 'disable-pry')
 Pry.commands.alias_command('kill', 'disable-pry')

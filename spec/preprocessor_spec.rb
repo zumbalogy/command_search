@@ -6,11 +6,11 @@ describe CommandSearch::Preprocessor do
   Cmd_default = { a: Boolean, s: String }
 
   def opt(x, fields = Field_default, command_fields = Cmd_default)
-    tokens = CommandSearch::Lexer.lex(x)
-    parsed = CommandSearch::Parser.parse!(tokens)
-    dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields)
-    cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
-    opted = CommandSearch::Optimizer.optimize(cleaned)
+    ast = CommandSearch::Lexer.lex(x)
+    CommandSearch::Parser.parse!(ast)
+    CommandSearch::Optimizer.optimize(ast)
+    CommandSearch::Normalizer.normalize!(ast, command_fields)
+    ast
   end
 
   def n(x, fields = Field_default, command_fields = Cmd_default)
@@ -19,8 +19,8 @@ describe CommandSearch::Preprocessor do
   end
 
   it 'should unroll negation' do
-    n('-(a|b)').should == [{negate: true, type: :str, value: 'a'}, {negate: true, type: :str, value: 'b'}]
-    n('(-a -b)').should == [{negate: true, type: :str, value: 'a'}, {negate: true, type: :str, value: 'b'}]
+    n('-(a|b)').should == [{negate: true, type: :str, value: /a/i}, {negate: true, type: :str, value: /b/i}]
+    n('(-a -b)').should == [{negate: true, type: :str, value: /a/i}, {negate: true, type: :str, value: /b/i}]
 
     n('-a').should_not == n('a')
     n('-(-a)').should == n('a')
@@ -55,5 +55,4 @@ describe CommandSearch::Preprocessor do
     n('-a>=1').should == n('a<1')
     n('-a<=1').should == n('a>1')
   end
-
 end

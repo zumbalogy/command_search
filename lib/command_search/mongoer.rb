@@ -78,6 +78,7 @@ module CommandSearch
     end
 
     def build_tree!(ast)
+      # TODO: combine build_searches and build_tree
       mongo_types = { paren: '$and', pipe: '$or', minus: '$nor' }
       ast.map! do |node|
         key = mongo_types[node[:nest_type]]

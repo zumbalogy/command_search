@@ -1,7 +1,7 @@
 load(__dir__ + '/command_search/aliaser.rb')
 load(__dir__ + '/command_search/lexer.rb')
 load(__dir__ + '/command_search/parser.rb')
-load(__dir__ + '/command_search/command_dealiaser.rb')
+load(__dir__ + '/command_search/normalizer.rb')
 load(__dir__ + '/command_search/optimizer.rb')
 load(__dir__ + '/command_search/preprocessor.rb')
 
@@ -22,21 +22,19 @@ module CommandSearch
     command_fields = options[:command_fields] || {}
 
     aliased_query = Aliaser.alias(query, aliases)
-    foo = Lexer.lex(aliased_query)
-    Parser.parse!(foo)
-    CommandDealiaser.dealias(foo, command_fields)
-    CommandDealiaser.decompose_unaliasable(foo, command_fields)
-    CommandDealiaser.cast_all_types(foo, command_fields)
-    cleaned_cmd_fields = CommandDealiaser.clean_command_fields(command_fields)
-    Optimizer.optimize(foo)
-    # Preprocessor.preprocess(foo, fields, cleaned_cmd_fields)
+    ast = Lexer.lex(aliased_query)
+    Parser.parse!(ast)
+    Optimizer.optimize(ast)
+    clean_cmd_fields = Normalizer.normalize!(ast, command_fields)
+
+    # Preprocessor.preprocess(ast, fields, clean_cmd_fields)
 
     if source.respond_to?(:mongo_client) && source.queryable
-      fields = [:__CommandSearch_mongo_fields_dummy_key__] if fields.empty?
-      mongo_query = Mongoer.build_query(foo, fields, cleaned_cmd_fields)
+      fields = [:__CommandSearch_dummy_key__] if fields.empty?
+      mongo_query = Mongoer.build_query(ast, fields, clean_cmd_fields)
       return source.where(mongo_query)
     end
 
-    source.select { |x| Memory.check(x, foo, fields, cleaned_cmd_fields) }
+    source.select { |x| Memory.check(x, ast, fields, clean_cmd_fields) }
   end
 end
