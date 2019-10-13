@@ -19,7 +19,7 @@ def run(input, fields = nil, command_fields = nil)
 end
 
 result = RubyProf.profile do
-  1000.times do
+  100.times do
     run('', [], {})
     run('')
     run('foo bar')
@@ -27,9 +27,9 @@ result = RubyProf.profile do
     run('(price<=200 discount)|price<=99.99')
     run('name:foo tile -(foo bar)')
     run('name:foo tile -(foo bar)|"hello world" foo>1.2')
+    run('name:foo tile a|a|a foo:bar -(foo bar)|"hello world" foo>1.2' * 50)
   end
-  run('name:foo tile a|a|a foo:bar -(foo bar)|"hello world" foo>1.2' * 100)
-  run('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 1200)
+  # run('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 1200)
 end
 
 # printer = RubyProf::GraphPrinter.new(result)
