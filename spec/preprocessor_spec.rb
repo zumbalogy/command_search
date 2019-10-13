@@ -8,7 +8,7 @@ describe CommandSearch::Preprocessor do
   def opt(x, fields = Field_default, command_fields = Cmd_default)
     ast = CommandSearch::Lexer.lex(x)
     CommandSearch::Parser.parse!(ast)
-    CommandSearch::Optimizer.optimize(ast)
+    CommandSearch::Optimizer.optimize!(ast)
     CommandSearch::Normalizer.normalize!(ast, command_fields)
     ast
   end

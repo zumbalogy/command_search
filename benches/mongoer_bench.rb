@@ -12,7 +12,7 @@ Benchmark.ips do |bm|
       aliased = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
       ast = CommandSearch::Lexer.lex(aliased)
       CommandSearch::Parser.parse!(ast)
-      CommandSearch::Optimizer.optimize(ast)
+      CommandSearch::Optimizer.optimize!(ast)
       command_fields = CommandSearch::Normalizer.normalize!(ast, command_fields)
       CommandSearch::Mongoer.build_query(ast, fields, command_fields)
     end

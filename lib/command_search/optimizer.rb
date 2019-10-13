@@ -24,7 +24,7 @@ module CommandSearch
       ast.flatten!
     end
 
-    def optimize(ast)
+    def optimize!(ast)
       denest!(ast)
       ast.uniq!
       ast

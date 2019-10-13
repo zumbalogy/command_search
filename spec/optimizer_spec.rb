@@ -31,11 +31,11 @@ describe CommandSearch::Optimizer do
   end
 
   def opt(x)
-    CommandSearch::Optimizer.optimize(parse(x))
+    CommandSearch::Optimizer.optimize!(parse(x))
   end
 
   it 'should work and be a no-op in some cases' do
-    opt('foo 1 2 a b').should == CommandSearch::Optimizer.optimize(opt('foo 1 2 a b'))
+    opt('foo 1 2 a b').should == CommandSearch::Optimizer.optimize!(opt('foo 1 2 a b'))
     opt('red "blue green"').should == parse('red "blue green"')
     opt('foo 1 2').should == [
       {type: :str, value: "foo"},

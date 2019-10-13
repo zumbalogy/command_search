@@ -8,7 +8,7 @@ Benchmark.ips() do |bm|
   def norm(input, command_fields)
     ast = CommandSearch::Lexer.lex(input)
     CommandSearch::Parser.parse!(ast)
-    CommandSearch::Optimizer.optimize(ast)
+    CommandSearch::Optimizer.optimize!(ast)
     $bm.report(input.inspect) {
       ast2 = Marshal.load(Marshal.dump(ast))
       CommandSearch::Normalizer.normalize!(ast2, command_fields)

@@ -24,7 +24,7 @@ module CommandSearch
     aliased_query = Aliaser.alias(query, aliases)
     ast = Lexer.lex(aliased_query)
     Parser.parse!(ast)
-    Optimizer.optimize(ast)
+    Optimizer.optimize!(ast)
     clean_cmd_fields = Normalizer.normalize!(ast, command_fields)
 
     # Preprocessor.preprocess(ast, fields, clean_cmd_fields)

@@ -5,7 +5,7 @@ describe CommandSearch::Normalizer do
   def parse(x)
     ast = CommandSearch::Lexer.lex(x)
     CommandSearch::Parser.parse!(ast)
-    CommandSearch::Optimizer.optimize(ast)
+    CommandSearch::Optimizer.optimize!(ast)
     ast
   end
 

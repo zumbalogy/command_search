@@ -1,10 +1,11 @@
-cast dates
 -- accept timezone arg
 
 for the preprocessor?
 # it 'should unroll negations with dates' do
-# end
 
-make
-command_fields
-named the same everywhere
+make command_fields named the same everywhere
+
+make the backends just take the ast tree and not need the command_fields
+then normalizer wont have to spit out the clean version and all
+-
+or at least consider this.

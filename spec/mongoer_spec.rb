@@ -5,7 +5,7 @@ describe CommandSearch::Mongoer do
   def q(x, fields, command_types = {})
     ast = CommandSearch::Lexer.lex(x)
     CommandSearch::Parser.parse!(ast)
-    CommandSearch::Optimizer.optimize(ast)
+    CommandSearch::Optimizer.optimize!(ast)
     cleaned_cmds = CommandSearch::Normalizer.normalize!(ast, command_types)
     CommandSearch::Mongoer.build_query(ast, fields, cleaned_cmds)
   end
