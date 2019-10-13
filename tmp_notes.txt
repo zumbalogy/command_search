@@ -1,22 +1,9 @@
 cast dates
 -- accept timezone arg
 
-
-// make sure tests for mongoer and mongo and memory use the preprocessor
-
-
-
 for the preprocessor?
 # it 'should unroll negations with dates' do
 # end
-
-
-rename command_dealiaser to normalizer and put the sql preprocess stuff there?
-
-
-
-
-add new dealiser casting stuff to benchmarks
 
 make
 command_fields
