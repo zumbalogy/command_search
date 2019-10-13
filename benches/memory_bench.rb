@@ -27,8 +27,7 @@ Benchmark.ips() do |bm|
       dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields)
       cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
       opted = CommandSearch::Optimizer.optimize(cleaned)
-      query = CommandSearch::Memory.build_query(opted, fields, command_fields)
-      $hats.select(&query).count
+      $hats.select { |x| CommandSearch::Memory.check(x, opted, fields, command_fields) }.count
     end
   end
 

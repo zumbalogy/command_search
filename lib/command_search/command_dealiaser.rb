@@ -19,7 +19,7 @@ module CommandSearch
     def cast_time(type, node)
       return unless [Time, Date, DateTime].include?(type)
       search_node = node[:value][1]
-      search_node[:type] = Time # TODO: clean all this up.
+      search_node[:type] = Time
       str = search_node[:value]
 
       if str == str.to_i.to_s
@@ -120,6 +120,10 @@ module CommandSearch
 
     def cast_all_types(ast, aliases)
       ast.map! do |node|
+        # new_key = dealias_key(key_node[:value], aliases)
+        # type = aliases[new_key.to_sym]
+        # cast_type(type, node) if type
+
         if node[:type] == :str
           cast_regex(String, node)
         end
@@ -130,6 +134,11 @@ module CommandSearch
           node[:number_value] = node[:value]
           cast_regex(String, node)
         end
+
+        # if node[:nest_type] == :colon || node[:nest_type] == :compare
+        #
+        # end
+
         cast_all_types(node[:value], aliases) if node[:nest_type] == :pipe
         cast_all_types(node[:value], aliases) if node[:nest_type] == :paren
         cast_all_types(node[:value], aliases) if node[:nest_type] == :minus

@@ -65,9 +65,5 @@ module CommandSearch
         end
       end
     end
-
-    def build_query(ast, fields, command_types = {})
-      proc { |x| check(x, ast, fields, command_types) }
-    end
   end
 end

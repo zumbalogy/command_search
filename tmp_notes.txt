@@ -17,3 +17,7 @@ rename command_dealiaser to normalizer and put the sql preprocess stuff there?
 
 
 add new dealiser casting stuff to benchmarks
+
+make
+command_fields
+named the same everywhere
