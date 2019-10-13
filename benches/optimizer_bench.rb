@@ -7,9 +7,9 @@ Benchmark.ips() do |bm|
 
   def bench(input)
     title = "Optimize #{input.length}: #{input.inspect[0..24]}"
-    lexed = CommandSearch::Lexer.lex(input)
-    parsed = CommandSearch::Parser.parse!(lexed)
-    $bm.report(title) { CommandSearch::Optimizer.optimize(parsed) }
+    ast = CommandSearch::Lexer.lex(input)
+    CommandSearch::Parser.parse!(ast)
+    $bm.report(title) { CommandSearch::Optimizer.optimize(ast) }
   end
 
   bench('')
