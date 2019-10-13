@@ -22,12 +22,11 @@ Benchmark.ips() do |bm|
     fields ||= [:title, :description, :tags]
     command_fields ||= { has_child_id: Boolean, title: String, name: :title }
     $bm.report(input.inspect[0..99]) do
-      lexed = CommandSearch::Lexer.lex(input)
-      parsed = CommandSearch::Parser.parse!(lexed)
-      dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields)
-      cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
-      opted = CommandSearch::Optimizer.optimize(cleaned)
-      $hats.select { |x| CommandSearch::Memory.check(x, opted, fields, command_fields) }.count
+      ast = CommandSearch::Lexer.lex(input)
+      CommandSearch::Parser.parse!(ast)
+      CommandSearch::Optimizer.optimize(ast)
+      command_fields = CommandSearch::Normalizer.normalize!(ast, command_fields)
+      $hats.select { |x| CommandSearch::Memory.check(x, ast, fields, command_fields) }.count
     end
   end
 
