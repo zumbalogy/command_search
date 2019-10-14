@@ -2,9 +2,8 @@ module CommandSearch
   module Memory
     module_function
 
-    def command_check(item, val, command_types)
+    def command_check(item, val)
       cmd = val[0][:value].to_sym
-      cmd_type = command_types[cmd]
       cmd_search = val[1][:value]
       val_type = val[1][:type]
       val_type = Boolean if val_type == :existence && cmd_search == true
@@ -26,16 +25,16 @@ module CommandSearch
       end
     end
 
-    def compare_check(item, node, command_types)
+    def compare_check(item, node, cmd_types)
       cmd = node[:value].first
       cmd_val = cmd[:value]
-      cmd_type = command_types[cmd[:value].to_sym]
+      cmd_type = cmd_types[cmd[:value].to_sym]
       item_val = item[cmd_val.to_sym] || item[cmd_val.to_s]
       search = node[:value].last
       val = search[:value]
       if val.is_a?(Time)
         item_val = item_val.to_time if item_val
-      elsif search[:type] == :str && command_types[val.to_sym]
+      elsif search[:type] == :str && cmd_types[val.to_sym]
         val = item[val.to_sym] || item[val.to_s]
       end
       args = [item_val, val]
@@ -44,24 +43,25 @@ module CommandSearch
       fn.call(*args.map(&:to_f))
     end
 
-    def check(item, ast, fields, command_types)
-      field_vals = fields.map { |x| item[x] || item[x.to_s] || item[x.to_sym] }.compact
-      ast_array = ast.is_a?(Array) ? ast : [ast]
-      ast_array.all? do |node|
+    def check(item, ast, fields, cmd_types)
+      ast.all? do |node|
         val = node[:value]
         case node[:nest_type]
         when nil
-          field_vals.any? { |x| x.to_s[val] }
+          fields.any? do |x|
+            item_val = item[x.to_sym] || item[x.to_s]
+            item_val.to_s[val] if item_val
+          end
         when :colon
-          command_check(item, val, command_types)
+          command_check(item, val)
         when :compare
-          compare_check(item, node, command_types)
-        when :pipe
-          val.any? { |v| check(item, v, fields, command_types) }
+          compare_check(item, node, cmd_types)
         when :minus
-          !val.all? { |v| check(item, v, fields, command_types) }
+          !val.all? { |v| check(item, [v], fields, cmd_types) }
+        when :pipe
+          val.any? { |v| check(item, [v], fields, cmd_types) }
         when :paren
-          val.all? { |v| check(item, v, fields, command_types) }
+          val.all? { |v| check(item, [v], fields, cmd_types) }
         end
       end
     end

@@ -33,6 +33,7 @@ Benchmark.ips() do |bm|
   bench('', [], {})
   bench('')
   bench('foo bar')
+  bench('a b c d e')
   bench('-(a)|"b"')
   bench('name:foo tile -(foo bar)')
   bench('name:foo tile -(foo bar)|"hello world" foo>1.2')
