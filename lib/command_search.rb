@@ -5,11 +5,8 @@ load(__dir__ + '/command_search/normalizer.rb')
 load(__dir__ + '/command_search/optimizer.rb')
 load(__dir__ + '/command_search/preprocessor.rb')
 
-# TODO: change these names
-# load(__dir__ + '/command_search/backends/memory.rb')
-# load(__dir__ + '/command_search/backends/mongoer.rb')
-load(__dir__ + '/command_search/memory.rb')
-load(__dir__ + '/command_search/mongoer.rb')
+load(__dir__ + '/command_search/backends/memory.rb')
+load(__dir__ + '/command_search/backends/mongoer.rb')
 
 class Boolean; end
 
