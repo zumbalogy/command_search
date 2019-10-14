@@ -24,38 +24,31 @@ module CommandSearch
         search_node[:value] = [Time.new(str), Time.new(str.to_i + 1)]
       else
         time_str = str.tr('._-', ' ')
-        input_times = Chronic.parse(time_str, { guess: nil }) || Chronic.parse(str, { guess: nil })
-        if input_times
-          search_node[:value] = [input_times.first, input_times.last]
+        times = Chronic.parse(time_str, { guess: nil })
+        times ||= Chronic.parse(str, { guess: nil })
+        if times
+          search_node[:value] = [times.first, times.last]
         else
           search_node[:value] = nil
           return
         end
       end
-
-      if node[:nest_type] == :compare
-        date_start_map = {
-          '<' => :start,
-          '>' => :end,
-          '<=' => :end,
-          '>=' => :start
-        }
-        op = node[:nest_op]
-        date_pick = date_start_map[op]
-        if date_pick == :start
-          search_node[:value] = search_node[:value].first
-        else
-          search_node[:value] = search_node[:value].last
-          search_node[:value] -= 1
-        end
+      return unless node[:nest_type] == :compare
+      op = node[:nest_op]
+      if op == '<' || op == '>='
+        search_node[:value] = search_node[:value].first
+      else
+        search_node[:value] = search_node[:value].last
+        search_node[:value] -= 1
       end
     end
 
     def cast_regex(node)
-      return unless node[:type] == :str || node[:type] == :quoted_str || node[:type] == :number
+      type = node[:type]
+      return unless type == :str || type == :quoted_str || type == :number
       raw = node[:value]
       str = Regexp.escape(raw)
-      return node[:value] = /#{str}/i unless node[:type] == :quoted_str
+      return node[:value] = /#{str}/i unless type == :quoted_str
       return node[:value] = '' if raw == ''
       return node[:value] = /\b#{str}\b/ unless raw[/(^\W)|(\W$)/]
       border_a = '(^|\s|[^:+\w])'
@@ -63,26 +56,22 @@ module CommandSearch
       node[:value] = Regexp.new(border_a + str + border_b)
     end
 
-    def flip_operator!(node, aliases)
-      # TODO: make this take precidence for first item. and write specs for that, and clean this up i guess
-      if (!aliases[node[:value][0][:value].to_sym] && aliases[node[:value][1][:value].to_sym])
-        flip_ops = {
-          '<' => '>',
-          '>' => '<',
-          '<=' => '>=',
-          '>=' => '<='
-        }
-        node[:nest_op] = flip_ops[node[:nest_op]]
-        node[:value].reverse!
-      end
+    def flip_operator!(node, cmd_fields)
+      # TODO: re precidence for first item. and write specs for that
+      val = node[:value]
+      return if cmd_fields[val[0][:value].to_sym]
+      return unless cmd_fields[val[1][:value].to_sym]
+      flip_ops = { '<' => '>', '>' => '<', '<=' => '>=', '>=' => '<=' }
+      node[:nest_op] = flip_ops[node[:nest_op]]
+      node[:value].reverse!
     end
 
-    def dealias_key(key, aliases)
-      key = aliases[key.to_sym] while aliases[key.to_sym].is_a?(Symbol)
+    def dealias_key(key, cmd_fields)
+      key = cmd_fields[key.to_sym] while cmd_fields[key.to_sym].is_a?(Symbol)
       key.to_s
     end
 
-    def dealias!(ast, aliases)
+    def dealias!(ast, cmd_fields)
       ast.map! do |node|
         nest = node[:nest_type]
         unless nest
@@ -91,13 +80,13 @@ module CommandSearch
           next node
         end
         unless nest == :colon || nest == :compare
-          dealias!(node[:value], aliases)
+          dealias!(node[:value], cmd_fields)
           next node
         end
-        flip_operator!(node, aliases) if nest == :compare
+        flip_operator!(node, cmd_fields) if nest == :compare
         (key_node, search_node) = node[:value]
-        new_key = dealias_key(key_node[:value], aliases)
-        type = aliases[new_key.to_sym]
+        new_key = dealias_key(key_node[:value], cmd_fields)
+        type = cmd_fields[new_key.to_sym]
         node[:value][0][:value] = new_key
         if type
           cast_bool(type, search_node)
@@ -113,11 +102,10 @@ module CommandSearch
       end
     end
 
-    def normalize!(ast, command_fields)
-      dealias!(ast, command_fields)
-
+    def normalize!(ast, cmd_fields)
+      dealias!(ast, cmd_fields)
       clean = {}
-      command_fields.each do |k, v|
+      cmd_fields.each do |k, v|
         next if v.is_a?(Symbol)
         if v.is_a?(Array)
           clean[k] = (v - [:allow_existence_boolean]).first

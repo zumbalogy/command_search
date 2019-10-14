@@ -44,7 +44,7 @@ module CommandSearch
     end
 
 
-    def sql_preprocess(ast, fields, command_fields)
+    def sql_preprocess!(ast, fields, command_fields)
       negation!(ast)
       ast.map! do |node|
         next node[:value] if node[:nest_type] == :paren

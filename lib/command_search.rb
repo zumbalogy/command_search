@@ -25,16 +25,14 @@ module CommandSearch
     ast = Lexer.lex(aliased_query)
     Parser.parse!(ast)
     Optimizer.optimize!(ast)
-    clean_cmd_fields = Normalizer.normalize!(ast, command_fields)
-
-    # Preprocessor.preprocess(ast, fields, clean_cmd_fields)
+    command_fields = Normalizer.normalize!(ast, command_fields)
 
     if source.respond_to?(:mongo_client) && source.queryable
       fields = [:__CommandSearch_dummy_key__] if fields.empty?
-      mongo_query = Mongoer.build_query(ast, fields, clean_cmd_fields)
+      mongo_query = Mongoer.build_query(ast, fields, command_fields)
       return source.where(mongo_query)
     end
 
-    source.select { |x| Memory.check(x, ast, fields, clean_cmd_fields) }
+    source.select { |x| Memory.check(x, ast, fields, command_fields) }
   end
 end
