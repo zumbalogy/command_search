@@ -2,10 +2,10 @@ module CommandSearch
   module Mongoer
     module_function
 
-    def build_search(node, fields, command_types)
+    def build_search(node, fields, cmd_fields)
       val = node[:value]
       forms = fields.map do |field|
-        type = command_types[field.to_sym]
+        type = cmd_fields[field.to_sym]
         if type == Numeric
           { field => node[:number_value] }
         else
@@ -41,12 +41,12 @@ module CommandSearch
       { key => val }
     end
 
-    def build_compare(node, command_types)
+    def build_compare(node, cmd_fields)
       op_map = { '<' => '$lt', '>' => '$gt', '<=' => '$lte', '>=' => '$gte' }
       op = op_map[node[:nest_op]]
       key = node[:value][0][:value]
       val = node[:value][1][:value]
-      if val.class == String && command_types[val.to_sym]
+      if val.class == String && cmd_fields[val.to_sym]
         val = '$' + val
         key = '$' + key
         val = [key, val]
@@ -55,16 +55,16 @@ module CommandSearch
       { key => { op => val } }
     end
 
-    def build_searches!(ast, fields, command_types)
+    def build_searches!(ast, fields, cmd_fields)
       mongo_types = { paren: '$and', pipe: '$or', minus: '$nor' }
       ast.map! do |node|
         type = node[:nest_type]
         if type == :colon
           build_command(node)
         elsif type == :compare
-          build_compare(node, command_types)
+          build_compare(node, cmd_fields)
         elsif key = mongo_types[type]
-          build_searches!(node[:value], fields, command_types)
+          build_searches!(node[:value], fields, cmd_fields)
           val = node[:value]
           if key == '$nor' && val.count > 1
             next { key => [{ '$and' => val }] }
@@ -72,14 +72,14 @@ module CommandSearch
           val.map! { |x| x['$or'] || x }.flatten! unless key == '$and'
           { key => val }
         else
-          build_search(node, fields, command_types)
+          build_search(node, fields, cmd_fields)
         end
       end
       ast.flatten!
     end
 
-    def build_query(ast, fields, command_types)
-      build_searches!(ast, fields, command_types)
+    def build_query(ast, fields, cmd_fields)
+      build_searches!(ast, fields, cmd_fields)
       return {} if ast == []
       return ast.first if ast.count == 1
       { '$and' => ast }

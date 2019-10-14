@@ -14,8 +14,9 @@ describe CommandSearch::Preprocessor do
   end
 
   def n(x, fields = Field_default, command_fields = Cmd_default)
-    opted = opt(x, fields, command_fields)
-    preprocessed = CommandSearch::Preprocessor.sql_preprocess!(opted, fields, command_fields)
+    ast = opt(x, fields, command_fields)
+    CommandSearch::Preprocessor.sql_preprocess!(ast)
+    ast
   end
 
   it 'should unroll negation' do
