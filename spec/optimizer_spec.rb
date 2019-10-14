@@ -336,26 +336,60 @@ describe CommandSearch::Optimizer do
           nest_op: '-',
           value: [{type: :str, value: 'foo'}]}]}]
     opt('-(-a b)').should == [{
-      :nest_op=>"-",
-      :nest_type=>:minus,
-      :type=>:nest,
-      :value=>[
-        {:nest_op=>"-",
-         :nest_type=>:minus,
-         :type=>:nest,
-         :value=>[{:type=>:str, :value=>"a"}]},
-        {:type=>:str, :value=>"b"}]}]
+      nest_op: '-',
+      nest_type: :minus,
+      type: :nest,
+      value: [
+        {nest_op: '-',
+         nest_type: :minus,
+         type: :nest,
+         value: [{type: :str, value: 'a'}]},
+        {type: :str, value: 'b'}]}]
     opt('-(a -b)').should == [{
-      :nest_op=>"-",
-      :nest_type=>:minus,
-      :type=>:nest,
-      :value=>[
-        {:type=>:str, :value=>"a"},
-        {:nest_op=>"-",
-         :nest_type=>:minus,
-         :type=>:nest,
-         :value=>[
-           {:type=>:str, :value=>"b"}]}]}]
+      nest_op: '-',
+      nest_type: :minus,
+      type: :nest,
+      value: [
+        {type: :str, value: 'a'},
+        {nest_op: '-',
+         nest_type: :minus,
+         type: :nest,
+         value: [
+           {type: :str, value: 'b'}]}]}]
+    opt('-(-a -b)').should == [{
+      nest_op: '-',
+      nest_type: :minus,
+      type: :nest,
+      value: [
+        {nest_op: '-',
+         nest_type: :minus,
+         type: :nest,
+         value: [{type: :str, value: 'a'}]},
+        {nest_op: '-',
+         nest_type: :minus,
+         type: :nest,
+         value: [
+           {type: :str, value: 'b'}]}]}]
+    opt('-(foo|-bar)|3').should == [{
+      nest_op: '|',
+      nest_type: :pipe,
+      type: :nest,
+      value:
+       [{nest_op: '-',
+         nest_type: :minus,
+         type: :nest,
+         value:
+          [{nest_op: '|',
+            nest_type: :pipe,
+            type: :nest,
+            value:
+             [{type: :str, value: 'foo'},
+              {nest_op: '-',
+               nest_type: :minus,
+               type: :nest,
+               value: [{type: :str, value: 'bar'}]}]}]},
+        {type: :number, value: '3'}]}]
+
   end
 
   # it 'should handle fancier logic' do
