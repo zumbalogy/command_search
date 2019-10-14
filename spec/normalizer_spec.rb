@@ -223,4 +223,23 @@ describe CommandSearch::Normalizer do
             {type: Time, value: Chronic.parse('1901-01-01 00:00:00')}]}]}]
   end
 
+  it 'should flip operators in flipped comparisons' do
+    def x(query, op, val1, val2)
+      aliases = { a: Numeric, b: Numeric }
+      res =  norm(query, aliases).first
+      res[:nest_op].should == op
+      res[:value][0][:value].should == val1
+      res[:value][1][:value].should == val2
+    end
+    aliases = { a: Numeric, b: Numeric }
+    x('a<b',  '<',  'a', 'b')
+    x('a>=b', '>=', 'a', 'b')
+    x('c>a',  '<',  'a', 'c')
+    x('c<=a', '>=', 'a', 'c')
+    x('a>=c', '>=', 'a', 'c')
+    x('a<c',  '<',  'a', 'c')
+    x('b<a',  '<',  'b', 'a')
+    x('b>=a', '>=', 'b', 'a')
+  end
+
 end

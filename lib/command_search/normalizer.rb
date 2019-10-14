@@ -57,7 +57,6 @@ module CommandSearch
     end
 
     def flip_operator!(node, cmd_fields)
-      # TODO: re precidence for first item. and write specs for that
       val = node[:value]
       return if cmd_fields[val[0][:value].to_sym]
       return unless cmd_fields[val[1][:value].to_sym]
