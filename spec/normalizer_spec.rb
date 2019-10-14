@@ -9,26 +9,15 @@ describe CommandSearch::Normalizer do
     ast
   end
 
-  def dealias(x, aliases)
+  def norm(x, aliases)
     ast = parse(x)
     CommandSearch::Normalizer.normalize!(ast, aliases)
     ast
   end
 
-  # it 'should cast regular expressions' do
-  #   # TODO
-  # end
-
-  # it 'should cast dates' do
-  #   # TODO
-  # end
-
   it 'should handle aliased commands and compares' do
-    aliases = { f00: :foo, foo: String, gray: :grey, grey: Numeric }
-    # TODO: write tests so that maybe casting and dealiasing are done seperate and all
-
-    aliases2 = { foo: :bar, bar: Numeric }
-    dealias('foo<100', aliases2).should == [
+    aliases = { foo: :bar, bar: Numeric }
+    norm('foo<100', aliases).should == [
       {type: :nest,
        nest_type: :compare,
        nest_op: '<',
@@ -37,16 +26,16 @@ describe CommandSearch::Normalizer do
   end
 
   it 'should set unaliased commands to normal searches' do
-    dealias('foo foo:bar', {}).should_not == parse('foo foo:bar')
-    dealias('a:b', {}).should == [{ type: :str, value: /a:b/i }]
-    dealias('-foo:bar', {})[0][:value].should == [{type: :str, value: /foo:bar/i }]
-    dealias('-foo:bar|baz', {})[0][:value][0][:value].should == [{type: :str, value: /foo:bar/i }]
+    norm('foo foo:bar', {}).should_not == parse('foo foo:bar')
+    norm('a:b', {}).should == [{ type: :str, value: /a:b/i }]
+    norm('-foo:bar', {})[0][:value].should == [{type: :str, value: /foo:bar/i }]
+    norm('-foo:bar|baz', {})[0][:value][0][:value].should == [{type: :str, value: /foo:bar/i }]
   end
 
   it 'should cast booleans' do
     def c(x)
       aliases = { a: :foo, foo: Boolean, b: [Numeric, :allow_existence_boolean] }
-      dealias(x, aliases)
+      norm(x, aliases)
     end
     c('a:true').should == [{
       type: :nest,
@@ -132,4 +121,106 @@ describe CommandSearch::Normalizer do
     c('c:-true').should == [{type: :str, value: /c:\-true/i}]
     c('c:-false').should == [{type: :str, value: /c:\-false/i}]
   end
+
+  it 'should cast regular expressions' do
+    aliases = { s: String, n: Integer }
+    norm('', aliases).should == []
+    norm('foo', aliases).should == [{type: :str, value: /foo/i}]
+    norm('foo 5', aliases).should == [{type: :str, value: /foo/i}, {number_value: '5', type: :number, value: /5/i}]
+    norm('-(foo|-bar)|3', aliases).should == [
+      {nest_op: '|',
+       nest_type: :pipe,
+       type: :nest,
+       value:
+        [{nest_op: '-',
+          nest_type: :minus,
+          type: :nest,
+          value:
+           [{nest_op: '|',
+             nest_type: :pipe,
+             type: :nest,
+             value:
+              [{type: :str, value: /foo/i},
+               {nest_op: '-',
+                nest_type: :minus,
+                type: :nest,
+                value: [{type: :str, value: /bar/i}]}]}]},
+         {number_value: '3', type: :number, value: /3/i}]}]
+     norm('s:-2', aliases).should ==  [
+       {nest_op: ':',
+        nest_type: :colon,
+        type: :nest,
+        value: [{type: :str, value: 's'}, {type: :number, value: /\-2/i}]}]
+     norm('s:abc', aliases).should == [
+       {nest_op: ':',
+        nest_type: :colon,
+        type: :nest,
+        value: [{type: :str, value: 's'}, {type: :str, value: /abc/i}]}]
+     norm('n:4', aliases).should == [
+       {nest_op: ':',
+        nest_type: :colon,
+        type: :nest,
+        value: [{type: :str, value: 'n'}, {type: :number, value: '4'}]}]
+     norm('n:abc', aliases).should ==  [
+       {nest_op: ':',
+        nest_type: :colon,
+        type: :nest,
+        value: [{type: :str, value: 'n'}, {type: :str, value: 'abc'}]}]
+  end
+
+  it 'should cast dates' do
+    aliases = { t: Time }
+
+    def x(query, op, time)
+      time = Chronic.parse(time) if time.is_a?(String)
+      aliases = { t: Time }
+      res = norm(query, aliases).first
+      res[:nest_op].should == op
+      res[:value][1][:value].should == time
+    end
+
+    x('t<1901', '<', Chronic.parse('1901-01-01 00:00:00'))
+    x('t>1902', '>', Chronic.parse('1902-12-31 23:59:59'))
+    x('t>=1903', '>=', Chronic.parse('1903-01-01 00:00:00'))
+    x('t<=1903', '<=', Chronic.parse('1903-12-31 23:59:59'))
+    x('t<1901-1-2', '<', Chronic.parse('1901-01-02 00:00:00'))
+    x('t<9', '<', Time.new('0009-01-01 00:00:00'))
+    x('t<hello', '<', nil)
+    x('t:hello', ':', nil)
+
+    norm('', aliases).should == []
+    norm('t:1900', aliases).should == [
+      {nest_op: ':',
+       nest_type: :colon,
+       type: :nest,
+       value: [{type: :str, value: 't'},
+               {type: Time, value: [Chronic.parse('1900-01-01 00:00:00'),
+                                    Chronic.parse('1901-01-01 00:00:00')]}]}]
+    norm('-t:1900', aliases).should == [
+      {nest_op: '-',
+       nest_type: :minus,
+       type: :nest,
+       value:
+        [{nest_op: ':',
+          nest_type: :colon,
+          type: :nest,
+          value:
+           [{type: :str, value: 't'},
+            {type: Time,
+             value:
+              [Chronic.parse('1900-01-01 00:00:00'),
+               Chronic.parse('1901-01-01 00:00:00')]}]}]}]
+    norm('-t<1901', aliases).should == [
+      {nest_op: '-',
+       nest_type: :minus,
+       type: :nest,
+       value:
+        [{nest_op: '<',
+          nest_type: :compare,
+          type: :nest,
+          value:
+           [{type: :str, value: 't'},
+            {type: Time, value: Chronic.parse('1901-01-01 00:00:00')}]}]}]
+  end
+
 end
