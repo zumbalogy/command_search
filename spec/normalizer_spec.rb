@@ -16,12 +16,19 @@ describe CommandSearch::Normalizer do
   end
 
   it 'should handle aliased commands and compares' do
-    aliases = { foo: :bar, bar: Numeric }
+    aliases = { foo: :bar, bar: :baz, baz: Numeric }
+    norm('-foo:100', aliases)[0][:value].should == norm('foo:100', aliases)
+    norm('foo:100', aliases).should == [
+      {type: :nest,
+        nest_type: :colon,
+        nest_op: ':',
+        value: [{type: :str, value: 'baz'},
+          {type: :number, value: '100'}]}]
     norm('foo<100', aliases).should == [
       {type: :nest,
        nest_type: :compare,
        nest_op: '<',
-       value: [{type: :str, value: 'bar'},
+       value: [{type: :str, value: 'baz'},
                {type: :number, value: '100'}]}]
   end
 
