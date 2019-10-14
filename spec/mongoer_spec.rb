@@ -97,7 +97,7 @@ describe CommandSearch::Mongoer do
     q2('num1:-230').should == { 'num1' => '-230' }
     q2('num1:-0.930').should == { 'num1' => '-0.930' }
     q2('num1:4.0').should == { 'num1' => '4.0' }
-    q2('num1:red').should == { 'num1' => 'red' } # TODO: injection sanitation
+    q2('num1:red').should == { 'num1' => 'red' }
   end
 
   it 'should handle chained commands' do
