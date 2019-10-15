@@ -21,11 +21,7 @@ Benchmark.ips do |bm|
   lex('0123456789')
   lex('a b c e d e f h i j k l 3 4 5 6 7 8 9')
   lex('foo:bar apple|bannana cost<=100')
-  lex('ab12' * 8)
-  lex('ab12' * 10)
+  lex('foo:bar apple|bannana cost<=100' * 100)
   lex('ab12' * 12)
-  lex('ab1 ' * 12)
-  lex('"foo" \'ba\'' * 8)
-  lex('"foo" \'ba\'' * 10)
   lex('"fo" \'ba\'' * 12)
 end

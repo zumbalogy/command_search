@@ -2,60 +2,33 @@ module CommandSearch
   module Optimizer
     module_function
 
-    def ands_and_ors!(ast)
+    def denest!(ast, parent_type = :paren)
       ast.map! do |node|
-        next node unless node[:nest_type] == :paren || node[:nest_type] == :pipe
-        ands_and_ors!(node[:value])
-        next node[:value].first if node[:value].length < 2
-        next node unless node[:nest_type] == :pipe
-        node[:value].map! do |kid|
-          next kid[:value] if kid[:nest_type] == :pipe
-          kid
+        next [] if node[:type] == :quoted_str && node[:value] == '' && [:paren, :pipe, :minus].include?(parent_type)
+        type = node[:nest_type]
+        next node unless type
+        next node unless type == :paren || type == :pipe || type == :minus
+        denest!(node[:value], type)
+        next [] if node[:value] == []
+        if type == :minus
+          only_child = node[:value].count == 1
+          child = node[:value].first
+          next child[:value] if only_child && child[:nest_type] == :minus
+          next node
         end
-        node[:value].flatten!
+        next node[:value] if node[:value].count == 1
+        next node[:value] if type == parent_type
+        next node[:value] if type == :paren && parent_type == :minus
+        next node if type == :paren
+        denest!(node[:value], type) # type == :pipe, parent_type == :paren
         node[:value].uniq!
         node
       end
-    end
-
-    def negate_negate!(ast)
-      ast.map! do |node|
-        next node unless node[:nest_type]
-        negate_negate!(node[:value])
-        next [] if node[:value] == []
-        type = node[:nest_type]
-        child_type = node[:value].first[:nest_type]
-        next node unless type == :minus && child_type == :minus
-        node[:value].first[:value]
-      end
       ast.flatten!
     end
 
-    def denest_parens!(ast, parent_type = :root)
-      ast.map! do |node|
-        next node unless node[:nest_type]
-        denest_parens!(node[:value], node[:nest_type])
-        # valid_self && (valid_parent || valid_child)
-        if node[:nest_type] == :paren && (parent_type != :pipe || node[:value].count < 2)
-          next node[:value]
-        end
-        node
-      end
-      ast.flatten!
-    end
-
-    def remove_empty_strings!(ast)
-      ast.reject! do |node|
-        remove_empty_strings!(node[:value]) if [:paren, :pipe, :minus].include?(node[:nest_type])
-        node[:type] == :quoted_str && node[:value] == ''
-      end
-    end
-
-    def optimize(ast)
-      denest_parens!(ast)
-      remove_empty_strings!(ast)
-      negate_negate!(ast)
-      ands_and_ors!(ast)
+    def optimize!(ast)
+      denest!(ast)
       ast.uniq!
       ast
     end

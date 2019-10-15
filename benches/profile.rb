@@ -11,16 +11,15 @@ def run(input, fields = nil, command_fields = nil)
   fields ||= [:title, :description, :tags]
   command_fields ||= { has_child_id: Boolean, title: String, name: :title }
   lexed = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
-  lexed = CommandSearch::Lexer.lex(input)
-  parsed = CommandSearch::Parser.parse!(lexed)
-  dealiased = CommandSearch::CommandDealiaser.dealias(parsed, command_fields)
-  cleaned = CommandSearch::CommandDealiaser.decompose_unaliasable(dealiased, command_fields)
-  opted = CommandSearch::Optimizer.optimize(cleaned)
-  CommandSearch::Mongoer.build_query(opted, fields, command_fields)
+  ast = CommandSearch::Lexer.lex(input)
+  CommandSearch::Parser.parse!(ast)
+  CommandSearch::Optimizer.optimize!(ast)
+  CommandSearch::Normalizer.normalize!(ast, command_fields)
+  CommandSearch::Mongoer.build_query(ast, fields, command_fields)
 end
 
 result = RubyProf.profile do
-  1000.times do
+  100.times do
     run('', [], {})
     run('')
     run('foo bar')
@@ -28,9 +27,9 @@ result = RubyProf.profile do
     run('(price<=200 discount)|price<=99.99')
     run('name:foo tile -(foo bar)')
     run('name:foo tile -(foo bar)|"hello world" foo>1.2')
+    run('name:foo tile a|a|a foo:bar -(foo bar)|"hello world" foo>1.2' * 50)
   end
-  run('name:foo tile a|a|a foo:bar -(foo bar)|"hello world" foo>1.2' * 100)
-  run('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 1200)
+  # run('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 1200)
 end
 
 # printer = RubyProf::GraphPrinter.new(result)
@@ -39,4 +38,4 @@ printer = RubyProf::CallStackPrinter.new(result)
 
 printer.print(STDOUT, min_percent: 0)
 
-# File.open('tmp/profile_data.html', 'w') { |file| printer.print(file) }
+# File.open('profile_data.html', 'w') { |file| printer.print(file) }

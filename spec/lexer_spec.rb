@@ -1,10 +1,10 @@
 load(__dir__ + '/./spec_helper.rb')
 
-def lex(input)
-  CommandSearch::Lexer.lex(input).select { |x| x[:type] != :space }
-end
-
 describe CommandSearch::Lexer do
+
+  def lex(input)
+    CommandSearch::Lexer.lex(input).select { |x| x[:type] != :space }
+  end
 
   it 'should handle empty strings' do
     lex('').should == []

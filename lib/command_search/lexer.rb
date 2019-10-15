@@ -9,7 +9,7 @@ module CommandSearch
         match = nil
         case input[i..-1]
         when /\A\s+/
-          type = :space
+          next i += Regexp.last_match[0].length
         when /\A"(.*?)"/
           match = Regexp.last_match[1]
           type = :quoted_str

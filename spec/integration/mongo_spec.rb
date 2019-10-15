@@ -55,6 +55,7 @@ class Hat
 end
 
 describe Hat do
+
   before do
     Mongoid.purge!
     Hat.create(title: 'name name1 1')

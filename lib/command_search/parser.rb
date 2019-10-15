@@ -47,7 +47,7 @@ module CommandSearch
         left = input[i][:type]
         right = input[i + 2][:type]
         if types.include?(left) && types.include?(right)
-          input.insert(i + 1, input[i + 1])
+          input.insert(i + 1, input[i + 1].clone())
         end
         i += 1
       end
@@ -83,7 +83,6 @@ module CommandSearch
         input[i - 1..i] = merge_strs(input[i - 1..i], [1, 0]) if i > 0
       end
 
-      input.select! { |x| x[:type] != :space }
       input[-1][:type] = :str if input[-1] && input[-1][:type] == :minus
     end
 
