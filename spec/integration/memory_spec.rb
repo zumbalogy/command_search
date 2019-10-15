@@ -382,6 +382,19 @@ describe CommandSearch::Memory do
     CommandSearch.search([{'foo' => 3}], '2', { fields: [:foo] }).count.should == 0
     CommandSearch.search([{'foo' => 3}], '3', { fields: ['foo'] }).count.should == 1
     CommandSearch.search([{'foo' => 3}], '3', { fields: [:foo] }).count.should == 1
+    CommandSearch.search([{'foo' => 3}], '3', { fields: [:bar] }).count.should == 0
+    CommandSearch.search([{'bar' => 3}], '3', { fields: [:foo] }).count.should == 0
+    CommandSearch.search([{'foo' => 3}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 1
+    CommandSearch.search([{:foo => 3}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 1
+    CommandSearch.search([{'foo' => 3}], 'foo:2', { command_fields: { foo: Numeric } }).count.should == 0
+    CommandSearch.search([{'foo' => 2}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 0
+    CommandSearch.search([{:foo => 2}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 0
+    CommandSearch.search([{:bar => 3}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 0
+    CommandSearch.search([{'bar' => 3}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 0
+    CommandSearch.search([{'foo' => 3}], 'bar:3', { command_fields: { foo: Numeric } }).count.should == 0
+    CommandSearch.search([{'foo' => 3}], 'foo:3', { command_fields: { bar: Numeric } }).count.should == 0
+    CommandSearch.search([{'bar' => 3}], 'foo:3', { command_fields: { bar: Numeric } }).count.should == 0
+    CommandSearch.search([{'foo' => 3}], 'bar:3', { command_fields: { bar: Numeric } }).count.should == 0
   end
 
   it 'should handle unicode' do

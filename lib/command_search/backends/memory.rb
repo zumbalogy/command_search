@@ -3,25 +3,26 @@ module CommandSearch
     module_function
 
     def command_check(item, val)
-      cmd = val[0][:value].to_sym
+      cmd = val[0][:value]
       cmd_search = val[1][:value]
+      item_val = item[cmd.to_sym] || item[cmd]
       val_type = val[1][:type]
       val_type = Boolean if val_type == :existence && cmd_search == true
       if val_type == Boolean
-        !!item[cmd] == cmd_search
+        !!item_val == cmd_search
       elsif val_type == :existence
-        item[cmd] == nil
-      elsif !item.key?(cmd)
+        item_val == nil
+      elsif !item_val
         return false
       elsif val_type == Time
-        item_time = item[cmd].to_time
+        item_time = item_val.to_time
         cmd_search.first <= item_time && item_time < cmd_search.last
       elsif cmd_search.is_a?(Regexp)
-        item[cmd][cmd_search]
+        item_val[cmd_search]
       elsif cmd_search == ''
-        item[cmd] == cmd_search
+        item_val == cmd_search
       else
-        item[cmd].to_s[/#{Regexp.escape(cmd_search)}/i]
+        item_val.to_s[/#{Regexp.escape(cmd_search)}/i]
       end
     end
 
