@@ -20,7 +20,7 @@ module CommandSearch
           type = :number
         when /\A-/
           type = :minus
-        when /\A[^\s:"|<>()]+/
+        when /\A[^\s:|<>()]+/
           type = :str
         when /\A\|+/
           type = :pipe
@@ -30,8 +30,6 @@ module CommandSearch
           type = :colon
         when /\A[<>]=?/
           type = :compare
-        when /\A./
-          type = :str
         end
         match = match || Regexp.last_match[0]
         out.push(type: type, value: match)
