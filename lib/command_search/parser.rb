@@ -13,9 +13,13 @@ module CommandSearch
           val = input[(opening + 1)..(i - 1)]
           input[opening..i] = { type: :nest, nest_type: :paren, value: val }
           i -= (val.length + 1)
+        else
+          input.delete_at(i)
+          next
         end
         i += 1
       end
+      opening_idxs.each_with_index { |o, i| input.delete_at(o - i) }
     end
 
     def cluster!(type, input, cluster_type = :binary)
@@ -86,10 +90,6 @@ module CommandSearch
       input[-1][:type] = :str if input[-1] && input[-1][:type] == :minus
     end
 
-    def clean_ununused!(input)
-      input.reject! { |x| x[:type] == :paren && x[:value].is_a?(String) }
-    end
-
     def parse!(input)
       clean_ununusable!(input)
       unchain!([:colon, :compare], input)
@@ -98,7 +98,6 @@ module CommandSearch
       cluster!(:compare, input)
       cluster!(:minus, input, :prefix)
       cluster!(:pipe, input)
-      clean_ununused!(input)
       input
     end
   end
