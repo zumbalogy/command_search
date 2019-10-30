@@ -68,10 +68,10 @@ module CommandSearch
     end
 
     def clean_ununusable!(input)
-      i = 0
+      i = 1
       while i < input.length
         next i += 1 unless input[i][:type] == :minus
-        next i += 1 unless i > 0 && [:compare, :colon].include?(input[i - 1][:type])
+        next i += 1 unless [:compare, :colon].include?(input[i - 1][:type])
         input[i..i + 1] = merge_strs(input[i..i + 1], [0, 1])
       end
 
