@@ -31,7 +31,7 @@ module CommandSearch
         when /\A[<>]=?/
           type = :compare
         end
-        match = match || Regexp.last_match[0]
+        match ||= Regexp.last_match[0]
         out.push(type: type, value: match)
         i += Regexp.last_match[0].length
       end
