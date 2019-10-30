@@ -65,6 +65,4 @@ Having further steps to process the AST for easier consumption by the backends.
 by folding in the command_types and all that into the ast, so that the backends can just be passed that and
 dont need to do any lookup
 
-make circleCi run a longer generative test in memory_spec.rb (and maybe do shorter one local)
-(the fuzzer too)
-and should run with some variations of fleshed-out options too
+the fuzzer and generative tests should run with some variations of fleshed-out options

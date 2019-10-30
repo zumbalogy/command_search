@@ -490,7 +490,9 @@ describe CommandSearch::Memory do
 
   it 'should handle fuzzing' do
     check = true
-    10000.times do |i|
+    trials = 1000
+    trials = 333000 if ENV['CI']
+    trials.times do |i|
       str = (0...24).map { (rand(130)).chr }.join
       begin
         CommandSearch.search([{}], str, { fields: [:foo] })
@@ -505,8 +507,10 @@ describe CommandSearch::Memory do
 
   it 'should handle permutations' do
     check = true
-    strs = ['a', 'b', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
-    strs.repeated_permutation(4).each do |perm|
+    strs = ['a', 'b', 'x', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
+    trials = 3
+    trials = 5 if ENV['CI']
+    strs.repeated_permutation(trials).each do |perm|
       begin
         CommandSearch.search([{}], perm.join, { fields: [:foo] })
       rescue
