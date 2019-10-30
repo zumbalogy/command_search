@@ -491,7 +491,7 @@ describe CommandSearch::Memory do
   it 'should handle fuzzing' do
     check = true
     trials = 1000
-    trials = 333000 if ENV['CI']
+    trials = 999000 if ENV['CI']
     trials.times do |i|
       str = (0...24).map { (rand(130)).chr }.join
       begin
