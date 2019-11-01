@@ -66,3 +66,5 @@ by folding in the command_types and all that into the ast, so that the backends 
 dont need to do any lookup
 
 the fuzzer and generative tests should run with some variations of fleshed-out options
+
+benchmark aliaser
