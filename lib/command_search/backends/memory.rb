@@ -46,8 +46,8 @@ module CommandSearch
         val = node[:value]
         case node[:nest_type]
         when nil
-          fields.any? do |x|
-            item_val = item[x.to_sym] || item[x.to_s]
+          fields.any? do |field|
+            item_val = item[field.to_sym] || item[field.to_s]
             item_val.to_s[val] if item_val
           end
         when :colon
