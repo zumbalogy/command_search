@@ -45,11 +45,11 @@ module CommandSearch
 
     def cast_regex(node)
       type = node[:type]
-      return unless type == :str || type == :quoted_str || type == :number
       raw = node[:value]
+      return unless raw.is_a?(String)
+      return if node[:value] == ''
       str = Regexp.escape(raw)
       return node[:value] = /#{str}/i unless type == :quoted_str
-      return node[:value] = '' if raw == ''
       return node[:value] = /\b#{str}\b/ unless raw[/(^\W)|(\W$)/]
       border_a = '(^|\s|[^:+\w])'
       border_b = '($|\s|[^:+\w])'
