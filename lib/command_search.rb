@@ -29,6 +29,6 @@ module CommandSearch
       return source.where(mongo_query)
     end
 
-    source.select { |x| Memory.check(x, ast, fields, command_fields) }
+    source.select { |x| Memory.check(x, ast, fields) }
   end
 end

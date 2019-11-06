@@ -56,10 +56,13 @@ module CommandSearch
       node[:value] = Regexp.new(border_a + str + border_b)
     end
 
-    def flip_operator!(node, cmd_fields)
+    def clean_comparison!(node, cmd_fields)
       val = node[:value]
-      return if cmd_fields[val[0][:value].to_sym]
       return unless cmd_fields[val[1][:value].to_sym]
+      if cmd_fields[val[0][:value].to_sym]
+        node[:compare_across_fields] = true
+        return
+      end
       flip_ops = { '<' => '>', '>' => '<', '<=' => '>=', '>=' => '<=' }
       node[:nest_op] = flip_ops[node[:nest_op]]
       node[:value].reverse!
@@ -82,7 +85,7 @@ module CommandSearch
           dealias!(node[:value], cmd_fields)
           next node
         end
-        flip_operator!(node, cmd_fields) if nest == :compare
+        clean_comparison!(node, cmd_fields) if nest == :compare
         (key_node, search_node) = node[:value]
         new_key = dealias_key(key_node[:value], cmd_fields)
         type = cmd_fields[new_key.to_sym]

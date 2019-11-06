@@ -41,12 +41,12 @@ module CommandSearch
       { key => val }
     end
 
-    def build_compare(node, cmd_fields)
+    def build_compare(node)
       op_map = { '<' => '$lt', '>' => '$gt', '<=' => '$lte', '>=' => '$gte' }
       op = op_map[node[:nest_op]]
       key = node[:value][0][:value]
       val = node[:value][1][:value]
-      if val.class == String && cmd_fields[val.to_sym]
+      if node[:compare_across_fields]
         val = '$' + val
         key = '$' + key
         val = [key, val]
@@ -62,7 +62,7 @@ module CommandSearch
         if type == :colon
           build_command(node)
         elsif type == :compare
-          build_compare(node, cmd_fields)
+          build_compare(node)
         elsif key = mongo_types[type]
           build_searches!(node[:value], fields, cmd_fields)
           val = node[:value]

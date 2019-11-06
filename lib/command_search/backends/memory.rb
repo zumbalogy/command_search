@@ -26,25 +26,22 @@ module CommandSearch
       end
     end
 
-    def compare_check(item, node, cmd_types)
-      cmd = node[:value].first
-      cmd_val = cmd[:value]
-      cmd_type = cmd_types[cmd[:value].to_sym]
+    def compare_check(item, node)
+      cmd_val = node[:value].first[:value]
       item_val = item[cmd_val.to_sym] || item[cmd_val.to_s]
-      search = node[:value].last
-      val = search[:value]
+      return unless item_val
+      val = node[:value].last[:value]
       if val.is_a?(Time)
-        item_val = item_val.to_time if item_val
-      elsif search[:type] == :str && cmd_types[val.to_sym]
+        item_val = item_val.to_time
+      elsif node[:compare_across_fields]
         val = item[val.to_sym] || item[val.to_s]
       end
-      args = [item_val, val]
-      return unless args.all?
+      return unless val
       fn = node[:nest_op].to_sym.to_proc
-      fn.call(*args.map(&:to_f))
+      fn.call(item_val.to_f, val.to_f)
     end
 
-    def check(item, ast, fields, cmd_types)
+    def check(item, ast, fields)
       ast.all? do |node|
         val = node[:value]
         case node[:nest_type]
@@ -56,13 +53,13 @@ module CommandSearch
         when :colon
           command_check(item, val)
         when :compare
-          compare_check(item, node, cmd_types)
+          compare_check(item, node)
         when :minus
-          !val.all? { |v| check(item, [v], fields, cmd_types) }
+          !val.all? { |v| check(item, [v], fields) }
         when :pipe
-          val.any? { |v| check(item, [v], fields, cmd_types) }
+          val.any? { |v| check(item, [v], fields) }
         when :paren
-          val.all? { |v| check(item, [v], fields, cmd_types) }
+          val.all? { |v| check(item, [v], fields) }
         end
       end
     end
