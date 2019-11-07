@@ -100,16 +100,16 @@ module CommandSearch
       end
     end
 
-    def fold_in_general_thingies!(ast, fields, cmd_fields)
+    def expand_general!(ast, fields, cmd_fields)
       ast.map! do |node|
         if node[:type] == :nest
           type = node[:nest_type]
           if type == :minus || type == :paren || type == :pipe
-            fold_in_general_thingies!(node[:value], fields, cmd_fields)
+            expand_general!(node[:value], fields, cmd_fields)
           elsif type == :colon
             field = node[:value][0][:value]
-            foo_type = cmd_fields[field.to_sym] || cmd_fields[field.to_s]
-            if foo_type == Numeric && node[:value][1][:type] == :number
+            field_type = cmd_fields[field.to_sym] || cmd_fields[field.to_s]
+            if field_type == Numeric && node[:value][1][:type] == :number
               node[:value][1][:value] = node[:value][1][:value].to_f
             end
           end
@@ -119,8 +119,8 @@ module CommandSearch
         original_val = node[:value]
         cast_regex!(node)
         new_val = fields.map do |field|
-          foo_type = cmd_fields[field.to_sym] || cmd_fields[field.to_s]
-          is_numeric = foo_type == Numeric
+          field_type = cmd_fields[field.to_sym] || cmd_fields[field.to_s]
+          is_numeric = field_type == Numeric
           {
             type: :nest,
             nest_type: :colon,
@@ -156,7 +156,7 @@ module CommandSearch
         next clean[k] = v
       end
       clean
-      fold_in_general_thingies!(ast, fields, clean)
+      expand_general!(ast, fields, clean)
     end
   end
 end
