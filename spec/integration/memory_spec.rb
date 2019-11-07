@@ -508,9 +508,9 @@ describe CommandSearch::Memory do
   it 'should handle permutations' do
     check = true
     strs = ['a', 'b', 'x', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
-    trials = 3
-    trials = 5 if ENV['CI']
-    strs.repeated_permutation(trials).each do |perm|
+    size = 3
+    size = 5 if ENV['CI']
+    strs.repeated_permutation(size).each do |perm|
       begin
         CommandSearch.search([{}], perm.join, { fields: [:foo] })
       rescue
