@@ -4,7 +4,7 @@ module CommandSearch
   module Normalizer
     module_function
 
-    def cast_bool(type, node)
+    def cast_bool!(type, node)
       if type == Boolean
         node[:type] = Boolean
         node[:value] = !!node[:value][0][/t/i]
@@ -16,7 +16,7 @@ module CommandSearch
       node[:value] = !!node[:value][0][/t/i]
     end
 
-    def cast_time(node)
+    def cast_time!(node)
       search_node = node[:value][1]
       search_node[:type] = Time
       str = search_node[:value]
@@ -43,7 +43,7 @@ module CommandSearch
       end
     end
 
-    def cast_regex(node)
+    def cast_regex!(node)
       type = node[:type]
       raw = node[:value]
       return unless raw.is_a?(String)
@@ -73,16 +73,12 @@ module CommandSearch
       key.to_s
     end
 
-    def dealias!(ast, cmd_fields)
+    def dealias!(ast, fields, cmd_fields)
       ast.map! do |node|
         nest = node[:nest_type]
-        unless nest
-          node[:number_value] = node[:value] if node[:type] == :number
-          cast_regex(node)
-          next node
-        end
+        next node unless nest
         unless nest == :colon || nest == :compare
-          dealias!(node[:value], cmd_fields)
+          dealias!(node[:value], fields, cmd_fields)
           next node
         end
         clean_comparison!(node, cmd_fields) if nest == :compare
@@ -91,34 +87,58 @@ module CommandSearch
         type = cmd_fields[new_key.to_sym]
         node[:value][0][:value] = new_key
         if type
-          cast_bool(type, search_node)
+          cast_bool!(type, search_node)
           type = (type - [:allow_existence_boolean]).first if type.is_a?(Array)
-          cast_time(node) if [Time, Date, DateTime].include?(type)
-          cast_regex(search_node) if type == String
+          cast_time!(node) if [Time, Date, DateTime].include?(type)
+          cast_regex!(search_node) if type == String
           next node
         end
         str_values = "#{new_key}#{node[:nest_op]}#{search_node[:value]}"
         node = { type: :str, value: str_values }
-        cast_regex(node)
+        cast_regex!(node)
         node
       end
     end
 
-    def normalize!(ast, cmd_fields)
-      dealias!(ast, cmd_fields)
-      clean = {}
-      cmd_fields.each do |k, v|
-        next if v.is_a?(Symbol)
-        if v.is_a?(Array)
-          clean[k] = (v - [:allow_existence_boolean]).first
-          next
+    def fold_in_general_thingies!(ast, fields, cmd_fields)
+      ast.map! do |node|
+        if node[:type] == :nest
+          type = node[:nest_type]
+          if type == :minus || type == :paren || type == :pipe
+            fold_in_general_thingies!(node[:value], fields, cmd_fields)
+          end
+          next node
         end
-        v = Numeric if v == Integer
-        v = Time if v == Date
-        v = Time if v == DateTime
-        next clean[k] = v
+        fields = [:__CommandSearch_dummy_key__] if fields.empty?
+        original_val = node[:value]
+        cast_regex!(node)
+        new_val = fields.map do |field|
+          foo_type = cmd_fields[field.to_sym] || cmd_fields[field.to_s]
+          is_numeric = foo_type == Numeric
+          {
+            type: :nest,
+            nest_type: :colon,
+            value: [
+              {
+                value: field
+              },
+              {
+                value: is_numeric ? original_val : node[:value],
+                original_value: original_val,
+                type: node[:type]
+              }
+            ]
+          }
+        end
+        next new_val.first if new_val.count < 2
+        { type: :nest, nest_type: :pipe, value: new_val }
       end
-      clean
+      ast.compact!
+    end
+
+    def normalize!(ast, fields, cmd_fields)
+      dealias!(ast, fields, cmd_fields)
+      fold_in_general_thingies!(ast, fields, cmd_fields)
     end
   end
 end

@@ -5,7 +5,7 @@ module CommandSearch
     def command_check(item, val)
       cmd = val[0][:value]
       cmd_search = val[1][:value]
-      item_val = item[cmd.to_sym] || item[cmd]
+      item_val = item[cmd.to_sym] || item[cmd.to_s]
       val_type = val[1][:type]
       val_type = Boolean if val_type == :existence && cmd_search == true
       if val_type == Boolean
@@ -17,10 +17,12 @@ module CommandSearch
       elsif val_type == Time
         item_time = item_val.to_time
         cmd_search.first <= item_time && item_time < cmd_search.last
-      elsif cmd_search.is_a?(Regexp)
-        item_val[cmd_search]
       elsif cmd_search == ''
         item_val == cmd_search
+      elsif item_val.is_a?(Numeric) && val_type == :number
+        item_val == (val[1][:original_value] || val[1][:value]).to_f
+      elsif cmd_search.is_a?(Regexp)
+        item_val[cmd_search]
       else
         item_val.to_s[/#{Regexp.escape(cmd_search)}/i]
       end
@@ -41,25 +43,20 @@ module CommandSearch
       fn.call(item_val.to_f, val.to_f)
     end
 
-    def check(item, ast, fields)
+    def check(item, ast)
       ast.all? do |node|
         val = node[:value]
         case node[:nest_type]
-        when nil
-          fields.any? do |field|
-            item_val = item[field.to_sym] || item[field.to_s]
-            item_val.to_s[val] if item_val
-          end
         when :colon
           command_check(item, val)
         when :compare
           compare_check(item, node)
         when :minus
-          !val.all? { |v| check(item, [v], fields) }
+          !val.all? { |v| check(item, [v]) }
         when :pipe
-          val.any? { |v| check(item, [v], fields) }
+          val.any? { |v| check(item, [v]) }
         when :paren
-          val.all? { |v| check(item, [v], fields) }
+          val.all? { |v| check(item, [v]) }
         end
       end
     end

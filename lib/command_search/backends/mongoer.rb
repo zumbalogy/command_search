@@ -2,20 +2,6 @@ module CommandSearch
   module Mongoer
     module_function
 
-    def build_search(node, fields, cmd_fields)
-      val = node[:value]
-      forms = fields.map do |field|
-        type = cmd_fields[field.to_sym]
-        if type == Numeric
-          { field => node[:number_value] }
-        else
-          { field => val }
-        end
-      end
-      return forms if forms.count < 2
-      { '$or' => forms }
-    end
-
     def build_command(node)
       (field_node, search_node) = node[:value]
       key = field_node[:value]
@@ -55,7 +41,7 @@ module CommandSearch
       { key => { op => val } }
     end
 
-    def build_searches!(ast, fields, cmd_fields)
+    def build_searches!(ast)
       mongo_types = { paren: '$and', pipe: '$or', minus: '$nor' }
       ast.map! do |node|
         type = node[:nest_type]
@@ -64,22 +50,20 @@ module CommandSearch
         elsif type == :compare
           build_compare(node)
         elsif key = mongo_types[type]
-          build_searches!(node[:value], fields, cmd_fields)
+          build_searches!(node[:value])
           val = node[:value]
           if key == '$nor' && val.count > 1
             next { key => [{ '$and' => val }] }
           end
           val.map! { |x| x['$or'] || x }.flatten! unless key == '$and'
           { key => val }
-        else
-          build_search(node, fields, cmd_fields)
         end
       end
       ast.flatten!
     end
 
-    def build_query(ast, fields, cmd_fields)
-      build_searches!(ast, fields, cmd_fields)
+    def build_query(ast)
+      build_searches!(ast)
       return {} if ast == []
       return ast.first if ast.count == 1
       { '$and' => ast }

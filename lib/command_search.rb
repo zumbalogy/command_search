@@ -19,16 +19,16 @@ module CommandSearch
 
     aliased_query = Aliaser.alias(query, aliases)
     ast = Lexer.lex(aliased_query)
+
     Parser.parse!(ast)
     Optimizer.optimize!(ast)
-    command_fields = Normalizer.normalize!(ast, command_fields)
+    Normalizer.normalize!(ast, fields, command_fields)
 
     if source.respond_to?(:mongo_client) && source.queryable
-      fields = [:__CommandSearch_dummy_key__] if fields.empty?
-      mongo_query = Mongoer.build_query(ast, fields, command_fields)
+      mongo_query = Mongoer.build_query(ast)
       return source.where(mongo_query)
     end
 
-    source.select { |x| Memory.check(x, ast, fields) }
+    source.select { |x| Memory.check(x, ast) }
   end
 end
