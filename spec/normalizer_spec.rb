@@ -11,7 +11,7 @@ describe CommandSearch::Normalizer do
 
   def norm(x, aliases)
     ast = parse(x)
-    CommandSearch::Normalizer.normalize!(ast, [:foo],  aliases)
+    CommandSearch::Normalizer.normalize!(ast, [:foo], aliases)
     ast
   end
 

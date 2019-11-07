@@ -17,14 +17,10 @@ module CommandSearch
       elsif val_type == Time
         item_time = item_val.to_time
         cmd_search.first <= item_time && item_time < cmd_search.last
-      elsif cmd_search == ''
-        item_val == cmd_search
-      elsif item_val.is_a?(Numeric) && val_type == :number
-        item_val == (val[1][:original_value] || val[1][:value]).to_f
       elsif cmd_search.is_a?(Regexp)
-        item_val[cmd_search]
+        item_val.to_s[cmd_search]
       else
-        item_val.to_s[/#{Regexp.escape(cmd_search)}/i]
+        item_val == cmd_search
       end
     end
 

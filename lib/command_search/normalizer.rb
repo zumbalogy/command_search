@@ -106,6 +106,12 @@ module CommandSearch
           type = node[:nest_type]
           if type == :minus || type == :paren || type == :pipe
             fold_in_general_thingies!(node[:value], fields, cmd_fields)
+          elsif type == :colon
+            field = node[:value][0][:value]
+            foo_type = cmd_fields[field.to_sym] || cmd_fields[field.to_s]
+            if foo_type == Numeric && node[:value][1][:type] == :number
+              node[:value][1][:value] = node[:value][1][:value].to_f
+            end
           end
           next node
         end
@@ -123,8 +129,7 @@ module CommandSearch
                 value: field
               },
               {
-                value: is_numeric ? original_val : node[:value],
-                original_value: original_val,
+                value: is_numeric ? original_val.to_f : node[:value],
                 type: node[:type]
               }
             ]
@@ -138,7 +143,20 @@ module CommandSearch
 
     def normalize!(ast, fields, cmd_fields)
       dealias!(ast, fields, cmd_fields)
-      fold_in_general_thingies!(ast, fields, cmd_fields)
+      clean = {}
+      cmd_fields.each do |k, v|
+        next if v.is_a?(Symbol)
+        if v.is_a?(Array)
+          clean[k] = (v - [:allow_existence_boolean]).first
+          next
+        end
+        v = Numeric if v == Integer
+        v = Time if v == Date
+        v = Time if v == DateTime
+        next clean[k] = v
+      end
+      clean
+      fold_in_general_thingies!(ast, fields, clean)
     end
   end
 end
