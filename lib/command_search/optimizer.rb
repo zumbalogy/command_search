@@ -6,7 +6,6 @@ module CommandSearch
       ast.map! do |node|
         next [] if node[:type] == :quoted_str && node[:value] == '' && [:and, :or, :not].include?(parent_type)
         type = node[:type]
-        next node unless type
         next node unless type == :and || type == :or || type == :not
         denest!(node[:value], type)
         next [] if node[:value] == []
