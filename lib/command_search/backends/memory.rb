@@ -47,11 +47,11 @@ module CommandSearch
           command_check(item, val)
         when :compare
           compare_check(item, node)
-        when :minus
+        when :not
           !val.all? { |v| check(item, [v]) }
-        when :pipe
+        when :or
           val.any? { |v| check(item, [v]) }
-        when :paren
+        when :and
           val.all? { |v| check(item, [v]) }
         end
       end

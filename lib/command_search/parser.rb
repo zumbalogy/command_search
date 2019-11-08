@@ -11,7 +11,7 @@ module CommandSearch
           opening_idxs.push(i)
         elsif opening = opening_idxs.pop()
           val = input[(opening + 1)..(i - 1)]
-          input[opening..i] = { nest_type: :paren, value: val }
+          input[opening..i] = { nest_type: :and, value: val }
           i -= (val.length + 1)
         else
           input.delete_at(i)
@@ -22,7 +22,7 @@ module CommandSearch
       opening_idxs.each_with_index { |o, i| input.delete_at(o - i) }
     end
 
-    def cluster!(type, input, cluster_type = :binary)
+    def cluster!(input, type, output_type, cluster_type = :binary)
       binary = (cluster_type == :binary)
       i = input.length - 1
       while i >= 0
@@ -33,18 +33,21 @@ module CommandSearch
           front_offset = 0
           front_offset = 1 if binary && i > 0
           input[(i - front_offset)..(i + 1)] = {
-            nest_type: type,
+            nest_type: output_type,
             nest_op: input[i][:value],
             value: val
           }
           i -= 1 if binary
         end
-        cluster!(type, input[i][:value], cluster_type) if input[i][:nest_type]
+        cluster!(input[i][:value], type, output_type, cluster_type) if input[i][:nest_type]
+        # TODO: big speed stuff here
+        # type = input[i][:nest_type]
+        # cluster!(input[i][:value], type, output_type, cluster_type) if type == :or || type == :and || type == :not
         i -= 1
       end
     end
 
-    def unchain!(types, input)
+    def unchain!(input, types)
       i = 0
       while i < input.length - 2
         left = input[i][:type]
@@ -91,12 +94,12 @@ module CommandSearch
 
     def parse!(input)
       clean_ununusable!(input)
-      unchain!([:colon, :compare], input)
+      unchain!(input, [:colon, :compare])
       group_parens!(input)
-      cluster!(:colon, input)
-      cluster!(:compare, input)
-      cluster!(:minus, input, :prefix)
-      cluster!(:pipe, input)
+      cluster!(input, :colon, :colon)
+      cluster!(input, :compare, :compare)
+      cluster!(input, :minus, :not, :prefix)
+      cluster!(input, :pipe, :or)
       input
     end
   end

@@ -42,7 +42,7 @@ module CommandSearch
     end
 
     def build_searches!(ast)
-      mongo_types = { paren: '$and', pipe: '$or', minus: '$nor' }
+      mongo_types = { and: '$and', or: '$or', not: '$nor' }
       ast.map! do |node|
         type = node[:nest_type]
         if type == :colon

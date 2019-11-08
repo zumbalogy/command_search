@@ -93,7 +93,7 @@ module CommandSearch
         }
       end
       return new_val.first if new_val.count < 2
-      { nest_type: :pipe, value: new_val }
+      { nest_type: :or, value: new_val }
     end
 
     def normalize!(ast, fields)
@@ -108,7 +108,7 @@ module CommandSearch
           end
         end
         node = split_general_fields(node, fields) unless node[:nest_type]
-        if node[:nest_type] == :minus || node[:nest_type] == :paren || node[:nest_type] == :pipe
+        if node[:nest_type] == :not || node[:nest_type] == :and || node[:nest_type] == :or
           normalize!(node[:value], fields)
           next node
         end
