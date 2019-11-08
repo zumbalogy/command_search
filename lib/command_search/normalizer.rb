@@ -117,8 +117,7 @@ module CommandSearch
         end
         str_values = "#{new_key}#{node[:nest_op]}#{search_node[:value]}"
         node = { type: :str, value: str_values }
-        # node[:value] = str_values
-        cast_regex!(node) # TODO: make a failing test case for this line missing
+        cast_regex!(node)
         general_fields = fields.select { |k, v| v.is_a?(Hash) && v[:general_search] }.keys
         general_fields = [:__CommandSearch_dummy_key__] if general_fields.empty?
         split_into_fields(node, general_fields)
