@@ -4,13 +4,14 @@ module CommandSearch
   module Normalizer
     module_function
 
-    def cast_bool!(type, node)
+    def cast_bool!(field, node)
+      type = field.is_a?(Hash) ? field[:type] : field
       if type == Boolean
         node[:type] = Boolean
         node[:value] = !!node[:value][0][/t/i]
         return
       end
-      return unless type.is_a?(Array) && type.include?(:allow_existence_boolean)
+      return unless field.is_a?(Hash) && field[:allow_existence_boolean]
       return unless node[:type] == :str && node[:value][/\Atrue\Z|\Afalse\Z/i]
       node[:type] = :existence
       node[:value] = !!node[:value][0][/t/i]
@@ -56,10 +57,15 @@ module CommandSearch
       node[:value] = Regexp.new(border_a + str + border_b)
     end
 
-    def clean_comparison!(node, cmd_fields)
+    def cast_numeric!(node)
+      return unless node[:type] == :number
+      node[:value] = node[:value].to_f
+    end
+
+    def clean_comparison!(node, fields)
       val = node[:value]
-      return unless cmd_fields[val[1][:value].to_sym]
-      if cmd_fields[val[0][:value].to_sym]
+      return unless fields[val[1][:value].to_sym]
+      if fields[val[0][:value].to_sym]
         node[:compare_across_fields] = true
         return
       end
@@ -68,94 +74,73 @@ module CommandSearch
       node[:value].reverse!
     end
 
-    def dealias_key(key, cmd_fields)
-      key = cmd_fields[key.to_sym] while cmd_fields[key.to_sym].is_a?(Symbol)
-      key.to_s
+    def dealias_key(key, fields)
+      key = fields[key.to_sym] while fields[key.to_sym].is_a?(Symbol)
+      key
     end
 
-    def dealias!(ast, fields, cmd_fields)
+    def split_into_fields(node, general_fields)
+      new_val = general_fields.map do |field|
+        {
+          type: :nest,
+          nest_type: :colon,
+          value: [
+            { value: field.to_s },
+            { value: node[:value], type: node[:type] },
+          ]
+        }
+      end
+      return new_val.first if new_val.count < 2
+      { type: :nest, nest_type: :pipe, value: new_val }
+    end
+
+    def dealias!(ast, fields)
       ast.map! do |node|
         nest = node[:nest_type]
         next node unless nest
         unless nest == :colon || nest == :compare
-          dealias!(node[:value], fields, cmd_fields)
+          dealias!(node[:value], fields)
           next node
         end
-        clean_comparison!(node, cmd_fields) if nest == :compare
+        clean_comparison!(node, fields) if nest == :compare
         (key_node, search_node) = node[:value]
-        new_key = dealias_key(key_node[:value], cmd_fields)
-        type = cmd_fields[new_key.to_sym]
-        node[:value][0][:value] = new_key
-        if type
-          cast_bool!(type, search_node)
-          type = (type - [:allow_existence_boolean]).first if type.is_a?(Array)
+        new_key = dealias_key(key_node[:value], fields)
+        node[:value][0][:value] = new_key.to_s
+        field = fields[new_key.to_sym] || fields[new_key.to_s]
+        if field && (field.is_a?(Class) || field[:type])
+          type = field.is_a?(Class) ? field : field[:type]
+          cast_bool!(field, search_node)
           cast_time!(node) if [Time, Date, DateTime].include?(type)
           cast_regex!(search_node) if type == String
+          cast_numeric!(search_node) if [Integer, Numeric].include?(type)
           next node
         end
         str_values = "#{new_key}#{node[:nest_op]}#{search_node[:value]}"
         node = { type: :str, value: str_values }
-        cast_regex!(node)
-        node
+        # node[:value] = str_values
+        cast_regex!(node) # TODO: make a failing test case for this line missing
+        general_fields = fields.select { |k, v| v.is_a?(Hash) && v[:general_search] }.keys
+        general_fields = [:__CommandSearch_dummy_key__] if general_fields.empty?
+        split_into_fields(node, general_fields)
       end
     end
 
-    def expand_general!(ast, fields, cmd_fields)
+    def expand_general!(ast, fields)
+      general_fields = fields.select { |k, v| v.is_a?(Hash) && v[:general_search] }.keys
+      general_fields = [:__CommandSearch_dummy_key__] if general_fields.empty?
       ast.map! do |node|
-        if node[:type] == :nest
-          type = node[:nest_type]
-          if type == :minus || type == :paren || type == :pipe
-            expand_general!(node[:value], fields, cmd_fields)
-          else
-            field = node[:value][0][:value]
-            field_type = cmd_fields[field.to_sym] || cmd_fields[field.to_s]
-            if field_type == Numeric && node[:value][1][:type] == :number
-              node[:value][1][:value] = node[:value][1][:value].to_f
-            end
-          end
-          next node
+        nest_type = node[:nest_type]
+        if nest_type == :minus || nest_type == :paren || nest_type == :pipe
+          expand_general!(node[:value], fields)
         end
-        fields = [:__CommandSearch_dummy_key__] if fields.empty?
-        original_val = node[:value]
-        cast_regex!(node)
-        new_val = fields.map do |field|
-          field_type = cmd_fields[field.to_sym] || cmd_fields[field.to_s]
-          is_numeric = field_type == Numeric
-          {
-            type: :nest,
-            nest_type: :colon,
-            value: [
-              {
-                value: field
-              },
-              {
-                value: is_numeric ? original_val.to_f : node[:value],
-                type: node[:type]
-              }
-            ]
-          }
-        end
-        next new_val.first if new_val.count < 2
-        { type: :nest, nest_type: :pipe, value: new_val }
+        next node if nest_type
+        split_into_fields(node, general_fields)
       end
     end
 
-    def normalize!(ast, fields, cmd_fields)
-      dealias!(ast, fields, cmd_fields)
-      clean = {}
-      cmd_fields.each do |k, v|
-        next if v.is_a?(Symbol)
-        if v.is_a?(Array)
-          clean[k] = (v - [:allow_existence_boolean]).first
-          next
-        end
-        v = Numeric if v == Integer
-        v = Time if v == Date
-        v = Time if v == DateTime
-        next clean[k] = v
-      end
-      clean
-      expand_general!(ast, fields, clean)
+    def normalize!(ast, fields)
+      expand_general!(ast, fields)
+      dealias!(ast, fields)
     end
   end
 end

@@ -23,22 +23,21 @@ class Hat
     sortable_field_names = ['title', 'description']
     sort_field = nil
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        child_id: Boolean,
-        title: String,
+      fields: {
+        child_id: { type: Boolean },
+        title: { type: String, general_search: true },
         name: :title,
-        description: String,
+        description: { type: String, general_search: true },
         desc: :description,
-        starred: Boolean,
+        starred: { type: Boolean },
         star: :starred,
-        tags: String,
+        tags: { type: String, general_search: true },
         tag: :tags,
-        feathers: [Numeric, :allow_existence_boolean],
-        feathers2: [:allow_existence_boolean, Numeric],
-        cost: Numeric,
-        fav_date: Time,
-        fav_date2: [:allow_existence_boolean, Time]
+        feathers: { type: Integer, allow_existence_boolean: true },
+        feathers2: { type: Numeric, allow_existence_boolean: true },
+        cost: { type: Numeric },
+        fav_date: { type: Time },
+        fav_date2: { type: Time, allow_existence_boolean: true }
       },
       aliases: {
         /#{head_border}sort:\S+#{tail_border}/ => proc { |match|
@@ -559,9 +558,9 @@ describe Hat do
 
     def search_bats(query, total)
       [Bat1, Bat2, Bat3, Bat4].each do |klass|
-        CommandSearch.search(klass, query, { command_fields: { fav_date: DateTime } }).count.should == total
-        CommandSearch.search(klass, query, { command_fields: { fav_date: Date } }).count.should == total
-        CommandSearch.search(klass, query, { command_fields: { fav_date: Time } }).count.should == total
+        CommandSearch.search(klass, query, { fields: { fav_date: { type: DateTime } } }).count.should == total
+        CommandSearch.search(klass, query, { fields: { fav_date: { type: Date } } }).count.should == total
+        CommandSearch.search(klass, query, { fields: { fav_date: { type: Time } } }).count.should == total
       end
     end
 

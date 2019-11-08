@@ -51,10 +51,10 @@ describe CommandSearch do
 
   it 'should be able to determine in memory vs mongo searches' do
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        has_child_id: Boolean,
-        title: String,
+      fields: {
+        has_child_id: { type: Boolean, general_search: true },
+        title: { type: String, general_search: true },
+        tags: { type: String, general_search: true },
         name: :title
       }
     }
@@ -64,20 +64,21 @@ describe CommandSearch do
     search_all('badKey:foo', options, 0)
   end
 
-  it 'should handle invalid keys' do
+  it 'should handle queries that use an unfound key' do
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        has_child_id: Boolean,
-        title: String
+      fields: {
+        has_child_id: { type: Boolean, general_search: true },
+        title: { type: String, general_search: true },
+        tags: { type: String, general_search: true },
       }
     }
     search_all('name:3|tags2', options, 1)
   end
 
   it 'should be able to work without command fields' do
-    options = { fields: [:title, :description, :tags] }
-    options2 = { fields: ['title', :description, :tags] }
+    general = {type: String, general_search: true}
+    options = { fields: { :title => general, :description => general, :tags => general } }
+    options2 = { fields: { 'title' => general, :description => general, :tags => general } }
     birds2 = [
       { title: 'bird:1' },
       { 'title' => 'title:2' }
@@ -91,9 +92,9 @@ describe CommandSearch do
 
   it 'should be able to work without search fields' do
     options = {
-      command_fields: {
-        has_child_id: Boolean,
-        title: String,
+      fields: {
+        has_child_id: { type: Boolean },
+        title: { type: String },
         name: :title
       }
     }
@@ -104,8 +105,8 @@ describe CommandSearch do
 
   it 'should handle existence booleans' do
     options = {
-      command_fields: {
-        title: [String, :allow_existence_boolean]
+      fields: {
+        title: { type: String, allow_existence_boolean: true }
       }
     }
     search_all('title:3', options, 1)
@@ -129,8 +130,8 @@ describe CommandSearch do
 
   it 'should be able to handle a field declared as Numeric or Interger' do
     def helper(query, total)
-      options = { command_fields: { feathers: Numeric } }
-      options2 = { command_fields: { feathers: Integer } }
+      options = { fields: { feathers: { type: Numeric } } }
+      options2 = { fields: { feathers: { type: Integer } } }
       search_all(query, options, total)
       search_all(query, options2, total)
     end
@@ -144,11 +145,12 @@ describe CommandSearch do
 
   it 'should handle wacky inputs' do
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        has_child_id: Boolean,
-        title: String,
-        name: :title
+      fields: {
+        has_child_id: { type: Boolean },
+        title: { type: String, general_search: true },
+        description: { type: String, general_search: true },
+        tags: { type: String, general_search: true },
+        name: :title,
       }
     }
     search_all('|desk', options, 4)
@@ -161,10 +163,11 @@ describe CommandSearch do
 
   it 'should handle long command alias chains' do
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        has_child_id: Boolean,
-        title: String,
+      fields: {
+        has_child_id: { type: Boolean },
+        title: { type: String, general_search: true },
+        description: { type: String, general_search: true },
+        tags: { type: String, general_search: true },
         name: :title,
         foo: :name,
         bar: :name,
@@ -177,10 +180,11 @@ describe CommandSearch do
   it 'should handle alaises' do
     sort_type = nil
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        has_child_id: Boolean,
-        title: String,
+      fields: {
+        has_child_id: { type: Boolean },
+        title: { type: String, general_search: true },
+        description: { type: String, general_search: true },
+        tags: { type: String, general_search: true },
         name: :title
       },
       aliases: {

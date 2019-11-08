@@ -9,22 +9,26 @@ describe CommandSearch::Normalizer do
     ast
   end
 
-  def norm(x, aliases)
+  def norm(x, fields)
     ast = parse(x)
-    CommandSearch::Normalizer.normalize!(ast, [:nnn], aliases)
+    CommandSearch::Normalizer.normalize!(ast, fields)
     ast
   end
 
   it 'should handle aliased commands and compares' do
-    aliases = { foo: :bar, bar: :baz, baz: Numeric }
-    norm('-foo:100', aliases)[0][:value].should == norm('foo:100', aliases)
-    norm('foo:100', aliases).should == [
+    fields = {
+      foo: :bar,
+      bar: :baz,
+      baz: { type: Numeric }
+    }
+    norm('-foo:100', fields)[0][:value].should == norm('foo:100', fields)
+    norm('foo:100', fields).should == [
       {type: :nest,
         nest_type: :colon,
         nest_op: ':',
         value: [{type: :str, value: 'baz'},
           {type: :number, value: 100.0}]}]
-    norm('foo<100', aliases).should == [
+    norm('foo<100', fields).should == [
       {type: :nest,
        nest_type: :compare,
        nest_op: '<',
@@ -33,28 +37,34 @@ describe CommandSearch::Normalizer do
   end
 
   it 'should set unaliased commands to normal searches' do
-    norm('foo foo:bar', {}).should_not == parse('foo foo:bar')
-    norm('a:b', {}).should == [{
+    fields = { nnn: { type: String, general_search: true } }
+    norm('foo foo:bar', fields).should_not == parse('foo foo:bar')
+    norm('a:b', fields).should == [{
       nest_type: :colon,
       type: :nest,
-      value: [{value: :nnn}, {type: :str, value: /a:b/i}]
+      value: [{value: 'nnn'}, {type: :str, value: /a:b/i}]
     }]
-    norm('-foo:bar', {})[0][:value].should == [{
+    norm('-foo:bar', fields)[0][:value].should == [{
       nest_type: :colon,
       type: :nest,
-      value: [{value: :nnn}, {type: :str, value: /foo:bar/i}]
+      value: [{value: 'nnn'}, {type: :str, value: /foo:bar/i}]
     }]
-    norm('-foo:bar|baz', {})[0][:value][0][:value].should == [{
+    norm('-foo:bar|baz', fields)[0][:value][0][:value].should == [{
       nest_type: :colon,
       type: :nest,
-      value: [{value: :nnn}, {type: :str, value: /foo:bar/i}]
+      value: [{value: 'nnn'}, {type: :str, value: /foo:bar/i}]
     }]
   end
 
   it 'should cast booleans' do
     def c(x)
-      aliases = { a: :foo, foo: Boolean, b: [Numeric, :allow_existence_boolean] }
-      norm(x, aliases)
+      fields = {
+        a: :foo,
+        foo: { type: Boolean },
+        b: { type: Numeric, allow_existence_boolean: true },
+        nnn: { type: String, general_search: true }
+      }
+      norm(x, fields)
     end
     c('a:true').should == [{
       type: :nest,
@@ -136,56 +146,60 @@ describe CommandSearch::Normalizer do
     c('c:true').should == [{
       nest_type: :colon,
       type: :nest,
-      value: [{value: :nnn}, {type: :str, value: /c:true/i}]
+      value: [{value: 'nnn'}, {type: :str, value: /c:true/i}]
     }]
     c('c:false').should == [{
       nest_type: :colon,
       type: :nest,
-      value: [{value: :nnn}, {type: :str, value: /c:false/i}]
+      value: [{value: 'nnn'}, {type: :str, value: /c:false/i}]
     }]
     c('-c:true')[0][:value].should == [{
       nest_type: :colon,
       type: :nest,
-      value: [{value: :nnn}, {type: :str, value: /c:true/i}]
+      value: [{value: 'nnn'}, {type: :str, value: /c:true/i}]
     }]
     c('-c:false')[0][:value].should == [{
       nest_type: :colon,
       type: :nest,
-      value: [{value: :nnn}, {type: :str, value: /c:false/i}]
+      value: [{value: 'nnn'}, {type: :str, value: /c:false/i}]
     }]
     c('c:-true').should == [{
       nest_type: :colon,
       type: :nest,
-      value: [{value: :nnn}, {type: :str, value: /c:\-true/i}]
+      value: [{value: 'nnn'}, {type: :str, value: /c:\-true/i}]
     }]
     c('c:-false').should == [{
       nest_type: :colon,
       type: :nest,
-      value: [{value: :nnn}, {type: :str, value: /c:\-false/i}]
+      value: [{value: 'nnn'}, {type: :str, value: /c:\-false/i}]
     }]
   end
 
   it 'should cast regular expressions' do
-    aliases = { s: String, n: Integer }
-    norm('', aliases).should == []
-    norm('foo', aliases).should == [{
+    fields = {
+      s: { type: String },
+      n: { type: Integer },
+      nnn: { type: String, general_search: true }
+    }
+    norm('', fields).should == []
+    norm('foo', fields).should == [{
       nest_type: :colon,
       type: :nest,
-      value: [{value: :nnn}, {type: :str, value: /foo/i}]
+      value: [{value: 'nnn'}, {type: :str, value: /foo/i}]
     }]
-    norm('foo 5', aliases).should == [
+    norm('foo 5', fields).should == [
       {
         nest_type: :colon,
         type: :nest,
-        value: [{value: :nnn}, {type: :str, value: /foo/i}]
+        value: [{value: 'nnn'}, {type: :str, value: /foo/i}]
       },
       {
         nest_type: :colon,
         type: :nest,
-        value: [{value: :nnn}, {type: :number, value: /5/i}]
+        value: [{value: 'nnn'}, {type: :number, value: /5/i}]
       }
      ]
-    norm('-(foo|-bar)|3', aliases).should == [{
+    norm('-(foo|-bar)|3', fields).should == [{
       nest_op: '|',
       nest_type: :pipe,
       type: :nest,
@@ -202,7 +216,7 @@ describe CommandSearch::Normalizer do
               {
                 nest_type: :colon,
                 type: :nest,
-                value: [{value: :nnn}, {type: :str, value: /foo/i}]
+                value: [{value: 'nnn'}, {type: :str, value: /foo/i}]
               },
               {
                 nest_op: '-',
@@ -211,7 +225,7 @@ describe CommandSearch::Normalizer do
                 value: [{
                   nest_type: :colon,
                   type: :nest,
-                  value: [{value: :nnn}, {type: :str, value: /bar/i}]
+                  value: [{value: 'nnn'}, {type: :str, value: /bar/i}]
                 }]
               }
             ]
@@ -220,29 +234,29 @@ describe CommandSearch::Normalizer do
         {
           nest_type: :colon,
           type: :nest,
-          value: [{value: :nnn}, {type: :number, value: /3/i}]
+          value: [{value: 'nnn'}, {type: :number, value: /3/i}]
         }
       ]
     }]
-    norm('s:-2', aliases).should == [{
+    norm('s:-2', fields).should == [{
       nest_op: ':',
       nest_type: :colon,
       type: :nest,
       value: [{type: :str, value: 's'}, {type: :number, value: /\-2/i}]
     }]
-    norm('s:abc', aliases).should == [{
+    norm('s:abc', fields).should == [{
       nest_op: ':',
       nest_type: :colon,
       type: :nest,
       value: [{type: :str, value: 's'}, {type: :str, value: /abc/i}]
     }]
-    norm('n:4', aliases).should == [{
+    norm('n:4', fields).should == [{
       nest_op: ':',
       nest_type: :colon,
       type: :nest,
       value: [{type: :str, value: 'n'}, {type: :number, value: 4.0}]
     }]
-    norm('n:abc', aliases).should == [{
+    norm('n:abc', fields).should == [{
       nest_op: ':',
       nest_type: :colon,
       type: :nest,
@@ -251,12 +265,12 @@ describe CommandSearch::Normalizer do
   end
 
   it 'should cast dates' do
-    aliases = { t: Time }
+    fields = { t: { type: Time } }
 
     def x(query, op, time)
       time = Chronic.parse(time) if time.is_a?(String)
-      aliases = { t: Time }
-      res = norm(query, aliases).first
+      fields = { t: { type: Time } }
+      res = norm(query, fields).first
       res[:nest_op].should == op
       res[:value][1][:value].should == time
     end
@@ -270,15 +284,15 @@ describe CommandSearch::Normalizer do
     x('t<hello', '<', nil)
     x('t:hello', ':', nil)
 
-    norm('', aliases).should == []
-    norm('t:1900', aliases).should == [
+    norm('', fields).should == []
+    norm('t:1900', fields).should == [
       {nest_op: ':',
        nest_type: :colon,
        type: :nest,
        value: [{type: :str, value: 't'},
                {type: Time, value: [Chronic.parse('1900-01-01 00:00:00'),
                                     Chronic.parse('1901-01-01 00:00:00')]}]}]
-    norm('-t:1900', aliases).should == [
+    norm('-t:1900', fields).should == [
       {nest_op: '-',
        nest_type: :minus,
        type: :nest,
@@ -292,7 +306,7 @@ describe CommandSearch::Normalizer do
              value:
               [Chronic.parse('1900-01-01 00:00:00'),
                Chronic.parse('1901-01-01 00:00:00')]}]}]}]
-    norm('-t<1901', aliases).should == [
+    norm('-t<1901', fields).should == [
       {nest_op: '-',
        nest_type: :minus,
        type: :nest,
@@ -307,8 +321,11 @@ describe CommandSearch::Normalizer do
 
   it 'should flip operators in flipped comparisons' do
     def x(query, op, val1, val2)
-      aliases = { a: Numeric, b: Numeric }
-      res =  norm(query, aliases).first
+      fields = {
+        a: { type: Numeric },
+        b: { type: Numeric }
+      }
+      res =  norm(query, fields).first
       res[:nest_op].should == op
       res[:value][0][:value].should == val1
       res[:value][1][:value].should == val2
