@@ -11,7 +11,7 @@ describe CommandSearch::Normalizer do
 
   def norm(x, aliases)
     ast = parse(x)
-    CommandSearch::Normalizer.normalize!(ast, [:foo], aliases)
+    CommandSearch::Normalizer.normalize!(ast, [:nnn], aliases)
     ast
   end
 
@@ -23,20 +23,32 @@ describe CommandSearch::Normalizer do
         nest_type: :colon,
         nest_op: ':',
         value: [{type: :str, value: 'baz'},
-          {type: :number, value: '100'}]}]
+          {type: :number, value: 100.0}]}]
     norm('foo<100', aliases).should == [
       {type: :nest,
        nest_type: :compare,
        nest_op: '<',
        value: [{type: :str, value: 'baz'},
-               {type: :number, value: '100'}]}]
+               {type: :number, value: 100.0}]}]
   end
 
   it 'should set unaliased commands to normal searches' do
     norm('foo foo:bar', {}).should_not == parse('foo foo:bar')
-    norm('a:b', {}).should == [{ type: :str, value: /a:b/i }]
-    norm('-foo:bar', {})[0][:value].should == [{type: :str, value: /foo:bar/i }]
-    norm('-foo:bar|baz', {})[0][:value][0][:value].should == [{type: :str, value: /foo:bar/i }]
+    norm('a:b', {}).should == [{
+      nest_type: :colon,
+      type: :nest,
+      value: [{value: :nnn}, {type: :str, value: /a:b/i}]
+    }]
+    norm('-foo:bar', {})[0][:value].should == [{
+      nest_type: :colon,
+      type: :nest,
+      value: [{value: :nnn}, {type: :str, value: /foo:bar/i}]
+    }]
+    norm('-foo:bar|baz', {})[0][:value][0][:value].should == [{
+      nest_type: :colon,
+      type: :nest,
+      value: [{value: :nnn}, {type: :str, value: /foo:bar/i}]
+    }]
   end
 
   it 'should cast booleans' do
@@ -121,58 +133,121 @@ describe CommandSearch::Normalizer do
       nest_type: :colon,
       nest_op: ':',
       value: [{type: :str, value: 'b'}, {type: :str, value: 'foo'}]}]
-    c('c:true').should == [{type: :str, value: /c:true/i}]
-    c('c:false').should == [{type: :str, value: /c:false/i}]
-    c('-c:true')[0][:value].should == [{type: :str, value: /c:true/i}]
-    c('-c:false')[0][:value].should == [{type: :str, value: /c:false/i}]
-    c('c:-true').should == [{type: :str, value: /c:\-true/i}]
-    c('c:-false').should == [{type: :str, value: /c:\-false/i}]
+    c('c:true').should == [{
+      nest_type: :colon,
+      type: :nest,
+      value: [{value: :nnn}, {type: :str, value: /c:true/i}]
+    }]
+    c('c:false').should == [{
+      nest_type: :colon,
+      type: :nest,
+      value: [{value: :nnn}, {type: :str, value: /c:false/i}]
+    }]
+    c('-c:true')[0][:value].should == [{
+      nest_type: :colon,
+      type: :nest,
+      value: [{value: :nnn}, {type: :str, value: /c:true/i}]
+    }]
+    c('-c:false')[0][:value].should == [{
+      nest_type: :colon,
+      type: :nest,
+      value: [{value: :nnn}, {type: :str, value: /c:false/i}]
+    }]
+    c('c:-true').should == [{
+      nest_type: :colon,
+      type: :nest,
+      value: [{value: :nnn}, {type: :str, value: /c:\-true/i}]
+    }]
+    c('c:-false').should == [{
+      nest_type: :colon,
+      type: :nest,
+      value: [{value: :nnn}, {type: :str, value: /c:\-false/i}]
+    }]
   end
 
   it 'should cast regular expressions' do
     aliases = { s: String, n: Integer }
     norm('', aliases).should == []
-    norm('foo', aliases).should == [{type: :str, value: /foo/i}]
-    norm('foo 5', aliases).should == [{type: :str, value: /foo/i}, {number_value: '5', type: :number, value: /5/i}]
-    norm('-(foo|-bar)|3', aliases).should == [
-      {nest_op: '|',
-       nest_type: :pipe,
-       type: :nest,
-       value:
-        [{nest_op: '-',
+    norm('foo', aliases).should == [{
+      nest_type: :colon,
+      type: :nest,
+      value: [{value: :nnn}, {type: :str, value: /foo/i}]
+    }]
+    norm('foo 5', aliases).should == [
+      {
+        nest_type: :colon,
+        type: :nest,
+        value: [{value: :nnn}, {type: :str, value: /foo/i}]
+      },
+      {
+        nest_type: :colon,
+        type: :nest,
+        value: [{value: :nnn}, {type: :number, value: /5/i}]
+      }
+     ]
+    norm('-(foo|-bar)|3', aliases).should == [{
+      nest_op: '|',
+      nest_type: :pipe,
+      type: :nest,
+      value: [
+        {
+          nest_op: '-',
           nest_type: :minus,
           type: :nest,
-          value:
-           [{nest_op: '|',
-             nest_type: :pipe,
-             type: :nest,
-             value:
-              [{type: :str, value: /foo/i},
-               {nest_op: '-',
+          value: [{
+            nest_op: '|',
+            nest_type: :pipe,
+            type: :nest,
+            value: [
+              {
+                nest_type: :colon,
+                type: :nest,
+                value: [{value: :nnn}, {type: :str, value: /foo/i}]
+              },
+              {
+                nest_op: '-',
                 nest_type: :minus,
                 type: :nest,
-                value: [{type: :str, value: /bar/i}]}]}]},
-         {number_value: '3', type: :number, value: /3/i}]}]
-     norm('s:-2', aliases).should ==  [
-       {nest_op: ':',
-        nest_type: :colon,
-        type: :nest,
-        value: [{type: :str, value: 's'}, {type: :number, value: /\-2/i}]}]
-     norm('s:abc', aliases).should == [
-       {nest_op: ':',
-        nest_type: :colon,
-        type: :nest,
-        value: [{type: :str, value: 's'}, {type: :str, value: /abc/i}]}]
-     norm('n:4', aliases).should == [
-       {nest_op: ':',
-        nest_type: :colon,
-        type: :nest,
-        value: [{type: :str, value: 'n'}, {type: :number, value: '4'}]}]
-     norm('n:abc', aliases).should ==  [
-       {nest_op: ':',
-        nest_type: :colon,
-        type: :nest,
-        value: [{type: :str, value: 'n'}, {type: :str, value: 'abc'}]}]
+                value: [{
+                  nest_type: :colon,
+                  type: :nest,
+                  value: [{value: :nnn}, {type: :str, value: /bar/i}]
+                }]
+              }
+            ]
+          }]
+        },
+        {
+          nest_type: :colon,
+          type: :nest,
+          value: [{value: :nnn}, {type: :number, value: /3/i}]
+        }
+      ]
+    }]
+    norm('s:-2', aliases).should == [{
+      nest_op: ':',
+      nest_type: :colon,
+      type: :nest,
+      value: [{type: :str, value: 's'}, {type: :number, value: /\-2/i}]
+    }]
+    norm('s:abc', aliases).should == [{
+      nest_op: ':',
+      nest_type: :colon,
+      type: :nest,
+      value: [{type: :str, value: 's'}, {type: :str, value: /abc/i}]
+    }]
+    norm('n:4', aliases).should == [{
+      nest_op: ':',
+      nest_type: :colon,
+      type: :nest,
+      value: [{type: :str, value: 'n'}, {type: :number, value: 4.0}]
+    }]
+    norm('n:abc', aliases).should == [{
+      nest_op: ':',
+      nest_type: :colon,
+      type: :nest,
+      value: [{type: :str, value: 'n'}, {type: :str, value: 'abc'}]
+    }]
   end
 
   it 'should cast dates' do

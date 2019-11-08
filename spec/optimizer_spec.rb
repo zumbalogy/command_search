@@ -100,7 +100,7 @@ describe CommandSearch::Optimizer do
        nest_op: '|',
        value: [{type: :str, value: 'a'},
                {type: :str, value: 'b'}]}]
-    opt('(a|b c)|z').should ==  [
+    opt('(a|b c)|z').should == [
       {type: :nest,
        nest_type: :pipe,
        nest_op: '|',

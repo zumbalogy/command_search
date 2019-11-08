@@ -140,12 +140,12 @@ describe CommandSearch::Mongoer do
 
   it 'should handle compares' do
     def q2(s); q(s, ['f1'], { num1: Numeric }); end
-    q2('num1<-230').should == {'num1'=>{'$lt'=>'-230'}}
-    q2('num1<=5.20').should == {'num1'=>{'$lte'=>'5.20'}}
-    q2('num1>0').should == {'num1'=>{'$gt'=>'0'}}
-    q2('0<num1').should == {'num1'=>{'$gt'=>'0'}}
-    q2('-5>=num1').should == {'num1'=>{'$lte'=>'-5'}}
-    q2('num1>=1000').should == {'num1'=>{'$gte'=>'1000'}}
+    q2('num1<-230').should == {'num1'=>{'$lt'=> -230.0 }}
+    q2('num1<=5.20').should == {'num1'=>{'$lte'=>5.20}}
+    q2('num1>0').should == {'num1'=>{'$gt'=>0.0}}
+    q2('0<num1').should == {'num1'=>{'$gt'=>0.0}}
+    q2('-5>=num1').should == {'num1'=>{'$lte'=>-5.0}}
+    q2('num1>=1000').should == {'num1'=>{'$gte'=>1000.0}}
   end
 
   it 'should handle time compares' do

@@ -129,7 +129,7 @@ describe CommandSearch::Parser do
              value: [
                {type: :str, value: 'x'},
                {type: :str, value: 'yy'}]}]}]}]
-    parse('(a|b c)|z').should ==  [
+    parse('(a|b c)|z').should == [
       {type: :nest,
        nest_type: :pipe,
        nest_op: '|',

@@ -106,7 +106,7 @@ module CommandSearch
           type = node[:nest_type]
           if type == :minus || type == :paren || type == :pipe
             expand_general!(node[:value], fields, cmd_fields)
-          elsif type == :colon
+          else
             field = node[:value][0][:value]
             field_type = cmd_fields[field.to_sym] || cmd_fields[field.to_s]
             if field_type == Numeric && node[:value][1][:type] == :number
