@@ -138,7 +138,6 @@ module CommandSearch
         next new_val.first if new_val.count < 2
         { type: :nest, nest_type: :pipe, value: new_val }
       end
-      ast.compact!
     end
 
     def normalize!(ast, fields, cmd_fields)
