@@ -11,7 +11,7 @@ Benchmark.ips() do |bm|
     CommandSearch::Optimizer.optimize!(ast)
     $bm.report(input.inspect) {
       ast2 = Marshal.load(Marshal.dump(ast))
-      CommandSearch::Normalizer.normalize!(ast2, command_fields)
+      CommandSearch::Normalizer.normalize!(ast2, [:nnn, :mmm], command_fields)
     }
   end
 

@@ -14,8 +14,8 @@ def run(input, fields = nil, command_fields = nil)
   ast = CommandSearch::Lexer.lex(input)
   CommandSearch::Parser.parse!(ast)
   CommandSearch::Optimizer.optimize!(ast)
-  CommandSearch::Normalizer.normalize!(ast, command_fields)
-  CommandSearch::Mongoer.build_query(ast, fields, command_fields)
+  CommandSearch::Normalizer.normalize!(ast, fields, command_fields)
+  CommandSearch::Mongoer.build_query(ast)
 end
 
 result = RubyProf.profile do

@@ -25,8 +25,8 @@ Benchmark.ips() do |bm|
       ast = CommandSearch::Lexer.lex(input)
       CommandSearch::Parser.parse!(ast)
       CommandSearch::Optimizer.optimize!(ast)
-      command_fields = CommandSearch::Normalizer.normalize!(ast, command_fields)
-      $hats.select { |x| CommandSearch::Memory.check(x, ast, fields) }.count
+      CommandSearch::Normalizer.normalize!(ast, fields, command_fields)
+      $hats.select { |x| CommandSearch::Memory.check(x, ast) }.count
     end
   end
 
