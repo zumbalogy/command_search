@@ -85,7 +85,6 @@ module CommandSearch
       general_fields = [:__CommandSearch_dummy_key__] if general_fields.empty?
       new_val = general_fields.map do |field|
         {
-          type: :nest,
           nest_type: :colon,
           value: [
             { value: field.to_s },
@@ -94,7 +93,7 @@ module CommandSearch
         }
       end
       return new_val.first if new_val.count < 2
-      { type: :nest, nest_type: :pipe, value: new_val }
+      { nest_type: :pipe, value: new_val }
     end
 
     def normalize!(ast, fields)

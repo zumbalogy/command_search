@@ -11,7 +11,7 @@ module CommandSearch
           opening_idxs.push(i)
         elsif opening = opening_idxs.pop()
           val = input[(opening + 1)..(i - 1)]
-          input[opening..i] = { type: :nest, nest_type: :paren, value: val }
+          input[opening..i] = { nest_type: :paren, value: val }
           i -= (val.length + 1)
         else
           input.delete_at(i)
@@ -33,14 +33,13 @@ module CommandSearch
           front_offset = 0
           front_offset = 1 if binary && i > 0
           input[(i - front_offset)..(i + 1)] = {
-            type: :nest,
             nest_type: type,
             nest_op: input[i][:value],
             value: val
           }
           i -= 1 if binary
         end
-        cluster!(type, input[i][:value], cluster_type) if input[i][:type] == :nest
+        cluster!(type, input[i][:value], cluster_type) if input[i][:nest_type]
         i -= 1
       end
     end
