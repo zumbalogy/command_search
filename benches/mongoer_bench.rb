@@ -5,20 +5,25 @@ load(__dir__ + '/../lib/command_search.rb')
 Benchmark.ips do |bm|
   $bm = bm
 
-  def bench(input, fields = nil, command_fields = nil)
-    fields ||= [:title, :description, :tags]
-    command_fields ||= { has_child_id: Boolean, title: String, name: :title }
+  def bench(input, fields = nil)
+    fields ||= {
+      has_child_id: Boolean,
+      title: { type: String, general_search: true },
+      description: { type: String, general_search: true },
+      tags: { type: String, general_search: true },
+      name: :title
+    }
     $bm.report(input.inspect.length) do
       aliased = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
       ast = CommandSearch::Lexer.lex(aliased)
       CommandSearch::Parser.parse!(ast)
       CommandSearch::Optimizer.optimize!(ast)
-      command_fields = CommandSearch::Normalizer.normalize!(ast, fields, command_fields)
+      CommandSearch::Normalizer.normalize!(ast, fields)
       CommandSearch::Mongoer.build_query(ast)
     end
   end
 
-  bench('', [], {})
+  bench('', {})
   bench('')
   bench('foo bar')
   bench('-(a)|"b"')
