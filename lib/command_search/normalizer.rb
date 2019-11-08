@@ -7,6 +7,7 @@ module CommandSearch
     def cast_bool!(field, node)
       type = field.is_a?(Hash) ? field[:type] : field
       if type == Boolean
+        return if field.is_a?(Hash) && field[:general_search] && !node[:value][/\Atrue\Z|\Afalse\Z/i]
         node[:type] = Boolean
         node[:value] = !!node[:value][0][/t/i]
         return
@@ -79,7 +80,9 @@ module CommandSearch
       key
     end
 
-    def split_into_fields(node, general_fields)
+    def split_general_fields(node, fields)
+      general_fields = fields.select { |k, v| v.is_a?(Hash) && v[:general_search] }.keys
+      general_fields = [:__CommandSearch_dummy_key__] if general_fields.empty?
       new_val = general_fields.map do |field|
         {
           type: :nest,
@@ -94,52 +97,34 @@ module CommandSearch
       { type: :nest, nest_type: :pipe, value: new_val }
     end
 
-    def dealias!(ast, fields)
+    def normalize!(ast, fields)
       ast.map! do |node|
-        nest = node[:nest_type]
-        next node unless nest
-        unless nest == :colon || nest == :compare
-          dealias!(node[:value], fields)
+        if node[:nest_type] == :colon || node[:nest_type] == :compare
+          clean_comparison!(node, fields) if node[:nest_type] == :compare
+          key = dealias_key(node[:value][0][:value], fields)
+          node[:value][0][:value] = key.to_s
+          unless fields[key.to_sym] || fields[key.to_s]
+            str_values = "#{key}#{node[:nest_op]}#{node[:value][1][:value]}"
+            node = { type: :str, value: str_values }
+          end
+        end
+        node = split_general_fields(node, fields) unless node[:nest_type]
+        if node[:nest_type] == :minus || node[:nest_type] == :paren || node[:nest_type] == :pipe
+          normalize!(node[:value], fields)
           next node
         end
-        clean_comparison!(node, fields) if nest == :compare
         (key_node, search_node) = node[:value]
-        new_key = dealias_key(key_node[:value], fields)
-        node[:value][0][:value] = new_key.to_s
-        field = fields[new_key.to_sym] || fields[new_key.to_s]
+        key = key_node[:value]
+        field = fields[key.to_sym] || fields[key.to_s]
         if field && (field.is_a?(Class) || field[:type])
           type = field.is_a?(Class) ? field : field[:type]
           cast_bool!(field, search_node)
           cast_time!(node) if [Time, Date, DateTime].include?(type)
           cast_regex!(search_node) if type == String
           cast_numeric!(search_node) if [Integer, Numeric].include?(type)
-          next node
         end
-        str_values = "#{new_key}#{node[:nest_op]}#{search_node[:value]}"
-        node = { type: :str, value: str_values }
-        cast_regex!(node)
-        general_fields = fields.select { |k, v| v.is_a?(Hash) && v[:general_search] }.keys
-        general_fields = [:__CommandSearch_dummy_key__] if general_fields.empty?
-        split_into_fields(node, general_fields)
+        node
       end
-    end
-
-    def expand_general!(ast, fields)
-      general_fields = fields.select { |k, v| v.is_a?(Hash) && v[:general_search] }.keys
-      general_fields = [:__CommandSearch_dummy_key__] if general_fields.empty?
-      ast.map! do |node|
-        nest_type = node[:nest_type]
-        if nest_type == :minus || nest_type == :paren || nest_type == :pipe
-          expand_general!(node[:value], fields)
-        end
-        next node if nest_type
-        split_into_fields(node, general_fields)
-      end
-    end
-
-    def normalize!(ast, fields)
-      expand_general!(ast, fields)
-      dealias!(ast, fields)
     end
   end
 end
