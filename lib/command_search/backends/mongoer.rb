@@ -44,7 +44,7 @@ module CommandSearch
     def build_searches!(ast)
       mongo_types = { and: '$and', or: '$or', not: '$nor' }
       ast.map! do |node|
-        type = node[:nest_type]
+        type = node[:type]
         if type == :colon
           build_command(node)
         elsif type == :compare

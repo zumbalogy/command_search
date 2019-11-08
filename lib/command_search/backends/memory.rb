@@ -42,7 +42,7 @@ module CommandSearch
     def check(item, ast)
       ast.all? do |node|
         val = node[:value]
-        case node[:nest_type]
+        case node[:type]
         when :colon
           command_check(item, val)
         when :compare

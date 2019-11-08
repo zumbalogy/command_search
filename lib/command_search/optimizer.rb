@@ -5,7 +5,7 @@ module CommandSearch
     def denest!(ast, parent_type = :and)
       ast.map! do |node|
         next [] if node[:type] == :quoted_str && node[:value] == '' && [:and, :or, :not].include?(parent_type)
-        type = node[:nest_type]
+        type = node[:type]
         next node unless type
         next node unless type == :and || type == :or || type == :not
         denest!(node[:value], type)
@@ -13,7 +13,7 @@ module CommandSearch
         if type == :not
           only_child = node[:value].count == 1
           child = node[:value].first
-          next child[:value] if only_child && child[:nest_type] == :not
+          next child[:value] if only_child && child[:type] == :not
           next node
         end
         next node[:value] if node[:value].count == 1

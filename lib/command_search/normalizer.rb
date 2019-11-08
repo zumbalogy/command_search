@@ -35,7 +35,7 @@ module CommandSearch
           return
         end
       end
-      return unless node[:nest_type] == :compare
+      return unless node[:type] == :compare
       op = node[:nest_op]
       if op == '<' || op == '>='
         search_node[:value] = search_node[:value].first
@@ -85,7 +85,7 @@ module CommandSearch
       general_fields = [:__CommandSearch_dummy_key__] if general_fields.empty?
       new_val = general_fields.map do |field|
         {
-          nest_type: :colon,
+          type: :colon,
           value: [
             { value: field.to_s },
             { value: node[:value], type: node[:type] },
@@ -93,13 +93,13 @@ module CommandSearch
         }
       end
       return new_val.first if new_val.count < 2
-      { nest_type: :or, value: new_val }
+      { type: :or, value: new_val }
     end
 
     def normalize!(ast, fields)
       ast.map! do |node|
-        if node[:nest_type] == :colon || node[:nest_type] == :compare
-          clean_comparison!(node, fields) if node[:nest_type] == :compare
+        if node[:type] == :colon || node[:type] == :compare
+          clean_comparison!(node, fields) if node[:type] == :compare
           key = dealias_key(node[:value][0][:value], fields)
           node[:value][0][:value] = key.to_s
           unless fields[key.to_sym] || fields[key.to_s]
@@ -107,8 +107,11 @@ module CommandSearch
             node = { type: :str, value: str_values }
           end
         end
-        node = split_general_fields(node, fields) unless node[:nest_type]
-        if node[:nest_type] == :not || node[:nest_type] == :and || node[:nest_type] == :or
+        unless node[:type] == :not || node[:type] == :and || node[:type] == :or || node[:type] == :colon || node[:type] == :compare
+          node = split_general_fields(node, fields)
+        end
+
+        if node[:type] == :not || node[:type] == :and || node[:type] == :or
           normalize!(node[:value], fields)
           next node
         end
