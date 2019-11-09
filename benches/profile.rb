@@ -1,6 +1,11 @@
-require 'ruby-prof'
+require('ruby-prof')
+require('mongoid')
 
 load(__dir__ + '/../lib/command_search.rb')
+
+class Hat
+  include Mongoid::Document
+end
 
 # RubyProf.measure_mode = RubyProf::WALL_TIME
 # RubyProf.measure_mode = RubyProf::PROCESS_TIME
@@ -15,12 +20,7 @@ def run(input, fields = nil)
     description: { type:  String, general_search: true },
     name: :title
   }
-  lexed = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
-  ast = CommandSearch::Lexer.lex(input)
-  CommandSearch::Parser.parse!(ast)
-  CommandSearch::Optimizer.optimize!(ast)
-  CommandSearch::Normalizer.normalize!(ast, fields)
-  CommandSearch::Mongoer.build_query(ast)
+  CommandSearch.search(Hat, input, { fields: fields, aliases: { 'foo' => 'bar' } })
 end
 
 result = RubyProf.profile do
