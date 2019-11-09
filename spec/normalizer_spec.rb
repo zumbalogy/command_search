@@ -116,11 +116,11 @@ describe CommandSearch::Normalizer do
     c('b:"false"').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{type: :str, value: 'b'}, {type: :quoted_str, value: 'false'}]}]
+      value: [{type: :str, value: 'b'}, {type: :quote, value: 'false'}]}]
     c('b:"true"').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{type: :str, value: 'b'}, {type: :quoted_str, value: 'true'}]}]
+      value: [{type: :str, value: 'b'}, {type: :quote, value: 'true'}]}]
     c('b:foo').should == [{
       type: :colon,
       nest_op: ':',

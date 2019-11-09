@@ -80,8 +80,8 @@ module CommandSearch
         next i += 1 if ![:compare, :colon].include?(input[i][:type])
         next i += 1 if i > 0 &&
           (i < input.count - 1) &&
-          [:str, :number, :quoted_str].include?(input[i - 1][:type]) &&
-          [:str, :number, :quoted_str].include?(input[i + 1][:type])
+          [:str, :number, :quote].include?(input[i - 1][:type]) &&
+          [:str, :number, :quote].include?(input[i + 1][:type])
 
         input[i..i + 1] = merge_strs(input[i..i + 1], [0, 1])
         input[i - 1..i] = merge_strs(input[i - 1..i], [1, 0]) if i > 0

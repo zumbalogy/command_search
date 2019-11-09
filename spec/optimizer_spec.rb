@@ -298,7 +298,7 @@ describe CommandSearch::Optimizer do
       type: :colon,
       nest_op: ':',
       value: [{ type: :str, value: 'foo' },
-              { type: :quoted_str, value: '' }]}]
+              { type: :quote, value: '' }]}]
   end
 
   it 'should handle single sides ORs' do

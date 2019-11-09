@@ -51,7 +51,7 @@ module CommandSearch
       return unless raw.is_a?(String)
       return if node[:value] == ''
       str = Regexp.escape(raw)
-      return node[:value] = /#{str}/i unless type == :quoted_str
+      return node[:value] = /#{str}/i unless type == :quote
       return node[:value] = /\b#{str}\b/ unless raw[/(^\W)|(\W$)/]
       border_a = '(^|\s|[^:+\w])'
       border_b = '($|\s|[^:+\w])'
@@ -65,8 +65,8 @@ module CommandSearch
 
     def clean_comparison!(node, fields)
       val = node[:value]
-      return unless fields[val[1][:value].to_sym]
-      if fields[val[0][:value].to_sym]
+      return unless fields[val[1][:value].to_sym] # TODO: does this need .to_s as well?
+      if fields[val[0][:value].to_sym] # TODO: does this need .to_s as well?
         node[:compare_across_fields] = true
         return
       end
@@ -76,7 +76,7 @@ module CommandSearch
     end
 
     def dealias_key(key, fields)
-      key = fields[key.to_sym] while fields[key.to_sym].is_a?(Symbol)
+      key = fields[key.to_sym] while fields[key.to_sym].is_a?(Symbol) # TODO: does this need .to_s as well?
       key
     end
 
@@ -96,6 +96,18 @@ module CommandSearch
       { type: :or, value: new_val }
     end
 
+    def type_cast!(node, fields)
+      (key_node, search_node) = node[:value]
+      key = key_node[:value]
+      field = fields[key.to_sym] || fields[key.to_s]
+      return unless field
+      type = field.is_a?(Class) ? field : field[:type]
+      cast_bool!(field, search_node)
+      cast_time!(node) if [Time, Date, DateTime].include?(type)
+      cast_regex!(search_node) if type == String
+      cast_numeric!(search_node) if [Integer, Numeric].include?(type)
+    end
+
     def normalize!(ast, fields)
       ast.map! do |node|
         if node[:type] == :colon || node[:type] == :compare
@@ -107,23 +119,13 @@ module CommandSearch
             node = { type: :str, value: str_values }
           end
         end
-        unless node[:type] == :not || node[:type] == :and || node[:type] == :or || node[:type] == :colon || node[:type] == :compare
+        if node[:type] == :str || node[:type] == :quote || node[:type] == :number
           node = split_general_fields(node, fields)
         end
-
-        if node[:type] == :not || node[:type] == :and || node[:type] == :or
+        if node[:type] == :colon || node[:type] == :compare
+          type_cast!(node, fields)
+        else
           normalize!(node[:value], fields)
-          next node
-        end
-        (key_node, search_node) = node[:value]
-        key = key_node[:value]
-        field = fields[key.to_sym] || fields[key.to_s]
-        if field && (field.is_a?(Class) || field[:type])
-          type = field.is_a?(Class) ? field : field[:type]
-          cast_bool!(field, search_node)
-          cast_time!(node) if [Time, Date, DateTime].include?(type)
-          cast_regex!(search_node) if type == String
-          cast_numeric!(search_node) if [Integer, Numeric].include?(type)
         end
         node
       end

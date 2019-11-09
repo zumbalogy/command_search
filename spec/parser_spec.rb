@@ -469,7 +469,7 @@ it 'should handle negating' do
       { type: :colon,
         nest_op: ':',
         value: [
-          { type: :quoted_str, value: '(' },
+          { type: :quote, value: '(' },
           { type: :str, value: 'a' }]}]
   end
 end

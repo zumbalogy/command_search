@@ -46,20 +46,20 @@ describe CommandSearch::Lexer do
   end
 
   it 'should handle quotes, removing surrounding quotes' do
-    lex('"foo"').should == [{type: :quoted_str, value: "foo"}]
-    lex("'bar'").should == [{type: :quoted_str, value: "bar"}]
+    lex('"foo"').should == [{type: :quote, value: "foo"}]
+    lex("'bar'").should == [{type: :quote, value: "bar"}]
     lex("a 'b foo'").should == [
       {type: :str, value: "a"},
-      {type: :quoted_str, value: "b foo"}
+      {type: :quote, value: "b foo"}
     ]
     lex("foo 'a b' bar").should == [
       {type: :str, value: "foo"},
-      {type: :quoted_str, value: "a b"},
+      {type: :quote, value: "a b"},
       {type: :str, value: "bar"}
     ]
     lex("-3 '-11 x'").should == [
       {type: :number, value: "-3"},
-      {type: :quoted_str, value: "-11 x"}
+      {type: :quote, value: "-11 x"}
     ]
     lex('a b " c').should == [
       {type: :str, value: "a"},
@@ -69,19 +69,19 @@ describe CommandSearch::Lexer do
     ]
     lex("a 'b \" c'").should == [
       {type: :str, value: "a"},
-      {type: :quoted_str, value: "b \" c"}
+      {type: :quote, value: "b \" c"}
     ]
-    lex('"a\'b"').should == [{type: :quoted_str, value: "a\'b"}]
-    lex("'a\"b'").should == [{type: :quoted_str, value: "a\"b"}]
-    lex("'a\"\"b'").should == [{type: :quoted_str, value: "a\"\"b"}]
-    lex('"a\'\'b"').should == [{type: :quoted_str, value: "a\'\'b"}]
+    lex('"a\'b"').should == [{type: :quote, value: "a\'b"}]
+    lex("'a\"b'").should == [{type: :quote, value: "a\"b"}]
+    lex("'a\"\"b'").should == [{type: :quote, value: "a\"\"b"}]
+    lex('"a\'\'b"').should == [{type: :quote, value: "a\'\'b"}]
     lex("'red \"blue' \" green").should == [
-      {type: :quoted_str, value: "red \"blue"},
+      {type: :quote, value: "red \"blue"},
       {type: :str, value: '"'},
       {type: :str, value: "green"}
     ]
     lex('"red \'blue" \' green').should == [
-      {type: :quoted_str, value: "red \'blue"},
+      {type: :quote, value: "red \'blue"},
       {type: :str, value: "'"},
       {type: :str, value: "green"}
     ]
@@ -98,11 +98,11 @@ describe CommandSearch::Lexer do
       {type: :str, value: "bar's"}
     ]
     lex("\"foo's unquoted bar's\"").should == [
-      {type: :quoted_str, value: "foo's unquoted bar's"}
+      {type: :quote, value: "foo's unquoted bar's"}
     ]
     lex("foo's \"quoted bar's\"").should == [
       {type: :str, value: "foo's"},
-      {type: :quoted_str, value: "quoted bar's"}
+      {type: :quote, value: "quoted bar's"}
     ]
     lex("fo'o'bar'").should == [{type: :str, value: "fo'o'bar'"}]
   end
@@ -134,19 +134,19 @@ describe CommandSearch::Lexer do
       {type: :str, value: "c"}
     ]
     lex("'desk1'|'desk2'").should == [
-      {type: :quoted_str, value: "desk1"},
+      {type: :quote, value: "desk1"},
       {type: :pipe, value: "|"},
-      {type: :quoted_str, value: "desk2"}
+      {type: :quote, value: "desk2"}
     ]
     lex('"desk1"|"desk2"').should == [
-      {type: :quoted_str, value: "desk1"},
+      {type: :quote, value: "desk1"},
       {type: :pipe, value: "|"},
-      {type: :quoted_str, value: "desk2"}
+      {type: :quote, value: "desk2"}
     ]
     lex("\"desk1\"|'desk2'").should == [
-      {type: :quoted_str, value: "desk1"},
+      {type: :quote, value: "desk1"},
       {type: :pipe, value: "|"},
-      {type: :quoted_str, value: "desk2"}
+      {type: :quote, value: "desk2"}
     ]
   end
 
@@ -176,11 +176,11 @@ describe CommandSearch::Lexer do
     ]
     lex('-"foo bar"').should == [
       {type: :minus, value: "-"},
-      {type: :quoted_str, value: "foo bar"}
+      {type: :quote, value: "foo bar"}
     ]
     lex('-"foo -bar" -x').should == [
       {type: :minus, value: "-"},
-      {type: :quoted_str, value: "foo -bar"},
+      {type: :quote, value: "foo -bar"},
       {type: :minus, value: "-"},
       {type: :str, value: "x"}
     ]
@@ -219,7 +219,7 @@ describe CommandSearch::Lexer do
     lex('1:"2"').should == [
       {type: :number, value: "1"},
       {type: :colon, value: ":"},
-      {type: :quoted_str, value: '2'}
+      {type: :quote, value: '2'}
     ]
   end
 

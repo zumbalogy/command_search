@@ -12,10 +12,10 @@ module CommandSearch
           next i += Regexp.last_match[0].length
         when /\A"(.*?)"/
           match = Regexp.last_match[1]
-          type = :quoted_str
+          type = :quote
         when /\A'(.*?)'/
           match = Regexp.last_match[1]
-          type = :quoted_str
+          type = :quote
         when /\A\-?\d+(\.\d+)?(?=$|[\s"':|<>()])/
           type = :number
         when /\A-/
