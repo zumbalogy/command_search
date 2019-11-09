@@ -468,6 +468,10 @@ describe CommandSearch::Memory do
     CommandSearch.search([{}], "4:O0E%~Z<@?O]e'h@<'k^", { fields: { foo: { type: String } } })
     CommandSearch.search([{}], '(-sdf:sdfdf>sd\'s":f-', { fields: { foo: { type: String } } })
     CommandSearch.search([{}], '""sdfdsfhellosdf|dsfsdf::>>><><', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '|(|', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '|(|', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '| |', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '()<', { fields: { foo: { type: String } } })
 
     CommandSearch.search([{}], 'foo:""', { command_fields: { foo: String } })
   end

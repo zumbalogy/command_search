@@ -7,10 +7,10 @@ class Hat
   include Mongoid::Document
 end
 
-# RubyProf.measure_mode = RubyProf::WALL_TIME
+RubyProf.measure_mode = RubyProf::WALL_TIME
 # RubyProf.measure_mode = RubyProf::PROCESS_TIME
 # RubyProf.measure_mode = RubyProf::ALLOCATIONS
-RubyProf.measure_mode = RubyProf::MEMORY
+# RubyProf.measure_mode = RubyProf::MEMORY
 
 def run(input, fields = nil)
   fields ||= {
@@ -24,7 +24,7 @@ def run(input, fields = nil)
 end
 
 result = RubyProf.profile do
-  1000.times do
+  2000.times do
     run('', {})
     run('')
     run('foo bar')

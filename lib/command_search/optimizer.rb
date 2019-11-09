@@ -4,7 +4,6 @@ module CommandSearch
 
     def denest!(ast, parent_type = :and)
       ast.map! do |node|
-        next [] if node[:type] == :quote && node[:value] == '' && [:and, :or, :not].include?(parent_type)
         type = node[:type]
         next node unless type == :and || type == :or || type == :not
         denest!(node[:value], type)
@@ -21,6 +20,7 @@ module CommandSearch
         next node if type == :and
         denest!(node[:value], type) # type == :or, parent_type == :and
         node[:value].uniq!
+        next node[:value] if node[:value].count == 1
         node
       end
       ast.flatten!

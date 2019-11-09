@@ -97,18 +97,15 @@ describe CommandSearch::Optimizer do
     opt('a|b').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [{type: :str, value: 'a'},
                {type: :str, value: 'b'}]}]
     opt('(a|b c)|z').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [{
                 type: :and,
                 value: [{
                          type: :or,
-                         nest_op: '|',
                          value: [{type: :str, value: 'a'},
                                  {type: :str, value: 'b'}]},
                         {type: :str, value: 'c'}]},
@@ -116,18 +113,15 @@ describe CommandSearch::Optimizer do
     opt('a|1 2|b').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [{type: :str, value: 'a'},
                {type: :number, value: '1'}]},
       {
        type: :or,
-       nest_op: '|',
        value: [{type: :number, value: '2'},
                {type: :str, value: 'b'}]}]
     opt('a|b|3').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [
          {type: :str, value: 'a'},
          {type: :str, value: 'b'},
@@ -135,13 +129,11 @@ describe CommandSearch::Optimizer do
     opt('(a) | (a|b)').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [{type: :str, value: 'a'},
                {type: :str, value: 'b'}]}]
     opt('a|(b|3)').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [
          {type: :str, value: 'a'},
          {type: :str, value: 'b'},
@@ -149,7 +141,6 @@ describe CommandSearch::Optimizer do
     opt('a|(b|(3|4))').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [
          {type: :str, value: 'a'},
          {type: :str, value: 'b'},
@@ -158,7 +149,6 @@ describe CommandSearch::Optimizer do
     opt('(a|b|((c|d)|(e|f)))').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [
          {type: :str, value: 'a'},
          {type: :str, value: 'b'},
@@ -169,7 +159,6 @@ describe CommandSearch::Optimizer do
     opt('(a|b|((c|d)|(e|f|g)))').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [
          {type: :str, value: 'a'},
          {type: :str, value: 'b'},
@@ -181,7 +170,6 @@ describe CommandSearch::Optimizer do
     opt('(a|b|((c|d)|(e|f|g)|h|i)|j)|k|l|a').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [
          {type: :str, value: 'a'},
          {type: :str, value: 'b'},
@@ -198,7 +186,6 @@ describe CommandSearch::Optimizer do
     opt('(a b) | (c d)').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [
          {
           type: :and,
@@ -211,7 +198,6 @@ describe CommandSearch::Optimizer do
     opt('(a b) | (c d) | (x y)').should == [
       {
        type: :or,
-       nest_op: '|',
        value: [
          {
           type: :and,
@@ -234,10 +220,10 @@ describe CommandSearch::Optimizer do
     opt('()').should == []
     opt('-()').should == []
     opt('-(-)').should == []
-    opt('-""').should == []
     opt('-|').should == []
     opt(' ( ( ()) -(()  )) ').should == []
     opt(' ( ( ()) -((-(()||(()|()))|(()|())-((-())))  )) ').should == []
+    opt('-""').should == [{type: :not, value: [{type: :quote, value: ''}]}]
   end
 
   it 'should handle wacky nonsense' do
@@ -247,9 +233,9 @@ describe CommandSearch::Optimizer do
     opt('(()').should == []
     opt('(())').should == []
     opt(')())').should == []
+    opt('-').should == []
     opt(':').should == [{type: :str, value: ':'}]
     opt('(:)').should == [{type: :str, value: ':'}]
-    opt('-').should == [{type: :str, value: '-'}]
     opt('>').should == [{type: :str, value: '>'}]
     opt('>>').should == [{type: :str, value: '>>'}]
     opt('>:').should == [{type: :str, value: '>:'}]
@@ -260,18 +246,14 @@ describe CommandSearch::Optimizer do
     opt('-<').should == [
       {
         type: :not,
-        nest_op: '-',
         value: [{type: :str, value: '<'}]}]
     opt('-<=').should == [
-      {
-        type: :not,
-        nest_op: '-',
-        value: [{type: :str, value: '<='}]}]
+      {type: :not,
+       value: [{type: :str, value: '<='}]}]
     opt('|:)').should == [{type: :str, value: ':'}]
     opt('-<>=-()<>:|(>=-|:)').should == [
       {
         type: :not,
-        nest_op: '-',
         value: [
           {
             type: :compare,
@@ -280,7 +262,6 @@ describe CommandSearch::Optimizer do
                     { type: :str, value: '-' }]}]},
       {
         type: :or,
-        nest_op: '|',
         value: [
           { type: :str, value: '<>:' },
           { type: :str, value: '>=-' },
@@ -288,12 +269,12 @@ describe CommandSearch::Optimizer do
   end
 
   it 'should handle empty strings' do
-    opt('""').should == []
-    opt('""|""').should == []
-    opt('(""|"")').should == []
-    opt('(""|"")|""|("")|(""|(""|((""|"")|(""|""))))').should == []
-    opt("''").should == []
-    opt("'' foo").should == [{type: :str, value: 'foo'}]
+    opt('""').should == [{type: :quote, value: ''}]
+    opt('""|""').should == [{type: :quote, value: ''}]
+    opt('(""|"")').should == [{type: :quote, value: ''}]
+    opt('(""|"")|""|("")|(""|(""|((""|"")|(""|""))))').should == [{type: :quote, value: ''}]
+    opt("''").should == [{type: :quote, value: ''}]
+    opt("'' foo").should == [{type: :quote, value: ''}, {type: :str, value: 'foo'}]
     opt('foo:""').should == [{
       type: :colon,
       nest_op: ':',
@@ -316,64 +297,54 @@ describe CommandSearch::Optimizer do
     opt('-a').should == [
       {
        type: :not,
-       nest_op: '-',
        value: [{type: :str, value: 'a'}]}]
     opt('- -1').should == [
       {
        type: :not,
-       nest_op: '-',
        value: [{type: :number, value: '-1'}]}]
     opt('-(-1 2 -foo)').should == [
       {
        type: :not,
-       nest_op: '-',
        value: [
          {type: :number, value: '-1'},
          {type: :number, value: '2'},
-         {
-          type: :not,
-          nest_op: '-',
-          value: [{type: :str, value: 'foo'}]}]}]
+         {type: :not, value: [{type: :str, value: 'foo'}]}]}]
     opt('-(-a b)').should == [{
-      nest_op: '-',
       type: :not,
       value: [
-        {nest_op: '-',
+        {
          type: :not,
          value: [{type: :str, value: 'a'}]},
         {type: :str, value: 'b'}]}]
     opt('-(a -b)').should == [{
-      nest_op: '-',
       type: :not,
       value: [
         {type: :str, value: 'a'},
-        {nest_op: '-',
+        {
          type: :not,
          value: [
            {type: :str, value: 'b'}]}]}]
     opt('-(-a -b)').should == [{
-      nest_op: '-',
       type: :not,
       value: [
-        {nest_op: '-',
+        {
          type: :not,
          value: [{type: :str, value: 'a'}]},
-        {nest_op: '-',
+        {
          type: :not,
          value: [
            {type: :str, value: 'b'}]}]}]
     opt('-(foo|-bar)|3').should == [{
-      nest_op: '|',
       type: :or,
       value:
-       [{nest_op: '-',
+       [{
          type: :not,
          value:
-          [{nest_op: '|',
+          [{
             type: :or,
             value:
              [{type: :str, value: 'foo'},
-              {nest_op: '-',
+              {
                type: :not,
                value: [{type: :str, value: 'bar'}]}]}]},
         {type: :number, value: '3'}]}]

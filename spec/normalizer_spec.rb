@@ -173,14 +173,11 @@ describe CommandSearch::Normalizer do
       }
      ]
     norm('-(foo|-bar)|3', fields).should == [{
-      nest_op: '|',
       type: :or,
       value: [
         {
-          nest_op: '-',
           type: :not,
           value: [{
-            nest_op: '|',
             type: :or,
             value: [
               {
@@ -188,7 +185,6 @@ describe CommandSearch::Normalizer do
                 value: [{value: 'nnn'}, {type: :str, value: /foo/i}]
               },
               {
-                nest_op: '-',
                 type: :not,
                 value: [{
                   type: :colon,
@@ -254,7 +250,7 @@ describe CommandSearch::Normalizer do
                {type: Time, value: [Chronic.parse('1900-01-01 00:00:00'),
                                     Chronic.parse('1901-01-01 00:00:00')]}]}]
     norm('-t:1900', fields).should == [
-      {nest_op: '-',
+      {
        type: :not,
         value:
         [{nest_op: ':',
@@ -266,7 +262,7 @@ describe CommandSearch::Normalizer do
               [Chronic.parse('1900-01-01 00:00:00'),
                Chronic.parse('1901-01-01 00:00:00')]}]}]}]
     norm('-t<1901', fields).should == [
-      {nest_op: '-',
+      {
        type: :not,
         value:
         [{nest_op: '<',
