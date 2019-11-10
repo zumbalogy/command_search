@@ -68,10 +68,3 @@ dont need to do any lookup
 the fuzzer and generative tests should run with some variations of fleshed-out options
 
 benchmark aliaser
-
-this currently does not handle it well if developer puts an aliased command in the general command fields
-solution for this might be to make the data structure passed in be more like
-{
-  long_field_a: { type: Integer, allow_existence_boolean: false, general: true },
-  fa: :long_field_a
-}
