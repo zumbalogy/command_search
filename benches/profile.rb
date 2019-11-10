@@ -24,7 +24,7 @@ def run(input, fields = nil)
 end
 
 result = RubyProf.profile do
-  2000.times do
+  1000.times do
     run('', {})
     run('')
     run('foo bar')
