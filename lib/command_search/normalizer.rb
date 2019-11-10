@@ -110,6 +110,10 @@ module CommandSearch
 
     def normalize!(ast, fields)
       ast.map! do |node|
+        if node[:type] == :and || node[:type] == :or || node[:type] == :not
+          normalize!(node[:value], fields)
+          next node
+        end
         if node[:type] == :colon || node[:type] == :compare
           clean_comparison!(node, fields) if node[:type] == :compare
           key = dealias_key(node[:value][0][:value], fields)
@@ -122,10 +126,10 @@ module CommandSearch
         if node[:type] == :str || node[:type] == :quote || node[:type] == :number
           node = split_general_fields(node, fields)
         end
-        if node[:type] == :colon || node[:type] == :compare
-          type_cast!(node, fields)
+        if node[:type] == :or
+          node[:value].each { |x| type_cast!(x, fields) }
         else
-          normalize!(node[:value], fields)
+          type_cast!(node, fields)
         end
         node
       end
