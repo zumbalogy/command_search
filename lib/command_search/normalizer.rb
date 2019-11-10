@@ -65,8 +65,8 @@ module CommandSearch
 
     def clean_comparison!(node, fields)
       val = node[:value]
-      return unless fields[val[1][:value].to_sym] # TODO: does this need .to_s as well?
-      if fields[val[0][:value].to_sym] # TODO: does this need .to_s as well?
+      return unless fields[val[1][:value].to_sym]
+      if fields[val[0][:value].to_sym]
         node[:compare_across_fields] = true
         return
       end
@@ -76,7 +76,7 @@ module CommandSearch
     end
 
     def dealias_key(key, fields)
-      key = fields[key.to_sym] while fields[key.to_sym].is_a?(Symbol) # TODO: does this need .to_s as well?
+      key = fields[key.to_sym] while fields[key.to_sym].is_a?(Symbol)
       key
     end
 

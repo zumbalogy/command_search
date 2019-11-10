@@ -76,7 +76,7 @@ describe CommandSearch do
   end
 
   it 'should be able to work without command fields' do
-    general = {type: String, general_search: true}
+    general = { type: String, general_search: true }
     options = { fields: { :title => general, :description => general, :tags => general } }
     options2 = { fields: { 'title' => general, :description => general, :tags => general } }
     birds2 = [
@@ -90,7 +90,7 @@ describe CommandSearch do
     CommandSearch.search(birds2, 'title:2', options2).count.should == 1
   end
 
-  it 'should be able to work without search fields' do
+  it 'should be able to work without general searches' do
     options = {
       fields: {
         has_child_id: { type: Boolean },
