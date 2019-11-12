@@ -47,6 +47,4 @@ the public search function should maybe take a timezone (or an option for :local
 
 Further cleaning up the test suite.
 
-the fuzzer and generative tests should run with some variations of fleshed-out options
-
 update readme

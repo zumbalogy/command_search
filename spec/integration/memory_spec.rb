@@ -400,29 +400,29 @@ describe CommandSearch::Memory do
   end
 
   it 'should handle unicode' do
-      fields = { fields: { a: { type: String, general_search: true } } }
-      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '💯', fields).count.should == 1
-      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨', fields).count.should == 1
-      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🔥♨', fields).count.should == 0
-      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🌺🌿 🔒 😀', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋👋👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋👋👋', fields).count.should == 0
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'こんにちは世界' }], '世界', fields).count.should == 1
-      CommandSearch.search([{ a: 'こんにちは世界' }], '月', fields).count.should == 0
-      CommandSearch.search([{ a: 'こんにちは世界' }], 'world', fields).count.should == 0
-      CommandSearch.search([{ a: 'こんにちは世界' }], 'moon', fields).count.should == 0
-      CommandSearch.search([{ a: 'හෙලෝ වර්ල්ඩ්' }], 'වර්ල්ඩ්', fields).count.should == 1
-      CommandSearch.search([{ a: 'හෙලෝ වර්ල්ඩ්' }], 'හඳ', fields).count.should == 0
-      CommandSearch.search([{ a: 'សួស្តី​ពិភពលោក' }], 'ពិភពលោក', fields).count.should == 1
-      CommandSearch.search([{ a: 'សួស្តី​ពិភពលោក' }], 'ព្រះ​ច័ន្ទ', fields).count.should == 0
-      CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ໂລກ', fields).count.should == 1
-      CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ເດືອນ', fields).count.should == 0
+    fields = { fields: { a: { type: String, general_search: true } } }
+    CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '💯', fields).count.should == 1
+    CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨', fields).count.should == 1
+    CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🔥♨', fields).count.should == 0
+    CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🌺🌿 🔒 😀', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋👋👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋👋👋', fields).count.should == 0
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'こんにちは世界' }], '世界', fields).count.should == 1
+    CommandSearch.search([{ a: 'こんにちは世界' }], '月', fields).count.should == 0
+    CommandSearch.search([{ a: 'こんにちは世界' }], 'world', fields).count.should == 0
+    CommandSearch.search([{ a: 'こんにちは世界' }], 'moon', fields).count.should == 0
+    CommandSearch.search([{ a: 'හෙලෝ වර්ල්ඩ්' }], 'වර්ල්ඩ්', fields).count.should == 1
+    CommandSearch.search([{ a: 'හෙලෝ වර්ල්ඩ්' }], 'හඳ', fields).count.should == 0
+    CommandSearch.search([{ a: 'សួស្តី​ពិភពលោក' }], 'ពិភពលោក', fields).count.should == 1
+    CommandSearch.search([{ a: 'សួស្តី​ពិភពលោក' }], 'ព្រះ​ច័ន្ទ', fields).count.should == 0
+    CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ໂລກ', fields).count.should == 1
+    CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ເດືອນ', fields).count.should == 0
   end
 
   it 'should handle different time data types' do
@@ -457,103 +457,6 @@ describe CommandSearch::Memory do
     CommandSearch.search(list4, 'foo<=1995', { fields: { foo: { type: DateTime } } }).count.should == 2
     CommandSearch.search(list4, 'foo<1995', { fields: { foo: { type: DateTime } } }).count.should == 0
     CommandSearch.search(list4, '-foo<=1995', { fields: { foo: { type: DateTime } } }).count.should == 1
-  end
-
-  it 'should not throw errors' do
-    CommandSearch.search([{}], "Q)'(':{Mc&hO    T)r", { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], "m3(_:;_[P4ZV<]w)t", { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], " d<1-Tw?.�ey<1.E4:e>cb]", { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], "=4Ts2em(5sZ ]]&x<-", { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], "<|SOUv~Y74+Fm+Yva`64", { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], "4:O0E%~Z<@?O]e'h@<'k^", { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], '(-sdf:sdfdf>sd\'s":f-', { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], '""sdfdsfhellosdf|dsfsdf::>>><><', { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], '|(|', { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], '|(|', { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], '| |', { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], '()<', { fields: { foo: { type: String } } })
-
-    CommandSearch.search([{}], 'foo:""', { command_fields: { foo: String } })
-  end
-
-  it 'should not throw errors in the presence of "naughty strings"' do
-    # https://github.com/minimaxir/big-list-of-naughty-strings
-    require('json')
-    file = File.read(__dir__ + '/../assets/blns.json')
-    list = JSON.parse(file)
-    check = true
-    list.each do |str|
-      begin
-        list = [
-          { foo: str },
-          { bar: str }
-        ]
-        options = {
-          fields: {
-            foo: { type: String },
-            bar: { type: Numeric, general_search: true }
-          }
-        }
-        CommandSearch.search(list, str, options)
-      rescue
-        check = false
-      end
-    end
-    check.should == true
-  end
-
-  it 'should handle fuzzing' do
-    check = true
-    trials = 1000
-    trials = 999000 if ENV['CI']
-    trials.times do |i|
-      str = (0...24).map { (rand(130)).chr }.join
-      begin
-        list = [
-          { foo: str },
-          { bar: str }
-        ]
-        options = {
-          fields: {
-            foo: { type: String },
-            bar: { type: Numeric, general_search: true }
-          }
-        }
-        CommandSearch.search(list, str, options)
-      rescue
-        puts str.inspect
-        check = false
-        break
-      end
-    end
-    check.should == true
-  end
-
-  it 'should handle permutations' do
-    check = true
-    strs = ['a', 'b', 'x', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
-    size = 3
-    size = 5 if ENV['CI']
-    strs.repeated_permutation(size).each do |perm|
-      begin
-        list = [
-          { foo: perm.join() },
-          { bar: 'abcdefg' },
-          { baz: 34, abc: 'xyz' },
-        ]
-        options = {
-          fields: {
-            foo: { type: String },
-            bar: { type: Numeric, general_search: true }
-          }
-        }
-        CommandSearch.search(list, perm.join(), options)
-      rescue
-        print(perm.join(), '    ')
-        check = false
-      end
-    end
-    check.should == true
   end
 
   # it 'should handle searching ones that are not specified and also weird hash ones' do
