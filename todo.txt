@@ -9,11 +9,6 @@ look into
 Even with existence boolean, this should maybe check that the existing value is not false.
 in mongoer.rb, memory.rb might need that too.
 
-consider making it so people can search emoji without quotes.
-parse(':)').should == ...
-parse('(: smile').should == ...
-need to decompose unmatched parens to strings.
-
 show example of it playing friendly with pagination for mongo/memory.
 
 maybe support a real regex type. using that could mean certain things are not needed.
@@ -33,16 +28,9 @@ would be to be able to specify a certain number of matches. like,
 this name field must have the string ":)" 3 times. having
 an option to pass though to real regexes might solve this.
 
-it might be good to have a way to tell "collection" types (paren, or, minus)
-from other nest types (compare and command) in the ast, to avoid code like
-    [:paren, :pipe, :minus].include?(x[:nest_type])
-
 chronic thinks that "2000" means 20:20 today, not year 2000.
 for colons, though confusing for compares:
 it would be nice if "foo:monday" matched any date on a monday, not just like this monday.
-
-General searches that are numeric need to be specified and included in the command_fields.
-making general searches a hash could fix this.
 
 Handling dynamic types in mongo is something to think about.
 
