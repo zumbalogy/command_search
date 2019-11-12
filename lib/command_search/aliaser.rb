@@ -3,9 +3,9 @@ module CommandSearch
     module_function
 
     def build_regex(str)
-      head_border = '(?<=^|[^:\w])'
-      tail_border = '(?=$|\W)'
-      Regexp.new(head_border + Regexp.escape(str) + tail_border, 'i')
+      head = '(?<=^|[^:\w])'
+      tail = '(?=$|\W)'
+      Regexp.new(head + Regexp.escape(str) + tail, 'i')
     end
 
     def quotes?(str, offset)
@@ -16,30 +16,21 @@ module CommandSearch
       false
     end
 
-    def alias_item(query, alias_key, alias_value)
-      return query unless alias_value.is_a?(String) || alias_value.is_a?(Proc)
-      if alias_key.is_a?(Regexp)
-        pattern = alias_key
-      elsif alias_key.is_a?(String)
-        pattern = build_regex(alias_key)
-      else
-        return query
+    def alias_item!(query, key, val)
+      if key.is_a?(String) || key.is_a?(Symbol)
+        key = build_regex(key)
       end
-      query.gsub!(pattern) do |match|
+      query.gsub!(key) do |match|
         next match if quotes?(query, Regexp.last_match.offset(0))
-        if alias_value.is_a?(String)
-          alias_value
-        elsif alias_value.is_a?(Proc)
-          alias_value.call(match).to_s
-        end
+        next val.call(match) if val.is_a?(Proc)
+        val
       end
-      query
     end
 
     def alias(query, aliases)
       return query unless aliases.any?
       out = query.dup
-      aliases.each { |(k, v)| alias_item(out, k, v) }
+      aliases.each { |(k, v)| alias_item!(out, k, v) }
       out
     end
   end

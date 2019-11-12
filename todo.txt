@@ -59,12 +59,6 @@ the public search function should maybe take a timezone (or an option for :local
 
 Further cleaning up the test suite.
 
-Making the public facing CommandSearch.search function better and more flexible.
-
-Having further steps to process the AST for easier consumption by the backends.
-by folding in the command_types and all that into the ast, so that the backends can just be passed that and
-dont need to do any lookup
-
 the fuzzer and generative tests should run with some variations of fleshed-out options
 
-benchmark aliaser
+update readme

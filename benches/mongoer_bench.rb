@@ -13,7 +13,7 @@ Benchmark.ips do |bm|
       tags: { type: String, general_search: true },
       name: :title
     }
-    $bm.report(input.inspect.length.to_s + '  m') do
+    $bm.report(input.inspect.length.to_s) do
       aliased = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
       ast = CommandSearch::Lexer.lex(aliased)
       CommandSearch::Parser.parse!(ast)
