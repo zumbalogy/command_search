@@ -26,9 +26,9 @@ describe CommandSearch do
     { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
     { description: "desk new \n line" },
     { tags: "multi tag, 'quoted tag'" },
-    { title: 'same_name', feathers: 2, cost: 0, fav_date: "2.months.ago" },
-    { title: 'same_name', feathers: 5, cost: 4, fav_date: "1.year.ago" },
-    { title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
+    { title: 'same_name', feathers: 2, cost: 0, fav_date: '2.months.ago' },
+    { title: 'same_name', feathers: 5, cost: 4, fav_date: '1.year.ago' },
+    { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' }
   ]
 
   def search_all(query, options, expected)
@@ -221,10 +221,10 @@ describe CommandSearch do
 
   it 'should not throw errors' do
     CommandSearch.search([{}], "Q)'(':{Mc&hO    T)r", { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], "m3(_:;_[P4ZV<]w)t", { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], " d<1-Tw?.�ey<1.E4:e>cb]", { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], "=4Ts2em(5sZ ]]&x<-", { fields: { foo: { type: String } } })
-    CommandSearch.search([{}], "<|SOUv~Y74+Fm+Yva`64", { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], 'm3(_:;_[P4ZV<]w)t', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], " d<1-Tw?.�e\u007Fy<1.E4:e>cb]", { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '=4Ts2em(5sZ ]]&x<-', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '<|SOUv~Y74+Fm+Yva`64', { fields: { foo: { type: String } } })
     CommandSearch.search([{}], "4:O0E%~Z<@?O]e'h@<'k^", { fields: { foo: { type: String } } })
     CommandSearch.search([{}], '(-sdf:sdfdf>sd\'s":f-', { fields: { foo: { type: String } } })
     CommandSearch.search([{}], '""sdfdsfhellosdf|dsfsdf::>>><><', { fields: { foo: { type: String } } })

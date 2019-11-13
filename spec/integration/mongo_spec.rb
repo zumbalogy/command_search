@@ -239,10 +239,10 @@ describe Hat do
       '$and' => [
         { '$or' => [{ 'title' => /multi/i }, { 'description' => /multi/i }, { 'tags' => /multi/i }] },
         { '$or' => [
-            { 'title' => /\bquoted\ tag\b/ },
-            { 'description' => /\bquoted\ tag\b/ },
-            { 'tags' => /\bquoted\ tag\b/ }
-          ] }
+          { 'title' => /\bquoted\ tag\b/ },
+          { 'description' => /\bquoted\ tag\b/ },
+          { 'tags' => /\bquoted\ tag\b/ }
+        ] }
       ]
     }
   end
@@ -276,7 +276,7 @@ describe Hat do
     Hat.search('feathers2>"-5"').count.should == 4
     Hat.search('feathers2>foo').count.should == 0
 
-    Hat.create(fav_date2: Time.new(1,1,1,0,0,0,0))
+    Hat.create(fav_date2: Time.new(1, 1, 1, 0, 0, 0, 0))
     Hat.search('fav_date2<1234').count.should == 1
     Hat.search('fav_date2>1234').count.should == 0
     Hat.search('feathers2>=-33').count.should == 4
@@ -328,12 +328,8 @@ describe Hat do
       '$and' => [
         { 'tags' => /tags1/i },
         { 'title' => /name3/i },
-        { '$or' =>
-          [{ 'title' => /name/i }, { 'description' => /name/i }, { 'tags' => /name/i }]
-        },
-        { '$or' =>
-          [{ 'title' => /desk/i }, { 'description' => /desk/i }, { 'tags' => /desk/i }]
-        }
+        { '$or' => [{ 'title' => /name/i }, { 'description' => /name/i }, { 'tags' => /name/i }] },
+        { '$or' => [{ 'title' => /desk/i }, { 'description' => /desk/i }, { 'tags' => /desk/i }] }
       ]
     }
   end
@@ -345,10 +341,11 @@ describe Hat do
 
   it 'should handle quoted apostrophes' do
     Hat.search("\"someone's iHat\"").count.should == 1
-    Hat.search("\"someone's iHat\"").selector.should == {"$or" => [
-                                                           {"title"=>/\bsomeone's\ iHat\b/},
-                                                           {"description"=>/\bsomeone's\ iHat\b/},
-                                                           {"tags"=>/\bsomeone's\ iHat\b/}]}
+    Hat.search("\"someone's iHat\"").selector.should == { '$or' => [
+      { 'title' => /\bsomeone's\ iHat\b/ },
+      { 'description' => /\bsomeone's\ iHat\b/ },
+      { 'tags' => /\bsomeone's\ iHat\b/ }
+    ] }
     Hat.search("title:\"someone's iHat\"").count.should == 1
     Hat.search("title:\"someone's iHat\"|name4").count.should == 2
   end

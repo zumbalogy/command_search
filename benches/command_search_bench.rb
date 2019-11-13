@@ -25,9 +25,9 @@ $birds = [
   { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
   { description: "desk new \n line" },
   { tags: "multi tag, 'quoted tag'" },
-  { title: 'same_name', feathers: 2, cost: 0, fav_date: "2.months.ago" },
-  { title: 'same_name', feathers: 5, cost: 4, fav_date: "1.year.ago" },
-  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
+  { title: 'same_name', feathers: 2, cost: 0, fav_date: '2.months.ago' },
+  { title: 'same_name', feathers: 5, cost: 4, fav_date: '1.year.ago' },
+  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' }
 ]
 
 Bird.destroy_all
@@ -73,7 +73,7 @@ Benchmark.ips() do |bm|
   }
 
   both('', {})
-  both('name', { })
+  both('name', {})
   both('name', options)
   both('title:name', options)
   both('name title:name', options)

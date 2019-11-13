@@ -23,8 +23,8 @@ Benchmark.ips() do |bm|
   norm('foo:bar ' * 10, { foo: String })
   norm('foo:bar ' * 10, { foo: :abc, abc: :xyz, xyz: String })
   norm('fo:bar ' * 10, { foo: :abc, abc: :xyz, xyz: String })
-  norm('fo:bar ' * 10, { })
-  norm('fo:bar a:a b:b c:c ' * 1, { })
-  norm('fo:bar a:a b:b c:c ' * 2, { })
-  norm('fo:bar a:a b:b c:c ' * 4, { })
+  norm('fo:bar ' * 10, {})
+  norm('fo:bar a:a b:b c:c ' * 1, {})
+  norm('fo:bar a:a b:b c:c ' * 2, {})
+  norm('fo:bar a:a b:b c:c ' * 4, {})
 end

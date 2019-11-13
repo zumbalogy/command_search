@@ -53,9 +53,9 @@ describe CommandSearch::Memory do
 
   it 'should be able to search for a boolean' do
     star_list = [
-     { title: 'foo', starred: true },
-     { title: 'bar', starred: true },
-     { title: 'bar 2', starred: false }
+      { title: 'foo', starred: true },
+      { title: 'bar', starred: true },
+      { title: 'bar 2', starred: false }
     ]
     search('starred:true', star_list).count.should == 2
     search('starred:false', star_list).count.should == 1
@@ -339,9 +339,9 @@ describe CommandSearch::Memory do
     search('-fav_date<=1_day_ago|-desk1').count.should == 9
 
     hats2 = [
-      { title: 'penguin', description: 'panda'},
-      { description: 'panda'},
-      { title: 'penguin'}
+      { title: 'penguin', description: 'panda' },
+      { description: 'panda' },
+      { title: 'penguin' }
     ]
     search('panda', hats2).count.should == 2
     search('-panda', hats2).count.should == 1
@@ -374,29 +374,29 @@ describe CommandSearch::Memory do
 
   it 'should be able to work with strings and symbols' do
     num_type = { type: Numeric, general_search: true }
-    CommandSearch.search([{foo: 3}], '2', { fields: {'foo' => num_type } }).count.should == 0
-    CommandSearch.search([{foo: 3}], '2', { fields: {:foo => num_type } }).count.should == 0
-    CommandSearch.search([{foo: 3}], '3', { fields: {'foo' => num_type } }).count.should == 1
-    CommandSearch.search([{foo: 3}], '3', { fields: {:foo => num_type } }).count.should == 1
-    CommandSearch.search([{'foo' => 3}], '2', { fields: {'foo' => num_type } }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], '2', { fields: {:foo => num_type } }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], '3', { fields: {'foo' => num_type } }).count.should == 1
-    CommandSearch.search([{'foo' => 3}], '3', { fields: {:foo => num_type } }).count.should == 1
-    CommandSearch.search([{'foo' => 3}], '3', { fields: {:bar => num_type } }).count.should == 0
-    CommandSearch.search([{'bar' => 3}], '3', { fields: {:foo => num_type } }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], 'foo:3', { fields: { foo: num_type } }).count.should == 1
-    CommandSearch.search([{:foo => 3}], 'foo:3', { fields: { foo: num_type } }).count.should == 1
-    CommandSearch.search([{'foo' => 3}], 'foo<=3', { fields: { foo: num_type } }).count.should == 1
-    CommandSearch.search([{:foo => 3}], 'foo>2', { fields: { foo: num_type } }).count.should == 1
-    CommandSearch.search([{'foo' => 3}], 'foo:2', { fields: { foo: num_type } }).count.should == 0
-    CommandSearch.search([{'foo' => 2}], 'foo:3', { fields: { foo: num_type } }).count.should == 0
-    CommandSearch.search([{:foo => 2}], 'foo:3', { fields: { foo: num_type } }).count.should == 0
-    CommandSearch.search([{:bar => 3}], 'foo:3', { fields: { foo: num_type } }).count.should == 0
-    CommandSearch.search([{'bar' => 3}], 'foo:3', { fields: { foo: num_type } }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], 'bar:3', { fields: { foo: num_type } }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], 'foo:3', { fields: { bar: num_type } }).count.should == 0
-    CommandSearch.search([{'bar' => 3}], 'foo:3', { fields: { bar: num_type } }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], 'bar:3', { fields: { bar: num_type } }).count.should == 0
+    CommandSearch.search([{ foo: 3 }], '2', { fields: { 'foo' => num_type } }).count.should == 0
+    CommandSearch.search([{ foo: 3 }], '2', { fields: { :foo => num_type } }).count.should == 0
+    CommandSearch.search([{ foo: 3 }], '3', { fields: { 'foo' => num_type } }).count.should == 1
+    CommandSearch.search([{ foo: 3 }], '3', { fields: { :foo => num_type } }).count.should == 1
+    CommandSearch.search([{ 'foo' => 3 }], '2', { fields: { 'foo' => num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], '2', { fields: { :foo => num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], '3', { fields: { 'foo' => num_type } }).count.should == 1
+    CommandSearch.search([{ 'foo' => 3 }], '3', { fields: { :foo => num_type } }).count.should == 1
+    CommandSearch.search([{ 'foo' => 3 }], '3', { fields: { :bar => num_type } }).count.should == 0
+    CommandSearch.search([{ 'bar' => 3 }], '3', { fields: { :foo => num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], 'foo:3', { fields: { foo: num_type } }).count.should == 1
+    CommandSearch.search([{ :foo => 3 }], 'foo:3', { fields: { foo: num_type } }).count.should == 1
+    CommandSearch.search([{ 'foo' => 3 }], 'foo<=3', { fields: { foo: num_type } }).count.should == 1
+    CommandSearch.search([{ :foo => 3 }], 'foo>2', { fields: { foo: num_type } }).count.should == 1
+    CommandSearch.search([{ 'foo' => 3 }], 'foo:2', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 2 }], 'foo:3', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ :foo => 2 }], 'foo:3', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ :bar => 3 }], 'foo:3', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ 'bar' => 3 }], 'foo:3', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], 'bar:3', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], 'foo:3', { fields: { bar: num_type } }).count.should == 0
+    CommandSearch.search([{ 'bar' => 3 }], 'foo:3', { fields: { bar: num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], 'bar:3', { fields: { bar: num_type } }).count.should == 0
   end
 
   it 'should handle unicode' do

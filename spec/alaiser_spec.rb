@@ -117,10 +117,10 @@ describe CommandSearch::Aliaser do
 
   it 'should handle function aliases with closures' do
     variable = 0
-    a('hit', { 'hit' => proc { |_| variable = 100; 101 }}).should == '101'
+    a('hit', { 'hit' => proc { |_| variable = 100; 101 } }).should == '101'
     variable.should == 100
     variable2 = ''
-    a('abc', { /./ => proc { |x| variable2 += x; x }}).should == 'abc'
+    a('abc', { /./ => proc { |x| variable2 += x; x } }).should == 'abc'
     variable2.should == 'abc'
   end
 
