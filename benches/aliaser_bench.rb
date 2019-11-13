@@ -7,7 +7,7 @@ Benchmark.ips do |bm|
 
   def bench(input, aliases)
     $bm.report(input.inspect[0..24]) do
-      aliased = CommandSearch::Aliaser.alias(input, aliases)
+      CommandSearch::Aliaser.alias(input, aliases)
     end
   end
 

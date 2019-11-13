@@ -88,7 +88,7 @@ module CommandSearch
           type: :colon,
           value: [
             { value: field.to_s },
-            { value: node[:value], type: node[:type] },
+            { value: node[:value], type: node[:type] }
           ]
         }
       end
