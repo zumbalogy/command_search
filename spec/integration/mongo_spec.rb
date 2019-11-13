@@ -345,7 +345,7 @@ describe Hat do
 
   it 'should handle quoted apostrophes' do
     Hat.search("\"someone's iHat\"").count.should == 1
-    Hat.search("\"someone's iHat\"").selector.should == {"$or"=>[
+    Hat.search("\"someone's iHat\"").selector.should == {"$or" => [
                                                            {"title"=>/\bsomeone's\ iHat\b/},
                                                            {"description"=>/\bsomeone's\ iHat\b/},
                                                            {"tags"=>/\bsomeone's\ iHat\b/}]}

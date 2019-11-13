@@ -430,7 +430,7 @@ describe CommandSearch::Memory do
     CommandSearch.search(list, 'foo>1990', { fields: { foo: { type: Time } } }).count.should == 2
     CommandSearch.search(list, 'foo>1990', { fields: { foo: { type: Date } } }).count.should == 2
     CommandSearch.search(list, 'foo>1990', { fields: { foo: { type: DateTime } } }).count.should == 2
-    CommandSearch.search(list, 'foo:1000', {  fields: { foo: { type: Time } } }).count.should == 1
+    CommandSearch.search(list, 'foo:1000', { fields: { foo: { type: Time } } }).count.should == 1
     CommandSearch.search(list, 'foo:1000', { fields: { foo: { type: Date } } }).count.should == 1
     CommandSearch.search(list, 'foo:1000', { fields: { foo: { type: DateTime } } }).count.should == 1
     list2 = [{ foo: Time.new('1991') }, { foo: Time.new('1995') }]

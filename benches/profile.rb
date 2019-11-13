@@ -15,9 +15,9 @@ RubyProf.measure_mode = RubyProf::WALL_TIME
 def run(input, fields = nil)
   fields ||= {
     has_child_id: Boolean,
-    title: { type:  String, general_search: true },
-    tags: { type:  String, general_search: true },
-    description: { type:  String, general_search: true },
+    title: { type: String, general_search: true },
+    tags: { type: String, general_search: true },
+    description: { type: String, general_search: true },
     name: :title
   }
   CommandSearch.search(Hat, input, { fields: fields, aliases: { 'foo' => 'bar' } })

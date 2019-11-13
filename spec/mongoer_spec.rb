@@ -15,28 +15,28 @@ describe CommandSearch::Mongoer do
     q('foo', fields).should == { "f1"=>/foo/i }
     q('red "blue green"', fields).should == { '$and' => [{'f1'=>/red/i},
                                                          {'f1'=>/\bblue\ green\b/}]}
-    q('foo 1 2', fields).should == {'$and'=>[{'f1'=>/foo/i},
+    q('foo 1 2', fields).should == {'$and' => [{'f1'=>/foo/i},
                                              {'f1'=>/1/i},
                                              {'f1'=>/2/i}]}
     fields = {
       'f1' => { type: String, general_search: true },
       'f2' => { type: String, general_search: true }
     }
-    q('red', fields).should == {'$or'=>[{'f1'=>/red/i},
+    q('red', fields).should == {'$or' => [{'f1'=>/red/i},
                                         {'f2'=>/red/i}]}
-    q('"red"', fields).should == {'$or'=>[{'f1'=>/\bred\b/},
+    q('"red"', fields).should == {'$or' => [{'f1'=>/\bred\b/},
                                           {'f2'=>/\bred\b/}]}
     q('foo "blue green"', fields).should == {
-      '$and'=>[{'$or'=>[{'f1'=>/foo/i},
+      '$and' => [{'$or' => [{'f1'=>/foo/i},
                         {'f2'=>/foo/i}]},
-               {'$or'=>[{'f1'=>/\bblue\ green\b/},
+               {'$or' => [{'f1'=>/\bblue\ green\b/},
                         {'f2'=>/\bblue\ green\b/}]}]}
     q('foo 1 2', fields).should == {
-      '$and'=>[{'$or'=>[{'f1'=>/foo/i},
+      '$and' => [{'$or' => [{'f1'=>/foo/i},
                         {'f2'=>/foo/i}]},
-               {'$or'=>[{'f1'=>/1/i},
+               {'$or' => [{'f1'=>/1/i},
                         {'f2'=>/1/i}]},
-               {'$or'=>[{'f1'=>/2/i},
+               {'$or' => [{'f1'=>/2/i},
                         {'f2'=>/2/i}]}]}
   end
 
@@ -92,11 +92,11 @@ describe CommandSearch::Mongoer do
       'f2' => { type: String, general_search: true }
     }
     q('(a b) | (c d)', fields).should == {
-      '$or'=>[
-        {'$and'=>[
+      '$or' => [
+        {'$and' => [
            {'$or'=>[{'f1'=>/a/i}, {'f2'=>/a/i}]},
            {'$or'=>[{'f1'=>/b/i}, {'f2'=>/b/i}]}]},
-        {'$and'=>[
+        {'$and' => [
            {'$or'=>[{'f1'=>/c/i}, {'f2'=>/c/i}]},
            {'$or'=>[{'f1'=>/d/i}, {'f2'=>/d/i}]}]}]}
   end
@@ -128,11 +128,11 @@ describe CommandSearch::Mongoer do
     q2('created:"april 10 2000"').should == q3('created:"april 10 2000"')
     q2('created:"april 10 2000"').should == q4('created:"april 10 2000"')
     q2('created:"april 10 2000"').should == {
-      '$and'=>[
+      '$and' => [
         {'created'=>{'$gte'=>Chronic.parse('2000-04-10 00:00:00')}},
         {'created'=>{'$lt'=>Chronic.parse('2000-04-11 00:00:00')}}]}
     q2('-created:"april-10.2000"').should == {
-      '$nor'=>[{'$and'=>[{'created'=>{'$gte'=>Chronic.parse('2000-04-10 00:00:00')}},
+      '$nor' => [{'$and' => [{'created'=>{'$gte'=>Chronic.parse('2000-04-10 00:00:00')}},
                          {'created'=>{'$lt'=>Chronic.parse('2000-04-11 00:00:00')}}]}]}
   end
 
@@ -143,9 +143,9 @@ describe CommandSearch::Mongoer do
     def q2(s); q(s, { foo: { type: String, allow_existence_boolean: true } }); end
     q2('foo:"true"').should == {'foo'=>/\btrue\b/}
     q2('foo:false').should == {'foo'=>{'$exists'=>false}}
-    q2('foo:true').should == {'$and'=>[{'foo'=>{'$exists'=>true}},
+    q2('foo:true').should == {'$and' => [{'foo'=>{'$exists'=>true}},
                                        {'foo'=>{'$ne'=>false}}]}
-    q2('foo:false|foo:error').should == {'$or'=>[{'foo'=>{'$exists'=>false}},
+    q2('foo:false|foo:error').should == {'$or' => [{'foo'=>{'$exists'=>false}},
                                                  {'foo'=>/error/i}]}
   end
 

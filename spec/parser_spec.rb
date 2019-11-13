@@ -149,7 +149,7 @@ describe CommandSearch::Parser do
     ]
   end
 
-it 'should handle negating' do
+  it 'should handle negating' do
     parse('ab-dc').should == [{type: :str, value: 'ab-dc'}]
     parse('-12.023').should == [{type: :number, value: '-12.023'}]
     parse('a -(c b)').should == [
@@ -175,7 +175,7 @@ it 'should handle negating' do
        type: :not,
        value: [{
                type: :not,
-                  value: [{type: :str, value: 'a'}]}]}]
+               value: [{type: :str, value: 'a'}]}]}]
     parse('-foo bar').should == [
       {
        type: :not,

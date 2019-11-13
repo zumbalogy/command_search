@@ -252,7 +252,7 @@ describe CommandSearch::Normalizer do
     norm('-t:1900', fields).should == [
       {
        type: :not,
-        value:
+       value:
         [{nest_op: ':',
           type: :colon,
           value:
@@ -264,7 +264,7 @@ describe CommandSearch::Normalizer do
     norm('-t<1901', fields).should == [
       {
        type: :not,
-        value:
+       value:
         [{nest_op: '<',
           type: :compare,
           value:
@@ -278,7 +278,7 @@ describe CommandSearch::Normalizer do
         a: { type: Numeric },
         b: { type: Numeric }
       }
-      res =  norm(query, fields).first
+      res = norm(query, fields).first
       res[:nest_op].should == op
       res[:value][0][:value].should == val1
       res[:value][1][:value].should == val2
