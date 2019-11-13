@@ -4,8 +4,6 @@ load(__dir__ + '/../lib/command_search.rb')
 
 Benchmark.ips do |bm|
   $bm = bm
-  bm.time = 2
-  bm.warmup = 0.2
 
   def bench(input, aliases)
     $bm.report(input.inspect[0..24]) do

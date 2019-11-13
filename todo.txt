@@ -44,7 +44,7 @@ https://apidock.com/rails/v4.2.7/ActiveRecord/QueryMethods/readonly
 
 Deciding what to do about UTC vs local time handling.
 the public search function should maybe take a timezone (or an option for :local or :utc, or such)
+https://github.com/mojombo/chronic#time-zones
+(looks like user might have to do it since they would need to be using activerecord or such)
 
 Further cleaning up the test suite.
-
-update readme
