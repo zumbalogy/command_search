@@ -24,19 +24,19 @@ class Hat
     sort_field = nil
     options = {
       fields: {
-        child_id: { type: Boolean },
+        child_id: Boolean,
         title: { type: String, general_search: true },
         name: :title,
         description: { type: String, general_search: true },
         desc: :description,
-        starred: { type: Boolean },
+        starred: Boolean,
         star: :starred,
         tags: { type: String, general_search: true },
         tag: :tags,
         feathers: { type: Integer, allow_existence_boolean: true },
         feathers2: { type: Numeric, allow_existence_boolean: true },
-        cost: { type: Numeric },
-        fav_date: { type: Time },
+        cost: Numeric,
+        fav_date: Time,
         fav_date2: { type: Time, allow_existence_boolean: true }
       },
       aliases: {
