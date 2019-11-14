@@ -25,9 +25,9 @@ $birds = [
   { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
   { description: "desk new \n line" },
   { tags: "multi tag, 'quoted tag'" },
-  { title: 'same_name', feathers: 2, cost: 0, fav_date: "2.months.ago" },
-  { title: 'same_name', feathers: 5, cost: 4, fav_date: "1.year.ago" },
-  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
+  { title: 'same_name', feathers: 2, cost: 0, fav_date: '2.months.ago' },
+  { title: 'same_name', feathers: 5, cost: 4, fav_date: '1.year.ago' },
+  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' }
 ]
 
 Bird.destroy_all
@@ -46,31 +46,37 @@ Benchmark.ips() do |bm|
     $bm.report('Mongo:' + title) { CommandSearch.search(Bird, query, options).count }
   end
 
-  both('', {})
-  both('', { fields: [] })
-  both('name', { })
-  both('name', { fields: [:title, :description, :tags] })
-  both('name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
-  both('title:name', { command_fields: { has_child_id: Boolean, title: String, name: :title } })
+  options = {
+    fields: {
+      has_child_id: Boolean,
+      title: { type: String, general_search: true },
+      description: { type: String, general_search: true },
+      tags: { type: String, general_search: true },
+      name: :title
+    }
+  }
 
-  both('name', {
-    fields: [:title, :description, :tags],
-    command_fields: { has_child_id: Boolean, title: String, name: :title }
-  })
-  both('title:name', {
-    fields: [:title, :description, :tags],
-    command_fields: { has_child_id: Boolean, title: String, name: :title }
-  })
-  both('name title:name', {
-    fields: [:title, :description, :tags],
-    command_fields: { has_child_id: Boolean, title: String, name: :title }
-  })
-  both('name title:name', {
-    fields: [:title, :description, :tags, :foo, :bar, :baz, :a, :b, :c],
-    command_fields: { has_child_id: Boolean, title: String, name: :title }
-  })
-  both('(price<=200 discount)|price<=99.99', {
-    fields: [:title, :description, :tags, :foo, :bar, :baz, :a, :b, :c],
-    command_fields: { has_child_id: Boolean, title: String, name: :title }
-  })
+  options2 = {
+    fields: {
+      has_child_id: Boolean,
+      title: { type: String, general_search: true },
+      description: { type: String, general_search: true },
+      tags: { type: String, general_search: true },
+      name: :title,
+      foo: { type: String, general_search: true },
+      bar: { type: String, general_search: true },
+      baz: { type: String, general_search: true },
+      a: { type: String, general_search: true },
+      b: { type: String, general_search: true },
+      c: { type: String, general_search: true }
+    }
+  }
+
+  both('', {})
+  both('name', {})
+  both('name', options)
+  both('title:name', options)
+  both('name title:name', options)
+  both('name title:name', options2)
+  both('(price<=200 discount)|price<=99.99', options2)
 end

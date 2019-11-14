@@ -11,8 +11,9 @@ describe CommandSearch::Aliaser do
     'user:me' => -> (match) { "user:#{$current_user_id}" },
     /coo+l/ => 'ice cold',
     /minutes:\d+/ => -> (match) { "seconds:#{match.split(':').last.to_i * 60}" },
-    [] => 'bad_val',
-    [2] => 'bad_val2',
+    sym_key: 'str_val',
+    'str_key' => :sym_val,
+    'num_key' => 123,
     'bad_key' => []
   }
 
@@ -116,10 +117,10 @@ describe CommandSearch::Aliaser do
 
   it 'should handle function aliases with closures' do
     variable = 0
-    a('hit', { 'hit' => proc { |_| variable = 100; 101 }}).should == '101'
+    a('hit', { 'hit' => proc { |_| variable = 100; 101 } }).should == '101'
     variable.should == 100
     variable2 = ''
-    a('abc', { /./ => proc { |x| variable2 += x; x }}).should == 'abc'
+    a('abc', { /./ => proc { |x| variable2 += x; x } }).should == 'abc'
     variable2.should == 'abc'
   end
 
@@ -130,9 +131,12 @@ describe CommandSearch::Aliaser do
     a('hello hello hello hello', { 'hello hello' => 'bye hello' }).should == 'bye hello bye hello'
   end
 
-  it 'should ignore invalid aliases' do
+  it 'should handle different datatypes in aliases' do
     a('[]').should == '[]'
     a('[2]').should == '[2]'
-    a('bad_key').should == 'bad_key'
+    a('bad_key').should == '[]'
+    a('num_key').should == '123'
+    a('sym_key').should == 'str_val'
+    a('str_key').should == 'sym_val'
   end
 end

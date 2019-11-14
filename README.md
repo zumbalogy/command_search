@@ -13,8 +13,9 @@ command_search also supports aliasing so that the following substitutions are ea
 * `user:me` to `user:59guwJphUhqfd2A` (but with the actual ID)
 * `hair=blue` to `hair:blue`
 
-command_search does not require an engine, is relatively free of magic, and
-should be easy to set up.
+command_search does not require an engine and should be easy to set up.
+
+command_search is written with performance in mind and should have minimal overhead for most queries.
 
 A sample Rails app using command_search can be seen at [github.com/zumbalogy/command_search_example](https://github.com/zumbalogy/command_search_example).
 
@@ -51,10 +52,9 @@ combination.
 | Negate  | `-`                  | `-error`, `-(sat\|sun)`                |
 
 ## Limitations
-The logic can be non-linear and slow (100ms+) for queries that exceed 10,000
-characters (even on non-embedded hardware). In public APIs or performance
-sensitive use cases, long inputs should be truncated or otherwise taken into
-account.
+The logic can be slow (100ms+) for queries that exceed 10,000 characters.
+In public APIs or performance sensitive use cases, long inputs should
+be truncated or otherwise taken into account.
 
 Date/Time searches are only parsed into dates for command searches that
 specify (`:`) or compare (`<`, `>`, `<=`, `>=`).
@@ -78,29 +78,24 @@ as a field type in the config.
 
 ## Setup
 To query collections, command_search provides the CommandSearch.search function,
-which takes a collection, a query, the general search fields and the command
-search fields. Providing an empty list for either the general or command search
-fields is OK.
+which takes a collection, a query, and an options hash.
 
 * Collection: Either an array of hashes or a class that is a Mongoid::Document.
 
 * Query: The string to use to search the collection, such as 'user:me' or 'bee|wasp'.
 
 * Options: A hash that describes how to search the collection.
-CommandSearch will use the following keys, all of which are optional:
 
-  * fields: An array of the values to search in items of the collection with
-  general searches. NOTE: If one of these values is a Numeric type, it will have
-  included in, and specified as such, in the command_fields to work properly.
-
-  * command_fields: A hash that maps symbols matching a field's name
-  to its type, or to another symbol as an alias. Valid types are `String`,
+  * fields: A hash that maps symbols matching a field's name
+  to its type, another symbol as an alias, or a hash. Valid types are `String`,
   `Boolean`, `Numeric`, and `Time`.
-  command_fields specified as `Boolean` will check for existence of a value if
-  the underlying data is not actually a boolean, so the query `bookmarked:true`
-  could work even if the bookmarked field is a timestamp. To be able to query
-  the bookmarked field as both a timestamp and a boolean, a symbol
-  can be added to the value in the hash like so: `bookmarked: [Time, :allow_existence_boolean]`.
+  Fields to be searched though when no field is specified in the query should be
+  marked like so: `description: { type: String, general_search: true }`
+  `Boolean` fields will check for existence of a value if the underlying
+  data is not actually a boolean, so the query `bookmarked:true` could work even
+  if the bookmarked field is a timestamp. To be able to query the bookmarked
+  field as both a timestamp and a boolean, a symbol can be added to the value
+  in the hash like so: `bookmarked: { type: Time, allow_existence_boolean: true }`.
 
   * aliases: A hash that maps strings or regex to strings or procs.
   CommandSearch will iterate though the hash and substitute parts of the query
@@ -132,16 +127,15 @@ class Foo
 
   def self.search(query)
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
+      fields: {
         child_id: Boolean,
-        title: String,
+        title: { type: String, general_search: true },
         name: :title,
-        description: String,
+        description: { type: String, general_search: true },
         desc: :description,
         starred: Boolean,
         star: :starred,
-        tags: String,
+        tags: { type: String, general_search: true },
         tag: :tags,
         feathers: [Numeric, :allow_existence_boolean],
         cost: Numeric,
@@ -174,8 +168,10 @@ class SortableFoo
     sortable_field_names = ['foo', 'bar']
     sort_field = nil
     options = {
-      fields: [:foo, :bar],
-      command_fields: {},
+      fields: {
+        foo: { type: String, general_search: true },
+        bar: { type: String }
+      },
       aliases: {
         /#{head_border}sort:\S+#{tail_border}/ => proc { |match|
           match_sort = match.sub(/^sort:/, '')
@@ -189,68 +185,3 @@ class SortableFoo
     return results
   end
 end
-```
-
-## Internal Details
-The lifecycle of a query is as follows: The query is alaised, lexed, parsed,
-de-aliased, optimized, and then turned into a Ruby select function or a MongoDB
-compatible query.
-
-In the example shown below, the time it takes to turn the string into a Mongo
-query is under 70µs (2017 i7-8550u @ 1.8GHz Ruby 2.6.0).
-
-The lexer breaks a query into pieces.
-```ruby
-CommandSearch::Lexer.lex('(price<=200 discount)|price<=99.99')
-[{ type: :paren,   value: '(' },
- { type: :str,     value: 'price' },
- { type: :compare, value: '<=' },
- { type: :number,  value: '200' },
- { type: :str,     value: 'discount' },
- { type: :paren,   value: ')' },
- { type: :pipe,    value: '|' },
- { type: :str,     value: 'price' },
- { type: :compare, value: '<' },
- { type: :number,  value: '99.99' }]
-```
-The parser then takes that and turns it into a tree.
-```ruby
-CommandSearch::Parser.parse!(_)
-[{ type: :nest,
-   nest_type: :pipe,
-   nest_op: '|',
-   value: [
-     { type: :nest,
-       nest_type: :paren,
-       value: [{ type: :nest,
-                 nest_type: :compare,
-                 nest_op: '<=',
-                 value: [{ type: :str, value: 'price' },
-                         { type: :number, value: '200' }] },
-               { type: :str, value: 'discount' }] },
-    { type: :nest,
-      nest_type: :compare,
-      nest_op: '<',
-      value: [{ type: :str, value: 'price' },
-              { type: :number, value: '99.99' }] }] }]
-```
-It will then aliased to the names given in the command_fields, and command like
-queries that don't match a specified command field will be turned into normal
-string searches.
-
-The optimizer will then tidy up some of the logic with rules such as:
-* '-(a)' => '-a'
-* '-(-a)' => 'a'
-* 'a a' => 'a'
-* 'a|a' => 'a'
-
-It will then be turned into a Ruby function to be used in a select, or a Mongo
-compatible query.
-
-```ruby
-CommandSearch::Mongoer.build_query(_, [:name, :description], { price: Integer })
-{ '$or' => [{ '$and' => [{ 'price' => { '$lte' => '200' } },
-                         { '$or' => [{ name: /discount/i },
-                                     { description: /discount/i }] }] },
-            { 'price' => { '$lte' => '99.99' } }] }
-```

@@ -4,19 +4,21 @@ module CommandSearch
   module Normalizer
     module_function
 
-    def cast_bool(type, node)
+    def cast_bool!(field, node)
+      type = field.is_a?(Hash) ? field[:type] : field
       if type == Boolean
+        return if field.is_a?(Hash) && field[:general_search] && !node[:value][/\Atrue\Z|\Afalse\Z/i]
         node[:type] = Boolean
         node[:value] = !!node[:value][0][/t/i]
         return
       end
-      return unless type.is_a?(Array) && type.include?(:allow_existence_boolean)
+      return unless field.is_a?(Hash) && field[:allow_existence_boolean]
       return unless node[:type] == :str && node[:value][/\Atrue\Z|\Afalse\Z/i]
       node[:type] = :existence
       node[:value] = !!node[:value][0][/t/i]
     end
 
-    def cast_time(node)
+    def cast_time!(node)
       search_node = node[:value][1]
       search_node[:type] = Time
       str = search_node[:value]
@@ -33,7 +35,7 @@ module CommandSearch
           return
         end
       end
-      return unless node[:nest_type] == :compare
+      return unless node[:type] == :compare
       op = node[:nest_op]
       if op == '<' || op == '>='
         search_node[:value] = search_node[:value].first
@@ -43,79 +45,94 @@ module CommandSearch
       end
     end
 
-    def cast_regex(node)
+    def cast_regex!(node)
       type = node[:type]
-      return unless type == :str || type == :quoted_str || type == :number
       raw = node[:value]
+      return unless raw.is_a?(String)
+      return if node[:value] == ''
       str = Regexp.escape(raw)
-      return node[:value] = /#{str}/i unless type == :quoted_str
-      return node[:value] = '' if raw == ''
-      return node[:value] = /\b#{str}\b/ unless raw[/(^\W)|(\W$)/]
+      return node[:value] = /#{str}/i unless type == :quote
+      return node[:value] = /\b#{str}\b/ unless raw[/(\A\W)|(\W\Z)/]
       border_a = '(^|\s|[^:+\w])'
       border_b = '($|\s|[^:+\w])'
       node[:value] = Regexp.new(border_a + str + border_b)
     end
 
-    def flip_operator!(node, cmd_fields)
+    def cast_numeric!(node)
+      return unless node[:type] == :number
+      node[:value] = node[:value].to_f
+    end
+
+    def clean_comparison!(node, fields)
       val = node[:value]
-      return if cmd_fields[val[0][:value].to_sym]
-      return unless cmd_fields[val[1][:value].to_sym]
+      return unless fields[val[1][:value].to_sym]
+      if fields[val[0][:value].to_sym]
+        node[:compare_across_fields] = true
+        return
+      end
       flip_ops = { '<' => '>', '>' => '<', '<=' => '>=', '>=' => '<=' }
       node[:nest_op] = flip_ops[node[:nest_op]]
       node[:value].reverse!
     end
 
-    def dealias_key(key, cmd_fields)
-      key = cmd_fields[key.to_sym] while cmd_fields[key.to_sym].is_a?(Symbol)
-      key.to_s
+    def dealias_key(key, fields)
+      key = fields[key.to_sym] while fields[key.to_sym].is_a?(Symbol)
+      key
     end
 
-    def dealias!(ast, cmd_fields)
+    def split_general_fields(node, fields)
+      general_fields = fields.select { |k, v| v.is_a?(Hash) && v[:general_search] }.keys
+      general_fields = ['__CommandSearch_dummy_key__'] if general_fields.empty?
+      new_val = general_fields.map! do |field|
+        {
+          type: :colon,
+          value: [
+            { value: field.to_s },
+            { value: node[:value], type: node[:type] }
+          ]
+        }
+      end
+      return new_val.first if new_val.count < 2
+      { type: :or, value: new_val }
+    end
+
+    def type_cast!(node, fields)
+      (key_node, search_node) = node[:value]
+      key = key_node[:value]
+      field = fields[key.to_sym] || fields[key.to_s]
+      return unless field
+      type = field.is_a?(Class) ? field : field[:type]
+      cast_bool!(field, search_node)
+      return cast_time!(node) if [Time, Date, DateTime].include?(type)
+      return cast_numeric!(search_node) if [Integer, Numeric].include?(type)
+      cast_regex!(search_node)
+    end
+
+    def normalize!(ast, fields)
       ast.map! do |node|
-        nest = node[:nest_type]
-        unless nest
-          node[:number_value] = node[:value] if node[:type] == :number
-          cast_regex(node)
+        if node[:type] == :and || node[:type] == :or || node[:type] == :not
+          normalize!(node[:value], fields)
           next node
         end
-        unless nest == :colon || nest == :compare
-          dealias!(node[:value], cmd_fields)
-          next node
+        if node[:type] == :colon || node[:type] == :compare
+          clean_comparison!(node, fields) if node[:type] == :compare
+          key = dealias_key(node[:value][0][:value], fields)
+          node[:value][0][:value] = key.to_s
+          unless fields[key.to_sym] || fields[key.to_s]
+            str_values = "#{key}#{node[:nest_op]}#{node[:value][1][:value]}"
+            node = { type: :str, value: str_values }
+          end
         end
-        flip_operator!(node, cmd_fields) if nest == :compare
-        (key_node, search_node) = node[:value]
-        new_key = dealias_key(key_node[:value], cmd_fields)
-        type = cmd_fields[new_key.to_sym]
-        node[:value][0][:value] = new_key
-        if type
-          cast_bool(type, search_node)
-          type = (type - [:allow_existence_boolean]).first if type.is_a?(Array)
-          cast_time(node) if [Time, Date, DateTime].include?(type)
-          cast_regex(search_node) if type == String
-          next node
+        if node[:type] == :str || node[:type] == :quote || node[:type] == :number
+          node = split_general_fields(node, fields)
         end
-        str_values = "#{new_key}#{node[:nest_op]}#{search_node[:value]}"
-        node = { type: :str, value: str_values }
-        cast_regex(node)
+        if node[:type] == :or
+          node[:value].each { |x| type_cast!(x, fields) }
+        else
+          type_cast!(node, fields)
+        end
         node
       end
-    end
-
-    def normalize!(ast, cmd_fields)
-      dealias!(ast, cmd_fields)
-      clean = {}
-      cmd_fields.each do |k, v|
-        next if v.is_a?(Symbol)
-        if v.is_a?(Array)
-          clean[k] = (v - [:allow_existence_boolean]).first
-          next
-        end
-        v = Numeric if v == Integer
-        v = Time if v == Date
-        v = Time if v == DateTime
-        next clean[k] = v
-      end
-      clean
     end
   end
 end

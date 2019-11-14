@@ -1,26 +1,31 @@
-require 'ruby-prof'
+require('ruby-prof')
+require('mongoid')
 
 load(__dir__ + '/../lib/command_search.rb')
 
-# RubyProf.measure_mode = RubyProf::WALL_TIME
+class Hat
+  include Mongoid::Document
+end
+
+RubyProf.measure_mode = RubyProf::WALL_TIME
 # RubyProf.measure_mode = RubyProf::PROCESS_TIME
 # RubyProf.measure_mode = RubyProf::ALLOCATIONS
-RubyProf.measure_mode = RubyProf::MEMORY
+# RubyProf.measure_mode = RubyProf::MEMORY
 
-def run(input, fields = nil, command_fields = nil)
-  fields ||= [:title, :description, :tags]
-  command_fields ||= { has_child_id: Boolean, title: String, name: :title }
-  lexed = CommandSearch::Aliaser.alias(input, { 'foo' => 'bar' })
-  ast = CommandSearch::Lexer.lex(input)
-  CommandSearch::Parser.parse!(ast)
-  CommandSearch::Optimizer.optimize!(ast)
-  CommandSearch::Normalizer.normalize!(ast, command_fields)
-  CommandSearch::Mongoer.build_query(ast, fields, command_fields)
+def run(input, fields = nil)
+  fields ||= {
+    has_child_id: Boolean,
+    title: { type: String, general_search: true },
+    tags: { type: String, general_search: true },
+    description: { type: String, general_search: true },
+    name: :title
+  }
+  CommandSearch.search(Hat, input, { fields: fields, aliases: { 'foo' => 'bar' } })
 end
 
 result = RubyProf.profile do
-  100.times do
-    run('', [], {})
+  1000.times do
+    run('', {})
     run('')
     run('foo bar')
     run('-(a)|"b"')

@@ -12,23 +12,22 @@ class Boolean; end
 module CommandSearch
   module_function
 
-  def search(source, query, options = {})
+  def search(source, query, options)
     aliases = options[:aliases] || {}
-    fields = options[:fields] || []
-    command_fields = options[:command_fields] || {}
+    fields = options[:fields] || {}
 
     aliased_query = Aliaser.alias(query, aliases)
     ast = Lexer.lex(aliased_query)
+
     Parser.parse!(ast)
     Optimizer.optimize!(ast)
-    command_fields = Normalizer.normalize!(ast, command_fields)
+    Normalizer.normalize!(ast, fields)
 
     if source.respond_to?(:mongo_client) && source.queryable
-      fields = [:__CommandSearch_dummy_key__] if fields.empty?
-      mongo_query = Mongoer.build_query(ast, fields, command_fields)
+      mongo_query = Mongoer.build_query(ast)
       return source.where(mongo_query)
     end
 
-    source.select { |x| Memory.check(x, ast, fields, command_fields) }
+    source.select { |x| Memory.check(x, ast) }
   end
 end

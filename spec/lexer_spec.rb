@@ -13,248 +13,248 @@ describe CommandSearch::Lexer do
   end
 
   it 'should correctly categorize strings' do
-    lex('foo').should == [{type: :str, value: "foo"}]
-    lex('f1oo').should == [{type: :str, value: "f1oo"}]
-    lex('ab_cd').should == [{type: :str, value: "ab_cd"}]
-    lex('ab?cd').should == [{type: :str, value: "ab?cd"}]
-    lex('F.O.O.').should == [{type: :str, value: "F.O.O."}]
-    lex('Dr.Foo').should == [{type: :str, value: "Dr.Foo"}]
-    lex('Dr.-Foo').should == [{type: :str, value: "Dr.-Foo"}]
-    lex('Dr.=Foo').should == [{type: :str, value: "Dr.=Foo"}]
-    lex('Dr=.Foo').should == [{type: :str, value: "Dr=.Foo"}]
-    lex('Dr-.Foo').should == [{type: :str, value: "Dr-.Foo"}]
-    lex('foo-bar-').should == [{type: :str, value: "foo-bar-"}]
-    lex('foo=bar=').should == [{type: :str, value: "foo=bar="}]
-    lex('a1-.2').should == [{type: :str, value: "a1-.2"}]
-    lex('1-.2').should == [{type: :str, value: "1-.2"}]
-    lex('1.-2').should == [{type: :str, value: "1.-2"}]
+    lex('foo').should == [{ type: :str, value: 'foo' }]
+    lex('f1oo').should == [{ type: :str, value: 'f1oo' }]
+    lex('ab_cd').should == [{ type: :str, value: 'ab_cd' }]
+    lex('ab?cd').should == [{ type: :str, value: 'ab?cd' }]
+    lex('F.O.O.').should == [{ type: :str, value: 'F.O.O.' }]
+    lex('Dr.Foo').should == [{ type: :str, value: 'Dr.Foo' }]
+    lex('Dr.-Foo').should == [{ type: :str, value: 'Dr.-Foo' }]
+    lex('Dr.=Foo').should == [{ type: :str, value: 'Dr.=Foo' }]
+    lex('Dr=.Foo').should == [{ type: :str, value: 'Dr=.Foo' }]
+    lex('Dr-.Foo').should == [{ type: :str, value: 'Dr-.Foo' }]
+    lex('foo-bar-').should == [{ type: :str, value: 'foo-bar-' }]
+    lex('foo=bar=').should == [{ type: :str, value: 'foo=bar=' }]
+    lex('a1-.2').should == [{ type: :str, value: 'a1-.2' }]
+    lex('1-.2').should == [{ type: :str, value: '1-.2' }]
+    lex('1.-2').should == [{ type: :str, value: '1.-2' }]
   end
 
   it 'should be able to split basic parts on spaces' do
     lex('a b c 1 foo').should == [
-      {type: :str, value: "a"},
-      {type: :str, value: "b"},
-      {type: :str, value: "c"},
-      {type: :number, value: "1"},
-      {type: :str, value: "foo"}
+      { type: :str, value: 'a' },
+      { type: :str, value: 'b' },
+      { type: :str, value: 'c' },
+      { type: :number, value: '1' },
+      { type: :str, value: 'foo' }
     ]
     lex('1 1 1').should == [
-      {type: :number, value: "1"},
-      {type: :number, value: "1"},
-      {type: :number, value: "1"}
+      { type: :number, value: '1' },
+      { type: :number, value: '1' },
+      { type: :number, value: '1' }
     ]
   end
 
   it 'should handle quotes, removing surrounding quotes' do
-    lex('"foo"').should == [{type: :quoted_str, value: "foo"}]
-    lex("'bar'").should == [{type: :quoted_str, value: "bar"}]
+    lex('"foo"').should == [{ type: :quote, value: 'foo' }]
+    lex("'bar'").should == [{ type: :quote, value: 'bar' }]
     lex("a 'b foo'").should == [
-      {type: :str, value: "a"},
-      {type: :quoted_str, value: "b foo"}
+      { type: :str, value: 'a' },
+      { type: :quote, value: 'b foo' }
     ]
     lex("foo 'a b' bar").should == [
-      {type: :str, value: "foo"},
-      {type: :quoted_str, value: "a b"},
-      {type: :str, value: "bar"}
+      { type: :str, value: 'foo' },
+      { type: :quote, value: 'a b' },
+      { type: :str, value: 'bar' }
     ]
     lex("-3 '-11 x'").should == [
-      {type: :number, value: "-3"},
-      {type: :quoted_str, value: "-11 x"}
+      { type: :number, value: '-3' },
+      { type: :quote, value: '-11 x' }
     ]
     lex('a b " c').should == [
-      {type: :str, value: "a"},
-      {type: :str, value: "b"},
-      {type: :str, value: "\""},
-      {type: :str, value: "c"}
+      { type: :str, value: 'a' },
+      { type: :str, value: 'b' },
+      { type: :str, value: '"' },
+      { type: :str, value: 'c' }
     ]
     lex("a 'b \" c'").should == [
-      {type: :str, value: "a"},
-      {type: :quoted_str, value: "b \" c"}
+      { type: :str, value: 'a' },
+      { type: :quote, value: 'b " c' }
     ]
-    lex('"a\'b"').should == [{type: :quoted_str, value: "a\'b"}]
-    lex("'a\"b'").should == [{type: :quoted_str, value: "a\"b"}]
-    lex("'a\"\"b'").should == [{type: :quoted_str, value: "a\"\"b"}]
-    lex('"a\'\'b"').should == [{type: :quoted_str, value: "a\'\'b"}]
+    lex('"a\'b"').should == [{ type: :quote, value: "a\'b" }]
+    lex("'a\"b'").should == [{ type: :quote, value: 'a"b' }]
+    lex("'a\"\"b'").should == [{ type: :quote, value: 'a""b' }]
+    lex('"a\'\'b"').should == [{ type: :quote, value: "a\'\'b" }]
     lex("'red \"blue' \" green").should == [
-      {type: :quoted_str, value: "red \"blue"},
-      {type: :str, value: '"'},
-      {type: :str, value: "green"}
+      { type: :quote, value: 'red "blue' },
+      { type: :str, value: '"' },
+      { type: :str, value: 'green' }
     ]
     lex('"red \'blue" \' green').should == [
-      {type: :quoted_str, value: "red \'blue"},
-      {type: :str, value: "'"},
-      {type: :str, value: "green"}
+      { type: :quote, value: "red \'blue" },
+      { type: :str, value: "'" },
+      { type: :str, value: 'green' }
     ]
   end
 
   it 'should be able to handle apostrophes' do
     lex("bee's knees").should == [
-      {type: :str, value: "bee's"},
-      {type: :str, value: "knees"}
+      { type: :str, value: "bee's" },
+      { type: :str, value: 'knees' }
     ]
     lex("foo's unquoted bar's").should == [
-      {type: :str, value: "foo's"},
-      {type: :str, value: "unquoted"},
-      {type: :str, value: "bar's"}
+      { type: :str, value: "foo's" },
+      { type: :str, value: 'unquoted' },
+      { type: :str, value: "bar's" }
     ]
     lex("\"foo's unquoted bar's\"").should == [
-      {type: :quoted_str, value: "foo's unquoted bar's"}
+      { type: :quote, value: "foo's unquoted bar's" }
     ]
     lex("foo's \"quoted bar's\"").should == [
-      {type: :str, value: "foo's"},
-      {type: :quoted_str, value: "quoted bar's"}
+      { type: :str, value: "foo's" },
+      { type: :quote, value: "quoted bar's" }
     ]
-    lex("fo'o'bar'").should == [{type: :str, value: "fo'o'bar'"}]
+    lex("fo'o'bar'").should == [{ type: :str, value: "fo'o'bar'" }]
   end
 
   it 'should handle OR statements' do
     lex('a+|b').should == [
-      {type: :str, value: "a+"},
-      {type: :pipe, value: "|"},
-      {type: :str, value: "b"}
+      { type: :str, value: 'a+' },
+      { type: :pipe, value: '|' },
+      { type: :str, value: 'b' }
     ]
     lex('a+z|+b').should == [
-      {type: :str, value: "a+z"},
-      {type: :pipe, value: "|"},
-      {type: :str, value: "+b"}
+      { type: :str, value: 'a+z' },
+      { type: :pipe, value: '|' },
+      { type: :str, value: '+b' }
     ]
     lex('a|b c|d').should == [
-      {type: :str, value: "a"},
-      {type: :pipe, value: "|"},
-      {type: :str, value: "b"},
-      {type: :str, value: "c"},
-      {type: :pipe, value: "|"},
-      {type: :str, value: "d"}
+      { type: :str, value: 'a' },
+      { type: :pipe, value: '|' },
+      { type: :str, value: 'b' },
+      { type: :str, value: 'c' },
+      { type: :pipe, value: '|' },
+      { type: :str, value: 'd' }
     ]
     lex('a|b|c').should == [
-      {type: :str, value: "a"},
-      {type: :pipe, value: "|"},
-      {type: :str, value: "b"},
-      {type: :pipe, value: "|"},
-      {type: :str, value: "c"}
+      { type: :str, value: 'a' },
+      { type: :pipe, value: '|' },
+      { type: :str, value: 'b' },
+      { type: :pipe, value: '|' },
+      { type: :str, value: 'c' }
     ]
     lex("'desk1'|'desk2'").should == [
-      {type: :quoted_str, value: "desk1"},
-      {type: :pipe, value: "|"},
-      {type: :quoted_str, value: "desk2"}
+      { type: :quote, value: 'desk1' },
+      { type: :pipe, value: '|' },
+      { type: :quote, value: 'desk2' }
     ]
     lex('"desk1"|"desk2"').should == [
-      {type: :quoted_str, value: "desk1"},
-      {type: :pipe, value: "|"},
-      {type: :quoted_str, value: "desk2"}
+      { type: :quote, value: 'desk1' },
+      { type: :pipe, value: '|' },
+      { type: :quote, value: 'desk2' }
     ]
     lex("\"desk1\"|'desk2'").should == [
-      {type: :quoted_str, value: "desk1"},
-      {type: :pipe, value: "|"},
-      {type: :quoted_str, value: "desk2"}
+      { type: :quote, value: 'desk1' },
+      { type: :pipe, value: '|' },
+      { type: :quote, value: 'desk2' }
     ]
   end
 
   it 'should handle duplicate pipe operators' do
     lex('a||b|c').should == [
-      {type: :str, value: "a"},
-      {type: :pipe, value: "||"},
-      {type: :str, value: "b"},
-      {type: :pipe, value: "|"},
-      {type: :str, value: "c"}
+      { type: :str, value: 'a' },
+      { type: :pipe, value: '||' },
+      { type: :str, value: 'b' },
+      { type: :pipe, value: '|' },
+      { type: :str, value: 'c' }
     ]
     lex('a||b||||c').should == [
-      {type: :str, value: "a"},
-      {type: :pipe, value: "||"},
-      {type: :str, value: "b"},
-      {type: :pipe, value: "||||"},
-      {type: :str, value: "c"}
+      { type: :str, value: 'a' },
+      { type: :pipe, value: '||' },
+      { type: :str, value: 'b' },
+      { type: :pipe, value: '||||' },
+      { type: :str, value: 'c' }
     ]
   end
 
   it 'should handle negating' do
-    lex('-5').should == [{type: :number, value: "-5"}]
-    lex('-0.23').should == [{type: :number, value: "-0.23"}]
+    lex('-5').should == [{ type: :number, value: '-5' }]
+    lex('-0.23').should == [{ type: :number, value: '-0.23' }]
     lex('-a').should == [
-      {type: :minus, value: "-"},
-      {type: :str, value: "a"}
+      { type: :minus, value: '-' },
+      { type: :str, value: 'a' }
     ]
     lex('-"foo bar"').should == [
-      {type: :minus, value: "-"},
-      {type: :quoted_str, value: "foo bar"}
+      { type: :minus, value: '-' },
+      { type: :quote, value: 'foo bar' }
     ]
     lex('-"foo -bar" -x').should == [
-      {type: :minus, value: "-"},
-      {type: :quoted_str, value: "foo -bar"},
-      {type: :minus, value: "-"},
-      {type: :str, value: "x"}
+      { type: :minus, value: '-' },
+      { type: :quote, value: 'foo -bar' },
+      { type: :minus, value: '-' },
+      { type: :str, value: 'x' }
     ]
-    lex('ab-cd').should == [{type: :str, value: "ab-cd"}]
+    lex('ab-cd').should == [{ type: :str, value: 'ab-cd' }]
     lex('-ab-cd').should == [
-      {type: :minus, value: "-"},
-      {type: :str, value: "ab-cd"}
+      { type: :minus, value: '-' },
+      { type: :str, value: 'ab-cd' }
     ]
   end
 
   it 'should handle commands' do
     lex('foo:bar').should == [
-      {type: :str, value: "foo"},
-      {type: :colon, value: ":"},
-      {type: :str, value: "bar"}
+      { type: :str, value: 'foo' },
+      { type: :colon, value: ':' },
+      { type: :str, value: 'bar' }
     ]
     lex('a:b c:d e').should == [
-      {type: :str, value: "a"},
-      {type: :colon, value: ":"},
-      {type: :str, value: "b"},
-      {type: :str, value: "c"},
-      {type: :colon, value: ":"},
-      {type: :str, value: "d"},
-      {type: :str, value: "e"}
+      { type: :str, value: 'a' },
+      { type: :colon, value: ':' },
+      { type: :str, value: 'b' },
+      { type: :str, value: 'c' },
+      { type: :colon, value: ':' },
+      { type: :str, value: 'd' },
+      { type: :str, value: 'e' }
     ]
     lex('-a:b c:-d').should == [
-      {type: :minus, value: "-"},
-      {type: :str, value: "a"},
-      {type: :colon, value: ":"},
-      {type: :str, value: "b"},
-      {type: :str, value: "c"},
-      {type: :colon, value: ":"},
-      {type: :minus, value: "-"},
-      {type: :str, value: "d"}
+      { type: :minus, value: '-' },
+      { type: :str, value: 'a' },
+      { type: :colon, value: ':' },
+      { type: :str, value: 'b' },
+      { type: :str, value: 'c' },
+      { type: :colon, value: ':' },
+      { type: :minus, value: '-' },
+      { type: :str, value: 'd' }
     ]
     lex('1:"2"').should == [
-      {type: :number, value: "1"},
-      {type: :colon, value: ":"},
-      {type: :quoted_str, value: '2'}
+      { type: :number, value: '1' },
+      { type: :colon, value: ':' },
+      { type: :quote, value: '2' }
     ]
   end
 
   it 'should handle comparisons' do
     lex('red>5').should == [
-      {type: :str, value: "red"},
-      {type: :compare, value: ">"},
-      {type: :number, value: "5"}
+      { type: :str, value: 'red' },
+      { type: :compare, value: '>' },
+      { type: :number, value: '5' }
     ]
     lex('blue<=green').should == [
-      {type: :str, value: "blue"},
-      {type: :compare, value: "<="},
-      {type: :str, value: "green"}
+      { type: :str, value: 'blue' },
+      { type: :compare, value: '<=' },
+      { type: :str, value: 'green' }
     ]
     lex('a<b c>=-1').should == [
-      {type: :str, value: "a"},
-      {type: :compare, value: "<"},
-      {type: :str, value: "b"},
-      {type: :str, value: "c"},
-      {type: :compare, value: ">="},
-      {type: :number, value: "-1"}
+      { type: :str, value: 'a' },
+      { type: :compare, value: '<' },
+      { type: :str, value: 'b' },
+      { type: :str, value: 'c' },
+      { type: :compare, value: '>=' },
+      { type: :number, value: '-1' }
     ]
     lex('a<=b<13').should == [
-      {type: :str, value: "a"},
-      {type: :compare, value: "<="},
-      {type: :str, value: "b"},
-      {type: :compare, value: "<"},
-      {type: :number, value: "13"}
+      { type: :str, value: 'a' },
+      { type: :compare, value: '<=' },
+      { type: :str, value: 'b' },
+      { type: :compare, value: '<' },
+      { type: :number, value: '13' }
     ]
     lex('-5<x<-10').should == [
-      {type: :number, value: '-5'},
-      {type: :compare, value: '<'},
-      {type: :str, value: 'x'},
-      {type: :compare, value: '<'},
-      {type: :number, value: '-10'}
+      { type: :number, value: '-5' },
+      { type: :compare, value: '<' },
+      { type: :str, value: 'x' },
+      { type: :compare, value: '<' },
+      { type: :number, value: '-10' }
     ]
   end
 
@@ -266,55 +266,55 @@ describe CommandSearch::Lexer do
 
   it 'should handle parens' do
     lex('(a)').should == [
-      {type: :paren, value: '('},
-      {type: :str, value: 'a'},
-      {type: :paren, value: ')'}
+      { type: :paren, value: '(' },
+      { type: :str, value: 'a' },
+      { type: :paren, value: ')' }
     ]
     lex('(a foo)').should == [
-      {type: :paren, value: '('},
-      {type: :str, value: 'a'},
-      {type: :str, value: 'foo'},
-      {type: :paren, value: ')'}
+      { type: :paren, value: '(' },
+      { type: :str, value: 'a' },
+      { type: :str, value: 'foo' },
+      { type: :paren, value: ')' }
     ]
     lex('(a (foo bar) b) c').should == [
-      {type: :paren, value: '('},
-      {type: :str, value: 'a'},
-      {type: :paren, value: '('},
-      {type: :str, value: 'foo'},
-      {type: :str, value: 'bar'},
-      {type: :paren, value: ')'},
-      {type: :str, value: 'b'},
-      {type: :paren, value: ')'},
-      {type: :str, value: 'c'}
+      { type: :paren, value: '(' },
+      { type: :str, value: 'a' },
+      { type: :paren, value: '(' },
+      { type: :str, value: 'foo' },
+      { type: :str, value: 'bar' },
+      { type: :paren, value: ')' },
+      { type: :str, value: 'b' },
+      { type: :paren, value: ')' },
+      { type: :str, value: 'c' }
     ]
     lex('(2)').should == [
-      {type: :paren, value: '('},
-      {type: :number, value: '2'},
-      {type: :paren, value: ')'}
+      { type: :paren, value: '(' },
+      { type: :number, value: '2' },
+      { type: :paren, value: ')' }
     ]
   end
 
   it 'should handle OR and NOT with parens' do
     lex('(a -(foo bar))').should == [
-      {type: :paren, value: '('},
-      {type: :str, value: 'a'},
-      {type: :minus, value: '-'},
-      {type: :paren, value: '('},
-      {type: :str, value: 'foo'},
-      {type: :str, value: 'bar'},
-      {type: :paren, value: ')'},
-      {type: :paren, value: ')'}
+      { type: :paren, value: '(' },
+      { type: :str, value: 'a' },
+      { type: :minus, value: '-' },
+      { type: :paren, value: '(' },
+      { type: :str, value: 'foo' },
+      { type: :str, value: 'bar' },
+      { type: :paren, value: ')' },
+      { type: :paren, value: ')' }
     ]
     lex('(a b) | (foo bar)').should == [
-      {type: :paren, value: '('},
-      {type: :str, value: 'a'},
-      {type: :str, value: 'b'},
-      {type: :paren, value: ')'},
-      {type: :pipe, value: '|'},
-      {type: :paren, value: '('},
-      {type: :str, value: 'foo'},
-      {type: :str, value: 'bar'},
-      {type: :paren, value: ')'}
+      { type: :paren, value: '(' },
+      { type: :str, value: 'a' },
+      { type: :str, value: 'b' },
+      { type: :paren, value: ')' },
+      { type: :pipe, value: '|' },
+      { type: :paren, value: '(' },
+      { type: :str, value: 'foo' },
+      { type: :str, value: 'bar' },
+      { type: :paren, value: ')' }
     ]
   end
 
@@ -366,12 +366,14 @@ describe CommandSearch::Lexer do
 
   it 'should handle illogical combinations of logical operators' do
     lex('(-)').should == [
-      {type: :paren, value: '('},
-      {type: :minus, value: '-'},
-      {type: :paren, value: ')'}]
+      { type: :paren, value: '(' },
+      { type: :minus, value: '-' },
+      { type: :paren, value: ')' }
+    ]
     lex('(|)').should == [
-      {type: :paren, value: '('},
-      {type: :pipe, value: '|'},
-      {type: :paren, value: ')'}]
+      { type: :paren, value: '(' },
+      { type: :pipe, value: '|' },
+      { type: :paren, value: ')' }
+    ]
   end
 end

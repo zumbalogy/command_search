@@ -12,15 +12,15 @@ module CommandSearch
           next i += Regexp.last_match[0].length
         when /\A"(.*?)"/
           match = Regexp.last_match[1]
-          type = :quoted_str
+          type = :quote
         when /\A'(.*?)'/
           match = Regexp.last_match[1]
-          type = :quoted_str
+          type = :quote
         when /\A\-?\d+(\.\d+)?(?=$|[\s"':|<>()])/
           type = :number
         when /\A-/
           type = :minus
-        when /\A[^\s:"|<>()]+/
+        when /\A[^\s:|<>()]+/
           type = :str
         when /\A\|+/
           type = :pipe
@@ -30,10 +30,8 @@ module CommandSearch
           type = :colon
         when /\A[<>]=?/
           type = :compare
-        when /\A./
-          type = :str
         end
-        match = match || Regexp.last_match[0]
+        match ||= Regexp.last_match[0]
         out.push(type: type, value: match)
         i += Regexp.last_match[0].length
       end

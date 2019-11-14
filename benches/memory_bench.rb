@@ -18,25 +18,30 @@ $hats = [
 Benchmark.ips() do |bm|
   $bm = bm
 
-  def bench(input, fields = nil, command_fields = nil)
-    fields ||= [:title, :description, :tags]
-    command_fields ||= { has_child_id: Boolean, title: String, name: :title }
+  def bench(input, fields = nil)
+    fields ||= {
+      has_child_id: Boolean,
+      title: { type: String, general_search: true },
+      description: { type: String, general_search: true },
+      tags: { type: String, general_search: true },
+      name: :title
+    }
     $bm.report(input.inspect[0..99]) do
       ast = CommandSearch::Lexer.lex(input)
       CommandSearch::Parser.parse!(ast)
       CommandSearch::Optimizer.optimize!(ast)
-      command_fields = CommandSearch::Normalizer.normalize!(ast, command_fields)
-      $hats.select { |x| CommandSearch::Memory.check(x, ast, fields, command_fields) }.count
+      CommandSearch::Normalizer.normalize!(ast, fields)
+      $hats.select { |x| CommandSearch::Memory.check(x, ast) }.count
     end
   end
 
-  bench('', [], {})
+  bench('', {})
   bench('')
   bench('foo bar')
   bench('a b c d e')
   bench('-(a)|"b"')
   bench('name:foo tile -(foo bar)')
   bench('name:foo tile -(foo bar)|"hello world" foo>1.2')
-  bench('name:foo tile a|a|a foo:bar -(foo bar)|"hello world" foo>1.2' * 1000)
-  bench('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 1200)
+  bench('name:foo tile a|a|a foo:bar -(foo bar)|"hello world" foo>1.2' * 100)
+  bench('a lemon a -() a b (a b (a b)) -((-())) (((a))) (a (a ((a)))) a (b c) a|a a|b|(a|b|c)|' * 100)
 end

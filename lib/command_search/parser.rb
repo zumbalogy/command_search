@@ -9,39 +9,71 @@ module CommandSearch
         next i += 1 unless input[i][:type] == :paren
         if input[i][:value] == '('
           opening_idxs.push(i)
-        elsif opening = opening_idxs.pop()
-          val = input[(opening + 1)..(i - 1)]
-          input[opening..i] = { type: :nest, nest_type: :paren, value: val }
-          i -= (val.length + 1)
+          input.delete_at(i)
+          next
         end
-        i += 1
+        input.delete_at(i)
+        opening = opening_idxs.pop()
+        next unless opening
+        val = input.slice(opening, i - opening)
+        if val.count > 1
+          input[opening..(i - 1)] = { type: :and, value: val }
+          i -= val.length
+          next
+        elsif val.count == 1
+          input[opening] = val.first
+        end
       end
     end
 
-    def cluster!(type, input, cluster_type = :binary)
-      binary = (cluster_type == :binary)
-      i = input.length - 1
-      while i >= 0
-        if input[i][:type] == type
-          val = [input[i + 1]]
-          val.compact!
-          val.unshift(input[i - 1]) if binary && i > 0
-          front_offset = 0
-          front_offset = 1 if binary && i > 0
-          input[(i - front_offset)..(i + 1)] = {
-            type: :nest,
-            nest_type: type,
-            nest_op: input[i][:value],
-            value: val
-          }
-          i -= 1 if binary
+    def cluster_cmds!(input)
+      i = 1
+      while i < input.length - 1
+        type = input[i][:type]
+        next i += 1 unless type == :colon || type == :compare
+        input[(i - 1)..(i + 1)] = {
+          type: type,
+          nest_op: input[i][:value],
+          value: [input[i - 1], input[i + 1]]
+        }
+      end
+    end
+
+    def cluster_or!(input)
+      i = 0
+      while i < input.length
+        type = input[i][:type]
+        cluster_or!(input[i][:value]) if type == :and || type == :not
+        next i += 1 unless type == :pipe
+        if i == 0 || i == input.length - 1
+          input.delete_at(i)
+          next
         end
-        cluster!(type, input[i][:value], cluster_type) if input[i][:type] == :nest
+        val = [input[i - 1], input[i + 1]]
+        cluster_or!(val)
+        input[(i - 1)..(i + 1)] = { type: :or, value: val }
+      end
+    end
+
+    def cluster_not!(input)
+      i = input.length
+      while i > 0
         i -= 1
+        type = input[i][:type]
+        cluster_not!(input[i][:value]) if type == :and
+        next unless type == :minus
+        if i == input.length - 1
+          input.delete_at(i)
+          next
+        end
+        input[i..(i + 1)] = {
+          type: :not,
+          value: [input[i + 1]]
+        }
       end
     end
 
-    def unchain!(types, input)
+    def unchain!(input, types)
       i = 0
       while i < input.length - 2
         left = input[i][:type]
@@ -64,41 +96,32 @@ module CommandSearch
     end
 
     def clean_ununusable!(input)
-      i = 0
+      i = 1
       while i < input.length
         next i += 1 unless input[i][:type] == :minus
-        next i += 1 unless i > 0 && [:compare, :colon].include?(input[i - 1][:type])
+        next i += 1 unless [:compare, :colon].include?(input[i - 1][:type])
         input[i..i + 1] = merge_strs(input[i..i + 1], [0, 1])
       end
-
       i = 0
       while i < input.length
         next i += 1 if ![:compare, :colon].include?(input[i][:type])
         next i += 1 if i > 0 &&
           (i < input.count - 1) &&
-          [:str, :number, :quoted_str].include?(input[i - 1][:type]) &&
-          [:str, :number, :quoted_str].include?(input[i + 1][:type])
+          [:str, :number, :quote].include?(input[i - 1][:type]) &&
+          [:str, :number, :quote].include?(input[i + 1][:type])
 
         input[i..i + 1] = merge_strs(input[i..i + 1], [0, 1])
         input[i - 1..i] = merge_strs(input[i - 1..i], [1, 0]) if i > 0
       end
-
-      input[-1][:type] = :str if input[-1] && input[-1][:type] == :minus
-    end
-
-    def clean_ununused!(input)
-      input.reject! { |x| x[:type] == :paren && x[:value].is_a?(String) }
     end
 
     def parse!(input)
       clean_ununusable!(input)
-      unchain!([:colon, :compare], input)
+      unchain!(input, [:colon, :compare])
+      cluster_cmds!(input)
       group_parens!(input)
-      cluster!(:colon, input)
-      cluster!(:compare, input)
-      cluster!(:minus, input, :prefix)
-      cluster!(:pipe, input)
-      clean_ununused!(input)
+      cluster_not!(input)
+      cluster_or!(input)
       input
     end
   end

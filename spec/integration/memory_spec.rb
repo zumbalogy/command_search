@@ -16,20 +16,19 @@ describe CommandSearch::Memory do
 
   def search(query, list = $hats)
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        has_child_id: Boolean,
-        title: String,
+      fields: {
+        has_child_id: { type: Boolean },
+        title: { type: String, general_search: true },
         name: :title,
-        description: String,
+        description: { type: String, general_search: true },
         desc: :description,
-        starred: Boolean,
+        starred: { type: Boolean },
         star: :starred,
-        tags: String,
+        tags: { type: String, general_search: true },
         tag: :tags,
-        feathers: [Numeric, :allow_existence_boolean],
-        cost: Numeric,
-        fav_date: Time
+        feathers: { type: Integer, allow_existence_boolean: true },
+        cost: { type: Numeric },
+        fav_date: { type: Time },
       }
     }
     CommandSearch.search(list, query, options)
@@ -54,9 +53,9 @@ describe CommandSearch::Memory do
 
   it 'should be able to search for a boolean' do
     star_list = [
-     { title: 'foo', starred: true },
-     { title: 'bar', starred: true },
-     { title: 'bar 2', starred: false }
+      { title: 'foo', starred: true },
+      { title: 'bar', starred: true },
+      { title: 'bar 2', starred: false }
     ]
     search('starred:true', star_list).count.should == 2
     search('starred:false', star_list).count.should == 1
@@ -340,9 +339,9 @@ describe CommandSearch::Memory do
     search('-fav_date<=1_day_ago|-desk1').count.should == 9
 
     hats2 = [
-      { title: 'penguin', description: 'panda'},
-      { description: 'panda'},
-      { title: 'penguin'}
+      { title: 'penguin', description: 'panda' },
+      { description: 'panda' },
+      { title: 'penguin' }
     ]
     search('panda', hats2).count.should == 2
     search('-panda', hats2).count.should == 1
@@ -374,147 +373,90 @@ describe CommandSearch::Memory do
   end
 
   it 'should be able to work with strings and symbols' do
-    CommandSearch.search([{foo: 3}], '2', { fields: ['foo'] }).count.should == 0
-    CommandSearch.search([{foo: 3}], '2', { fields: [:foo] }).count.should == 0
-    CommandSearch.search([{foo: 3}], '3', { fields: ['foo'] }).count.should == 1
-    CommandSearch.search([{foo: 3}], '3', { fields: [:foo] }).count.should == 1
-    CommandSearch.search([{'foo' => 3}], '2', { fields: ['foo'] }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], '2', { fields: [:foo] }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], '3', { fields: ['foo'] }).count.should == 1
-    CommandSearch.search([{'foo' => 3}], '3', { fields: [:foo] }).count.should == 1
-    CommandSearch.search([{'foo' => 3}], '3', { fields: [:bar] }).count.should == 0
-    CommandSearch.search([{'bar' => 3}], '3', { fields: [:foo] }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 1
-    CommandSearch.search([{:foo => 3}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 1
-    CommandSearch.search([{'foo' => 3}], 'foo<=3', { command_fields: { foo: Numeric } }).count.should == 1
-    CommandSearch.search([{:foo => 3}], 'foo>2', { command_fields: { foo: Numeric } }).count.should == 1
-    CommandSearch.search([{'foo' => 3}], 'foo:2', { command_fields: { foo: Numeric } }).count.should == 0
-    CommandSearch.search([{'foo' => 2}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 0
-    CommandSearch.search([{:foo => 2}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 0
-    CommandSearch.search([{:bar => 3}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 0
-    CommandSearch.search([{'bar' => 3}], 'foo:3', { command_fields: { foo: Numeric } }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], 'bar:3', { command_fields: { foo: Numeric } }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], 'foo:3', { command_fields: { bar: Numeric } }).count.should == 0
-    CommandSearch.search([{'bar' => 3}], 'foo:3', { command_fields: { bar: Numeric } }).count.should == 0
-    CommandSearch.search([{'foo' => 3}], 'bar:3', { command_fields: { bar: Numeric } }).count.should == 0
+    num_type = { type: Numeric, general_search: true }
+    CommandSearch.search([{ foo: 3 }], '2', { fields: { 'foo' => num_type } }).count.should == 0
+    CommandSearch.search([{ foo: 3 }], '2', { fields: { :foo => num_type } }).count.should == 0
+    CommandSearch.search([{ foo: 3 }], '3', { fields: { 'foo' => num_type } }).count.should == 1
+    CommandSearch.search([{ foo: 3 }], '3', { fields: { :foo => num_type } }).count.should == 1
+    CommandSearch.search([{ 'foo' => 3 }], '2', { fields: { 'foo' => num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], '2', { fields: { :foo => num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], '3', { fields: { 'foo' => num_type } }).count.should == 1
+    CommandSearch.search([{ 'foo' => 3 }], '3', { fields: { :foo => num_type } }).count.should == 1
+    CommandSearch.search([{ 'foo' => 3 }], '3', { fields: { :bar => num_type } }).count.should == 0
+    CommandSearch.search([{ 'bar' => 3 }], '3', { fields: { :foo => num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], 'foo:3', { fields: { foo: num_type } }).count.should == 1
+    CommandSearch.search([{ :foo => 3 }], 'foo:3', { fields: { foo: num_type } }).count.should == 1
+    CommandSearch.search([{ 'foo' => 3 }], 'foo<=3', { fields: { foo: num_type } }).count.should == 1
+    CommandSearch.search([{ :foo => 3 }], 'foo>2', { fields: { foo: num_type } }).count.should == 1
+    CommandSearch.search([{ 'foo' => 3 }], 'foo:2', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 2 }], 'foo:3', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ :foo => 2 }], 'foo:3', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ :bar => 3 }], 'foo:3', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ 'bar' => 3 }], 'foo:3', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], 'bar:3', { fields: { foo: num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], 'foo:3', { fields: { bar: num_type } }).count.should == 0
+    CommandSearch.search([{ 'bar' => 3 }], 'foo:3', { fields: { bar: num_type } }).count.should == 0
+    CommandSearch.search([{ 'foo' => 3 }], 'bar:3', { fields: { bar: num_type } }).count.should == 0
   end
 
   it 'should handle unicode' do
-      fields = { fields: [:a] }
-      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '💯', fields).count.should == 1
-      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨', fields).count.should == 1
-      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🔥♨', fields).count.should == 0
-      CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🌺🌿 🔒 😀', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋👋👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋👋👋', fields).count.should == 0
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋', fields).count.should == 1
-      CommandSearch.search([{ a: 'こんにちは世界' }], '世界', fields).count.should == 1
-      CommandSearch.search([{ a: 'こんにちは世界' }], '月', fields).count.should == 0
-      CommandSearch.search([{ a: 'こんにちは世界' }], 'world', fields).count.should == 0
-      CommandSearch.search([{ a: 'こんにちは世界' }], 'moon', fields).count.should == 0
-      CommandSearch.search([{ a: 'හෙලෝ වර්ල්ඩ්' }], 'වර්ල්ඩ්', fields).count.should == 1
-      CommandSearch.search([{ a: 'හෙලෝ වර්ල්ඩ්' }], 'හඳ', fields).count.should == 0
-      CommandSearch.search([{ a: 'សួស្តី​ពិភពលោក' }], 'ពិភពលោក', fields).count.should == 1
-      CommandSearch.search([{ a: 'សួស្តី​ពិភពលោក' }], 'ព្រះ​ច័ន្ទ', fields).count.should == 0
-      CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ໂລກ', fields).count.should == 1
-      CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ເດືອນ', fields).count.should == 0
+    fields = { fields: { a: { type: String, general_search: true } } }
+    CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '💯', fields).count.should == 1
+    CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨', fields).count.should == 1
+    CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🔥♨', fields).count.should == 0
+    CommandSearch.search([{ a: '😀🤔😶🤯🇦🇶🏁🆒⁉🚫📡🔒💲👠♦🔥♨🌺🌿💃🙌👍👌👋💯❤💔' }], '🔥♨🌺🌿 🔒 😀', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello👋👋👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋👋👋', fields).count.should == 0
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'hello👋👋👋' }], 'hello 👋', fields).count.should == 1
+    CommandSearch.search([{ a: 'こんにちは世界' }], '世界', fields).count.should == 1
+    CommandSearch.search([{ a: 'こんにちは世界' }], '月', fields).count.should == 0
+    CommandSearch.search([{ a: 'こんにちは世界' }], 'world', fields).count.should == 0
+    CommandSearch.search([{ a: 'こんにちは世界' }], 'moon', fields).count.should == 0
+    CommandSearch.search([{ a: 'හෙලෝ වර්ල්ඩ්' }], 'වර්ල්ඩ්', fields).count.should == 1
+    CommandSearch.search([{ a: 'හෙලෝ වර්ල්ඩ්' }], 'හඳ', fields).count.should == 0
+    CommandSearch.search([{ a: 'សួស្តី​ពិភពលោក' }], 'ពិភពលោក', fields).count.should == 1
+    CommandSearch.search([{ a: 'សួស្តី​ពិភពលោក' }], 'ព្រះ​ច័ន្ទ', fields).count.should == 0
+    CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ໂລກ', fields).count.should == 1
+    CommandSearch.search([{ a: 'ສະ​ບາຍ​ດີ​ຊາວ​ໂລກ' }], 'ເດືອນ', fields).count.should == 0
   end
 
   it 'should handle different time data types' do
     list = [{ foo: Date.new(1000) }, { foo: Time.now }, { foo: DateTime.now }]
-    CommandSearch.search(list, 'foo>1990', { command_fields: { foo: Time } }).count.should == 2
-    CommandSearch.search(list, 'foo>1990', { command_fields: { foo: Date } }).count.should == 2
-    CommandSearch.search(list, 'foo>1990', { command_fields: { foo: DateTime } }).count.should == 2
-    CommandSearch.search(list, 'foo:1000', {  command_fields: { foo: Time } }).count.should == 1
-    CommandSearch.search(list, 'foo:1000', { command_fields: { foo: Date } }).count.should == 1
-    CommandSearch.search(list, 'foo:1000', { command_fields: { foo: DateTime } }).count.should == 1
+    CommandSearch.search(list, 'foo>1990', { fields: { foo: { type: Time } } }).count.should == 2
+    CommandSearch.search(list, 'foo>1990', { fields: { foo: { type: Date } } }).count.should == 2
+    CommandSearch.search(list, 'foo>1990', { fields: { foo: { type: DateTime } } }).count.should == 2
+    CommandSearch.search(list, 'foo:1000', { fields: { foo: { type: Time } } }).count.should == 1
+    CommandSearch.search(list, 'foo:1000', { fields: { foo: { type: Date } } }).count.should == 1
+    CommandSearch.search(list, 'foo:1000', { fields: { foo: { type: DateTime } } }).count.should == 1
     list2 = [{ foo: Time.new('1991') }, { foo: Time.new('1995') }]
-    CommandSearch.search(list2, 'foo:1991', { command_fields: { foo: Time } }).count.should == 1
-    CommandSearch.search(list2, 'foo<=1991', { command_fields: { foo: Time } }).count.should == 1
-    CommandSearch.search(list2, 'foo<2010', { command_fields: { foo: Time } }).count.should == 2
-    CommandSearch.search(list2, 'foo:1991', { command_fields: { foo: Date } }).count.should == 1
-    CommandSearch.search(list2, 'foo<=1991', { command_fields: { foo: Date } }).count.should == 1
-    CommandSearch.search(list2, 'foo<2010', { command_fields: { foo: Date } }).count.should == 2
-    CommandSearch.search(list2, 'foo:1991', { command_fields: { foo: DateTime } }).count.should == 1
-    CommandSearch.search(list2, 'foo<=1991', { command_fields: { foo: DateTime } }).count.should == 1
-    CommandSearch.search(list2, 'foo<2010', { command_fields: { foo: DateTime } }).count.should == 2
+    CommandSearch.search(list2, 'foo:1991', { fields: { foo: { type: Time } } }).count.should == 1
+    CommandSearch.search(list2, 'foo<=1991', { fields: { foo: { type: Time } } }).count.should == 1
+    CommandSearch.search(list2, 'foo<2010', { fields: { foo: { type: Time } } }).count.should == 2
+    CommandSearch.search(list2, 'foo:1991', { fields: { foo: { type: Date } } }).count.should == 1
+    CommandSearch.search(list2, 'foo<=1991', { fields: { foo: { type: Date } } }).count.should == 1
+    CommandSearch.search(list2, 'foo<2010', { fields: { foo: { type: Date } } }).count.should == 2
+    CommandSearch.search(list2, 'foo:1991', { fields: { foo: { type: DateTime } } }).count.should == 1
+    CommandSearch.search(list2, 'foo<=1991', { fields: { foo: { type: DateTime } } }).count.should == 1
+    CommandSearch.search(list2, 'foo<2010', { fields: { foo: { type: DateTime } } }).count.should == 2
     list3 = [{ foo: Time.new('1991-01-01') }, { foo: Time.new('1995') }]
-    CommandSearch.search(list3, 'foo:"1991/01/01"', { command_fields: { foo: DateTime } }).count.should == 1
-    CommandSearch.search(list3, 'foo:"1991-01-01"', { command_fields: { foo: DateTime } }).count.should == 1
-    CommandSearch.search(list3, 'foo:"1995"', { command_fields: { foo: DateTime } }).count.should == 1
-    CommandSearch.search(list3, 'foo:"1994"', { command_fields: { foo: DateTime } }).count.should == 0
-    CommandSearch.search(list3, 'foo:"1996"', { command_fields: { foo: DateTime } }).count.should == 0
+    CommandSearch.search(list3, 'foo:"1991/01/01"', { fields: { foo: { type: DateTime } } }).count.should == 1
+    CommandSearch.search(list3, 'foo:"1991-01-01"', { fields: { foo: { type: DateTime } } }).count.should == 1
+    CommandSearch.search(list3, 'foo:"1995"', { fields: { foo: { type: DateTime } } }).count.should == 1
+    CommandSearch.search(list3, 'foo:"1994"', { fields: { foo: { type: DateTime } } }).count.should == 0
+    CommandSearch.search(list3, 'foo:"1996"', { fields: { foo: { type: DateTime } } }).count.should == 0
     list4 = [{ foo: Time.new('1995') }, { foo: Time.new(1995, 12, 12) }, { foo: Time.new('1996') }]
-    CommandSearch.search(list4, 'foo:"1995"', { command_fields: { foo: DateTime } }).count.should == 2
-    CommandSearch.search(list4, 'foo>=1995', { command_fields: { foo: DateTime } }).count.should == 3
-    CommandSearch.search(list4, 'foo>1995', { command_fields: { foo: DateTime } }).count.should == 1
-    CommandSearch.search(list4, 'foo>=1995-02-03', { command_fields: { foo: DateTime } }).count.should == 2
-    CommandSearch.search(list4, 'foo<=1995', { command_fields: { foo: DateTime } }).count.should == 2
-    CommandSearch.search(list4, 'foo<1995', { command_fields: { foo: DateTime } }).count.should == 0
-    CommandSearch.search(list4, '-foo<=1995', { command_fields: { foo: DateTime } }).count.should == 1
-  end
-
-  it 'should not throw errors' do
-    CommandSearch.search([{}], "Q)'(':{Mc&hO    T)r", { fields: [:foo] })
-    CommandSearch.search([{}], "m3(_:;_[P4ZV<]w)t", { fields: [:foo] })
-    CommandSearch.search([{}], " d<1-Tw?.�ey<1.E4:e>cb]", { fields: [:foo] })
-    CommandSearch.search([{}], "=4Ts2em(5sZ ]]&x<-", { fields: [:foo] })
-    CommandSearch.search([{}], "<|SOUv~Y74+Fm+Yva`64", { fields: [:foo] })
-    CommandSearch.search([{}], "4:O0E%~Z<@?O]e'h@<'k^", { fields: [:foo] })
-    CommandSearch.search([{}], '(-sdf:sdfdf>sd\'s":f-', { fields: [:foo] })
-    CommandSearch.search([{}], '""sdfdsfhellosdf|dsfsdf::>>><><', { fields: [:foo] })
-
-    CommandSearch.search([{}], 'foo:""', { command_fields: { foo: String } })
-  end
-
-  it 'should not throw errors in the presence of "naughty strings"' do
-    # https://github.com/minimaxir/big-list-of-naughty-strings
-    require('json')
-    file = File.read(__dir__ + '/../assets/blns.json')
-    list = JSON.parse(file)
-    check = true
-    list.each do |str|
-      begin
-        CommandSearch.search([{}], str, { fields: [:foo] })
-      rescue
-        check = false
-      end
-    end
-    check.should == true
-  end
-
-  it 'should handle fuzzing' do
-    check = true
-    10000.times do |i|
-      str = (0...24).map { (rand(130)).chr }.join
-      begin
-        CommandSearch.search([{}], str, { fields: [:foo] })
-      rescue
-        puts str.inspect
-        check = false
-        break
-      end
-    end
-    check.should == true
-  end
-
-  it 'should handle permutations' do
-    check = true
-    strs = ['a', 'b', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
-    strs.repeated_permutation(4).each do |perm|
-      begin
-        CommandSearch.search([{}], perm.join, { fields: [:foo] })
-      rescue
-        puts perm
-        check = false
-      end
-    end
-    check.should == true
+    CommandSearch.search(list4, 'foo:"1995"', { fields: { foo: { type: DateTime } } }).count.should == 2
+    CommandSearch.search(list4, 'foo>=1995', { fields: { foo: { type: DateTime } } }).count.should == 3
+    CommandSearch.search(list4, 'foo>1995', { fields: { foo: { type: DateTime } } }).count.should == 1
+    CommandSearch.search(list4, 'foo>=1995-02-03', { fields: { foo: { type: DateTime } } }).count.should == 2
+    CommandSearch.search(list4, 'foo<=1995', { fields: { foo: { type: DateTime } } }).count.should == 2
+    CommandSearch.search(list4, 'foo<1995', { fields: { foo: { type: DateTime } } }).count.should == 0
+    CommandSearch.search(list4, '-foo<=1995', { fields: { foo: { type: DateTime } } }).count.should == 1
   end
 
   # it 'should handle searching ones that are not specified and also weird hash ones' do

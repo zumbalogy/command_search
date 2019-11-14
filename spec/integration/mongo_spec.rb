@@ -23,22 +23,21 @@ class Hat
     sortable_field_names = ['title', 'description']
     sort_field = nil
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
+      fields: {
         child_id: Boolean,
-        title: String,
+        title: { type: String, general_search: true },
         name: :title,
-        description: String,
+        description: { type: String, general_search: true },
         desc: :description,
         starred: Boolean,
         star: :starred,
-        tags: String,
+        tags: { type: String, general_search: true },
         tag: :tags,
-        feathers: [Numeric, :allow_existence_boolean],
-        feathers2: [:allow_existence_boolean, Numeric],
+        feathers: { type: Integer, allow_existence_boolean: true },
+        feathers2: { type: Numeric, allow_existence_boolean: true },
         cost: Numeric,
         fav_date: Time,
-        fav_date2: [:allow_existence_boolean, Time]
+        fav_date2: { type: Time, allow_existence_boolean: true }
       },
       aliases: {
         /#{head_border}sort:\S+#{tail_border}/ => proc { |match|
@@ -240,10 +239,10 @@ describe Hat do
       '$and' => [
         { '$or' => [{ 'title' => /multi/i }, { 'description' => /multi/i }, { 'tags' => /multi/i }] },
         { '$or' => [
-            { 'title' => /\bquoted\ tag\b/ },
-            { 'description' => /\bquoted\ tag\b/ },
-            { 'tags' => /\bquoted\ tag\b/ }
-          ] }
+          { 'title' => /\bquoted\ tag\b/ },
+          { 'description' => /\bquoted\ tag\b/ },
+          { 'tags' => /\bquoted\ tag\b/ }
+        ] }
       ]
     }
   end
@@ -277,7 +276,7 @@ describe Hat do
     Hat.search('feathers2>"-5"').count.should == 4
     Hat.search('feathers2>foo').count.should == 0
 
-    Hat.create(fav_date2: Time.new(1,1,1,0,0,0,0))
+    Hat.create(fav_date2: Time.new(1, 1, 1, 0, 0, 0, 0))
     Hat.search('fav_date2<1234').count.should == 1
     Hat.search('fav_date2>1234').count.should == 0
     Hat.search('feathers2>=-33').count.should == 4
@@ -329,12 +328,8 @@ describe Hat do
       '$and' => [
         { 'tags' => /tags1/i },
         { 'title' => /name3/i },
-        { '$or' =>
-          [{ 'title' => /name/i }, { 'description' => /name/i }, { 'tags' => /name/i }]
-        },
-        { '$or' =>
-          [{ 'title' => /desk/i }, { 'description' => /desk/i }, { 'tags' => /desk/i }]
-        }
+        { '$or' => [{ 'title' => /name/i }, { 'description' => /name/i }, { 'tags' => /name/i }] },
+        { '$or' => [{ 'title' => /desk/i }, { 'description' => /desk/i }, { 'tags' => /desk/i }] }
       ]
     }
   end
@@ -346,10 +341,11 @@ describe Hat do
 
   it 'should handle quoted apostrophes' do
     Hat.search("\"someone's iHat\"").count.should == 1
-    Hat.search("\"someone's iHat\"").selector.should == {"$or"=>[
-                                                           {"title"=>/\bsomeone's\ iHat\b/},
-                                                           {"description"=>/\bsomeone's\ iHat\b/},
-                                                           {"tags"=>/\bsomeone's\ iHat\b/}]}
+    Hat.search("\"someone's iHat\"").selector.should == { '$or' => [
+      { 'title' => /\bsomeone's\ iHat\b/ },
+      { 'description' => /\bsomeone's\ iHat\b/ },
+      { 'tags' => /\bsomeone's\ iHat\b/ }
+    ] }
     Hat.search("title:\"someone's iHat\"").count.should == 1
     Hat.search("title:\"someone's iHat\"|name4").count.should == 2
   end
@@ -559,9 +555,9 @@ describe Hat do
 
     def search_bats(query, total)
       [Bat1, Bat2, Bat3, Bat4].each do |klass|
-        CommandSearch.search(klass, query, { command_fields: { fav_date: DateTime } }).count.should == total
-        CommandSearch.search(klass, query, { command_fields: { fav_date: Date } }).count.should == total
-        CommandSearch.search(klass, query, { command_fields: { fav_date: Time } }).count.should == total
+        CommandSearch.search(klass, query, { fields: { fav_date: { type: DateTime } } }).count.should == total
+        CommandSearch.search(klass, query, { fields: { fav_date: { type: Date } } }).count.should == total
+        CommandSearch.search(klass, query, { fields: { fav_date: { type: Time } } }).count.should == total
       end
     end
 

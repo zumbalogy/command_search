@@ -26,9 +26,9 @@ describe CommandSearch do
     { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
     { description: "desk new \n line" },
     { tags: "multi tag, 'quoted tag'" },
-    { title: 'same_name', feathers: 2, cost: 0, fav_date: "2.months.ago" },
-    { title: 'same_name', feathers: 5, cost: 4, fav_date: "1.year.ago" },
-    { title: "someone's iHat", feathers: 8, cost: 100, fav_date: "1.week.ago" }
+    { title: 'same_name', feathers: 2, cost: 0, fav_date: '2.months.ago' },
+    { title: 'same_name', feathers: 5, cost: 4, fav_date: '1.year.ago' },
+    { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' }
   ]
 
   def search_all(query, options, expected)
@@ -51,10 +51,10 @@ describe CommandSearch do
 
   it 'should be able to determine in memory vs mongo searches' do
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        has_child_id: Boolean,
-        title: String,
+      fields: {
+        has_child_id: { type: Boolean, general_search: true },
+        title: { type: String, general_search: true },
+        tags: { type: String, general_search: true },
         name: :title
       }
     }
@@ -64,20 +64,21 @@ describe CommandSearch do
     search_all('badKey:foo', options, 0)
   end
 
-  it 'should handle invalid keys' do
+  it 'should handle queries that use invalid keys' do
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        has_child_id: Boolean,
-        title: String
+      fields: {
+        has_child_id: { type: Boolean, general_search: true },
+        title: { type: String, general_search: true },
+        tags: { type: String, general_search: true },
       }
     }
     search_all('name:3|tags2', options, 1)
   end
 
   it 'should be able to work without command fields' do
-    options = { fields: [:title, :description, :tags] }
-    options2 = { fields: ['title', :description, :tags] }
+    general = { type: String, general_search: true }
+    options = { fields: { :title => general, :description => general, :tags => general } }
+    options2 = { fields: { 'title' => general, :description => general, :tags => general } }
     birds2 = [
       { title: 'bird:1' },
       { 'title' => 'title:2' }
@@ -89,11 +90,11 @@ describe CommandSearch do
     CommandSearch.search(birds2, 'title:2', options2).count.should == 1
   end
 
-  it 'should be able to work without search fields' do
+  it 'should be able to work without general searches' do
     options = {
-      command_fields: {
-        has_child_id: Boolean,
-        title: String,
+      fields: {
+        has_child_id: { type: Boolean },
+        title: { type: String },
         name: :title
       }
     }
@@ -104,8 +105,8 @@ describe CommandSearch do
 
   it 'should handle existence booleans' do
     options = {
-      command_fields: {
-        title: [String, :allow_existence_boolean]
+      fields: {
+        title: { type: String, allow_existence_boolean: true }
       }
     }
     search_all('title:3', options, 1)
@@ -129,8 +130,8 @@ describe CommandSearch do
 
   it 'should be able to handle a field declared as Numeric or Interger' do
     def helper(query, total)
-      options = { command_fields: { feathers: Numeric } }
-      options2 = { command_fields: { feathers: Integer } }
+      options = { fields: { feathers: { type: Numeric } } }
+      options2 = { fields: { feathers: { type: Integer } } }
       search_all(query, options, total)
       search_all(query, options2, total)
     end
@@ -144,11 +145,12 @@ describe CommandSearch do
 
   it 'should handle wacky inputs' do
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        has_child_id: Boolean,
-        title: String,
-        name: :title
+      fields: {
+        has_child_id: { type: Boolean },
+        title: { type: String, general_search: true },
+        description: { type: String, general_search: true },
+        tags: { type: String, general_search: true },
+        name: :title,
       }
     }
     search_all('|desk', options, 4)
@@ -161,10 +163,11 @@ describe CommandSearch do
 
   it 'should handle long command alias chains' do
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        has_child_id: Boolean,
-        title: String,
+      fields: {
+        has_child_id: { type: Boolean },
+        title: { type: String, general_search: true },
+        description: { type: String, general_search: true },
+        tags: { type: String, general_search: true },
         name: :title,
         foo: :name,
         bar: :name,
@@ -177,10 +180,11 @@ describe CommandSearch do
   it 'should handle alaises' do
     sort_type = nil
     options = {
-      fields: [:title, :description, :tags],
-      command_fields: {
-        has_child_id: Boolean,
-        title: String,
+      fields: {
+        has_child_id: { type: Boolean },
+        title: { type: String, general_search: true },
+        description: { type: String, general_search: true },
+        tags: { type: String, general_search: true },
         name: :title
       },
       aliases: {
@@ -214,4 +218,108 @@ describe CommandSearch do
       'someone\'s iHat'
     ]
   end
+
+  it 'should not throw errors' do
+    CommandSearch.search([{}], "Q)'(':{Mc&hO    T)r", { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], 'm3(_:;_[P4ZV<]w)t', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], " d<1-Tw?.�e\u007Fy<1.E4:e>cb]", { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '=4Ts2em(5sZ ]]&x<-', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '<|SOUv~Y74+Fm+Yva`64', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], "4:O0E%~Z<@?O]e'h@<'k^", { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '(-sdf:sdfdf>sd\'s":f-', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '""sdfdsfhellosdf|dsfsdf::>>><><', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '|(|', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '|(|', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '| |', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], '()<', { fields: { foo: { type: String } } })
+    CommandSearch.search([{}], 'foo:""', { command_fields: { foo: String } })
+  end
+
+  it 'should not throw errors in the presence of "naughty strings"' do
+    # https://github.com/minimaxir/big-list-of-naughty-strings
+    require('json')
+    file = File.read(__dir__ + '/../assets/blns.json')
+    list = JSON.parse(file)
+    check = true
+    list.each do |query|
+      begin
+        list = [
+          { foo: query },
+          { bar: query }
+        ]
+        options = {
+          fields: {
+            foo: { type: String },
+            bar: { type: Numeric, general_search: true }
+          }
+        }
+        CommandSearch.search(list, query, options)
+        CommandSearch.search(Bird, query, options)
+        CommandSearch.search($birds, query, options)
+      rescue
+        check = false
+      end
+    end
+    check.should == true
+  end
+
+  it 'should handle fuzzing' do
+    check = true
+    trials = 500
+    trials = 999000 if ENV['CI']
+    trials.times do |i|
+      query = (0...24).map { (rand(130)).chr }.join
+      begin
+        list = [
+          { foo: query },
+          { bar: query }
+        ]
+        options = {
+          fields: {
+            foo: { type: String },
+            bar: { type: Numeric, general_search: true }
+          }
+        }
+        CommandSearch.search(list, query, options)
+        CommandSearch.search(Bird, query, options)
+        CommandSearch.search($birds, query, options)
+      rescue
+        puts query.inspect
+        check = false
+        break
+      end
+    end
+    check.should == true
+  end
+
+  it 'should handle permutations' do
+    check = true
+    strs = ['a', 'b', 'x', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
+    size = 3
+    size = 5 if ENV['CI']
+    strs.repeated_permutation(size).each do |perm|
+      begin
+        list = [
+          { foo: perm.join() },
+          { bar: 'abcdefg' },
+          { baz: 34, abc: 'xyz' },
+        ]
+        options = {
+          fields: {
+            foo: { type: String },
+            bar: { type: Numeric, general_search: true }
+          }
+        }
+        query = perm.join()
+        CommandSearch.search(list, query, options)
+        CommandSearch.search(Bird, query, options)
+        CommandSearch.search($birds, query, options)
+      rescue
+        print(perm.join(), '    ')
+        check = false
+      end
+    end
+    check.should == true
+  end
+
 end
