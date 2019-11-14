@@ -82,7 +82,7 @@ module CommandSearch
 
     def split_general_fields(node, fields)
       general_fields = fields.select { |k, v| v.is_a?(Hash) && v[:general_search] }.keys
-      general_fields = [:__CommandSearch_dummy_key__] if general_fields.empty?
+      general_fields = ['__CommandSearch_dummy_key__'] if general_fields.empty?
       new_val = general_fields.map! do |field|
         {
           type: :colon,
