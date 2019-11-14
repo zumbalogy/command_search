@@ -64,7 +64,7 @@ describe CommandSearch do
     search_all('badKey:foo', options, 0)
   end
 
-  it 'should handle queries that use an unfound key' do
+  it 'should handle queries that use invalid keys' do
     options = {
       fields: {
         has_child_id: { type: Boolean, general_search: true },
