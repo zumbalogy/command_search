@@ -185,6 +185,14 @@ describe CommandSearch::Normalizer do
       type: :colon,
       value: [{ value: 'nnn' }, { type: :str, value: /foo/i }]
     }]
+    norm('"+foo"', fields).should == [{
+      type: :colon,
+      value: [{ value: 'nnn' }, { type: :quote, value: /(^|\s|[^:+\w])\+foo($|\s|[^:+\w])/ }]
+    }]
+    norm('"foo?"', fields).should == [{
+      type: :colon,
+      value: [{ value: 'nnn' }, { type: :quote, value: /(^|\s|[^:+\w])foo\?($|\s|[^:+\w])/ }]
+    }]
     norm('foo 5', fields).should == [
       {
         type: :colon,

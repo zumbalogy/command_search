@@ -4,23 +4,25 @@ module CommandSearch
 
     def command_check(item, val)
       cmd = val[0][:value]
-      cmd_search = val[1][:value]
+      search = val[1][:value]
       item_val = item[cmd.to_sym] || item[cmd.to_s]
-      val_type = val[1][:type]
-      val_type = Boolean if val_type == :existence && cmd_search == true
-      if val_type == Boolean
-        !!item_val == cmd_search
-      elsif val_type == :existence
+      type = val[1][:type]
+      type = Boolean if type == :existence && search == true
+      if type == Boolean
+        !!item_val == search
+      elsif type == :existence
         item_val == nil
       elsif !item_val
         return false
-      elsif val_type == Time
+      elsif search.is_a?(Regexp)
+        item_val.to_s[search]
+        # for versions ruby 2.4.0 (2016-12-25) and up, match? is much faster
+        # item_val.to_s.match?(search)
+      elsif type == Time
         item_time = item_val.to_time
-        cmd_search.first <= item_time && item_time < cmd_search.last
-      elsif cmd_search.is_a?(Regexp)
-        item_val.to_s[cmd_search]
+        search.first <= item_time && item_time < search.last
       else
-        item_val == cmd_search
+        item_val == search
       end
     end
 

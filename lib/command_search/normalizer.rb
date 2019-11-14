@@ -52,7 +52,7 @@ module CommandSearch
       return if node[:value] == ''
       str = Regexp.escape(raw)
       return node[:value] = /#{str}/i unless type == :quote
-      return node[:value] = /\b#{str}\b/ unless raw[/(^\W)|(\W$)/]
+      return node[:value] = /\b#{str}\b/ unless raw[/(\A\W)|(\W\Z)/]
       border_a = '(^|\s|[^:+\w])'
       border_b = '($|\s|[^:+\w])'
       node[:value] = Regexp.new(border_a + str + border_b)

@@ -35,7 +35,7 @@ Benchmark.ips() do |bm|
     end
   end
 
-  bench('', [], {})
+  bench('', {})
   bench('')
   bench('foo bar')
   bench('a b c d e')
