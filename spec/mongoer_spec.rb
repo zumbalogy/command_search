@@ -116,8 +116,6 @@ describe CommandSearch::Mongoer do
     }
   end
 
-  # TODO: test having no type and just having it listed as general search
-
   it 'should denest parens' do
     fields = {
       'f1' => { type: String, general_search: true },
@@ -181,9 +179,10 @@ describe CommandSearch::Mongoer do
     def q1(s); q(s, { b: Boolean }); end
     q1('b:true').should == { '$and' => [{ 'b' => { '$exists' => true } }, { 'b' => { '$ne' => false } }] }
     q1('b:false').should == { '$and' => [{ 'b' => { '$exists' => true } }, { 'b' => { '$ne' => true } }] }
-    def q2(s); q(s, { foo: { type: String, allow_existence_boolean: true } }); end
+    def q2(s); q(s, { foo: { type: String, allow_existence_boolean: true }, bar: String }); end
     q2('foo:"true"').should == { 'foo' => /\btrue\b/ }
     q2('foo:false').should == { 'foo' => { '$exists' => false } }
+    q2('bar:false').should == { 'bar' => /false/i }
     q2('foo:true').should == { '$and' => [
       { 'foo' => { '$exists' => true } },
       { 'foo' => { '$ne' => false } }
@@ -191,6 +190,23 @@ describe CommandSearch::Mongoer do
     q2('foo:false|foo:error').should == { '$or' => [
       { 'foo' => { '$exists' => false } },
       { 'foo' => /error/i }
+    ] }
+    def q3(s)
+      options = {
+        foo: { type: String, allow_existence_boolean: true, general_search: true },
+        bar: { type: String, general_search: true },
+        baz: { type: String, allow_existence_boolean: true }
+      }
+      q(s, options)
+    end
+    q3('abc').should == { '$or' => [{ 'foo' => /abc/i }, { 'bar' => /abc/i }] }
+    q3('"true"').should == { '$or' => [{ 'foo' => /\btrue\b/ }, { 'bar' => /\btrue\b/ }] }
+    q3('true').should == { '$or' => [
+      { '$and' => [
+        { 'foo' => { '$exists' => true } },
+        { 'foo' => { '$ne' => false } }
+      ] },
+      { 'bar' => /true/i }
     ] }
   end
 

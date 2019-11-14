@@ -103,9 +103,9 @@ module CommandSearch
       return unless field
       type = field.is_a?(Class) ? field : field[:type]
       cast_bool!(field, search_node)
-      cast_time!(node) if [Time, Date, DateTime].include?(type)
-      cast_regex!(search_node) if type == String
-      cast_numeric!(search_node) if [Integer, Numeric].include?(type)
+      return cast_time!(node) if [Time, Date, DateTime].include?(type)
+      return cast_numeric!(search_node) if [Integer, Numeric].include?(type)
+      cast_regex!(search_node)
     end
 
     def normalize!(ast, fields)
