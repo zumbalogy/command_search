@@ -5,8 +5,8 @@ version: 2
 jobs:
   build:
     docker:
-       - image: circleci/ruby:2.6.5-node-browsers
-       - image: circleci/mongo:3.6.3
+       - image: circleci/ruby:latest
+       - image: circleci/mongo:latest
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
