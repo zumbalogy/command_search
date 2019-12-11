@@ -1,0 +1,25 @@
+development:
+  adapter: postgresql
+  encoding: unicode
+  host: localhost
+  database: command_search_db_dev
+  pool: 5
+  username: command_search_user_dev
+  password: _
+
+test:
+  adapter: postgresql
+  encoding: unicode
+  host: localhost
+  database: command_search_db_test
+  pool: 5
+  username: command_search_user_test
+  password: _
+
+
+# sudo -u postgres psql
+#
+# create user "command_search_user_dev" with password '_';
+# create user "command_search_user_test" with password '_';
+# create database "command_search_db_dev" owner "command_search_user_dev";
+# create database "command_search_db_test" owner "command_search_user_test";
