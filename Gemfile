@@ -5,6 +5,9 @@ gem 'chronic'
 group :test, :development do
   gem 'mongoid'
 
+  gem 'activerecord'
+  gem 'pg'
+
   gem 'ruby-prof'
   gem 'benchmark-ips'
 

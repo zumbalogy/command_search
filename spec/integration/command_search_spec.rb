@@ -1,9 +1,5 @@
 load(__dir__ + '/../spec_helper.rb')
 
-require('mongoid')
-
-Mongoid.load!(__dir__ + '/../assets/mongoid.yml', :test)
-
 describe CommandSearch do
 
   class Bird
@@ -17,6 +13,23 @@ describe CommandSearch do
     field :feathers,    type: Integer
     field :cost,        type: Integer
     field :fav_date,    type: Time
+  end
+
+  ActiveRecord::Schema.define do
+    create_table :crows, force: true do |t|
+      t.string :title
+      t.string :description
+      t.string :state
+      t.string :tags
+      t.boolean :starred
+      t.string :child_id
+      t.integer :feathers
+      t.integer :cost
+      t.datetime :fav_date
+    end
+  end
+
+  class Crow < ActiveRecord::Base
   end
 
   $birds = [
@@ -33,11 +46,13 @@ describe CommandSearch do
 
   def search_all(query, options, expected)
     CommandSearch.search(Bird, query, options).count.should == expected
+    CommandSearch.search(Crow, query, options).count.should == expected
     CommandSearch.search($birds, query, options).count.should == expected
   end
 
   before do
     Mongoid.purge!
+    Crow.delete_all
     Bird.create(title: 'name name1 1')
     Bird.create(title: 'name name2 2', description: 'desk desk1 1')
     Bird.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
@@ -47,12 +62,22 @@ describe CommandSearch do
     Bird.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
     Bird.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
     Bird.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
+
+    Crow.create(title: 'name name1 1')
+    Crow.create(title: 'name name2 2', description: 'desk desk1 1')
+    Crow.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
+    Crow.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
+    Crow.create(description: "desk new \n line")
+    Crow.create(tags: "multi tag, 'quoted tag'")
+    Crow.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
+    Crow.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
+    Crow.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
   end
 
   it 'should be able to determine in memory vs mongo searches' do
     options = {
       fields: {
-        has_child_id: { type: Boolean, general_search: true },
+        child_id: { type: Boolean, general_search: true },
         title: { type: String, general_search: true },
         tags: { type: String, general_search: true },
         name: :title
@@ -67,7 +92,7 @@ describe CommandSearch do
   it 'should handle queries that use invalid keys' do
     options = {
       fields: {
-        has_child_id: { type: Boolean, general_search: true },
+        child_id: { type: Boolean, general_search: true },
         title: { type: String, general_search: true },
         tags: { type: String, general_search: true },
       }
@@ -93,7 +118,7 @@ describe CommandSearch do
   it 'should be able to work without general searches' do
     options = {
       fields: {
-        has_child_id: { type: Boolean },
+        child_id: { type: Boolean },
         title: { type: String },
         name: :title
       }
@@ -146,7 +171,7 @@ describe CommandSearch do
   it 'should handle wacky inputs' do
     options = {
       fields: {
-        has_child_id: { type: Boolean },
+        child_id: { type: Boolean },
         title: { type: String, general_search: true },
         description: { type: String, general_search: true },
         tags: { type: String, general_search: true },
@@ -164,7 +189,7 @@ describe CommandSearch do
   it 'should handle long command alias chains' do
     options = {
       fields: {
-        has_child_id: { type: Boolean },
+        child_id: { type: Boolean },
         title: { type: String, general_search: true },
         description: { type: String, general_search: true },
         tags: { type: String, general_search: true },
@@ -181,7 +206,7 @@ describe CommandSearch do
     sort_type = nil
     options = {
       fields: {
-        has_child_id: { type: Boolean },
+        child_id: { type: Boolean },
         title: { type: String, general_search: true },
         description: { type: String, general_search: true },
         tags: { type: String, general_search: true },
@@ -196,6 +221,16 @@ describe CommandSearch do
     }
     results = CommandSearch.search(Bird, 'sort:title name', options)
     results = results.order_by(sort_type => :asc) if sort_type
+    results.map { |x| x[sort_type] }.should == [
+      'name name1 1',
+      'name name2 2',
+      'name name3 3',
+      'name name4 4',
+      'same_name',
+      'same_name'
+    ]
+    results = CommandSearch.search(Crow, 'sort:title name', options)
+    results = results.order(sort_type => :asc) if sort_type
     results.map { |x| x[sort_type] }.should == [
       'name name1 1',
       'name name2 2',
@@ -255,6 +290,7 @@ describe CommandSearch do
         }
         CommandSearch.search(list, query, options)
         CommandSearch.search(Bird, query, options)
+        CommandSearch.search(Crow, query, options)
         CommandSearch.search($birds, query, options)
       rescue
         check = false
@@ -282,6 +318,7 @@ describe CommandSearch do
         }
         CommandSearch.search(list, query, options)
         CommandSearch.search(Bird, query, options)
+        CommandSearch.search(Crow, query, options)
         CommandSearch.search($birds, query, options)
       rescue
         puts query.inspect
@@ -313,6 +350,7 @@ describe CommandSearch do
         query = perm.join()
         CommandSearch.search(list, query, options)
         CommandSearch.search(Bird, query, options)
+        CommandSearch.search(Crow, query, options)
         CommandSearch.search($birds, query, options)
       rescue
         print(perm.join(), '    ')

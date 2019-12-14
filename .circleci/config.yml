@@ -5,8 +5,12 @@ version: 2
 jobs:
   build:
     docker:
-       - image: circleci/ruby:2.6.5-node-browsers
-       - image: circleci/mongo:3.6.3
+       - image: circleci/ruby:latest
+       - image: circleci/mongo:latest
+       - image: circleci/postgres:latest
+         environment:
+           POSTGRES_USER: command_search_user_test
+           POSTGRES_DB: command_search_db_test
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/

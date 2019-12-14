@@ -27,7 +27,7 @@ describe CommandSearch::Normalizer do
         type: :colon,
         nest_op: ':',
         value: [
-          { type: :str, value: 'baz' },
+          { type: :str, value: 'baz', field_type: Numeric },
           { type: :number, value: 100.0 }
         ]
       }
@@ -37,7 +37,7 @@ describe CommandSearch::Normalizer do
         type: :compare,
         nest_op: '<',
         value: [
-          { type: :str, value: 'baz' },
+          { type: :str, value: 'baz', field_type: Numeric },
           { type: :number, value: 100.0 }
         ]
       }
@@ -49,15 +49,24 @@ describe CommandSearch::Normalizer do
     norm('foo foo:bar', fields).should_not == parse('foo foo:bar')
     norm('a:b', fields).should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :str, value: /a:b/i }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :str, value: /a:b/i }
+      ]
     }]
     norm('-foo:bar', fields)[0][:value].should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :str, value: /foo:bar/i }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :str, value: /foo:bar/i }
+      ]
     }]
     norm('-foo:bar|baz', fields)[0][:value][0][:value].should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :str, value: /foo:bar/i }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :str, value: /foo:bar/i }
+      ]
     }]
   end
 
@@ -74,103 +83,166 @@ describe CommandSearch::Normalizer do
     c('a:true').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'foo' }, { type: Boolean, value: true }]
+      value: [
+        { type: :str, value: 'foo', field_type: Boolean },
+        { type: Boolean, value: true }
+      ]
     }]
     c('a:false').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'foo' }, { type: Boolean, value: false }]
+      value: [
+        { type: :str, value: 'foo', field_type: Boolean },
+        { type: Boolean, value: false }
+      ]
     }]
     c('a:foo').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'foo' }, { type: Boolean, value: false }]
+      value: [
+        { type: :str, value: 'foo', field_type: Boolean },
+        { type: Boolean, value: false }
+      ]
     }]
     c('-a:true')[0][:value].should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'foo' }, { type: Boolean, value: true }]
+      value: [
+        { type: :str, value: 'foo', field_type: Boolean },
+        { type: Boolean, value: true }
+      ]
     }]
     c('a:-true').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'foo' }, { type: Boolean, value: false }]
+      value: [
+        { type: :str, value: 'foo', field_type: Boolean },
+        { type: Boolean, value: false }
+      ]
     }]
     c('a:-false').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'foo' }, { type: Boolean, value: false }]
+      value: [
+        { type: :str, value: 'foo', field_type: Boolean },
+        { type: Boolean, value: false }
+      ]
     }]
     c('b:true').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'b' }, { type: :existence, value: true }]
+      value: [
+        { type: :str, value: 'b', field_type: Numeric },
+        { type: :existence, value: true }
+      ]
     }]
     c('b:false').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'b' }, { type: :existence, value: false }]
+      value: [
+        { type: :str, value: 'b', field_type: Numeric },
+        { type: :existence, value: false }
+      ]
     }]
     c('-b:true')[0][:value].should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'b' }, { type: :existence, value: true }]
+      value: [
+        { type: :str, value: 'b', field_type: Numeric },
+        { type: :existence, value: true }
+      ]
     }]
     c('-b:false')[0][:value].should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'b' }, { type: :existence, value: false }]
+      value: [
+        { type: :str, value: 'b', field_type: Numeric },
+        { type: :existence, value: false }
+      ]
     }]
     c('b:-true').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'b' }, { type: :str, value: '-true' }]
+      value: [
+        { type: :str, value: 'b', field_type: Numeric },
+        { type: :str, value: '-true' }
+      ]
     }]
     c('b:-false').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'b' }, { type: :str, value: '-false' }]
+      value: [
+        { type: :str, value: 'b', field_type: Numeric },
+        { type: :str, value: '-false' }
+      ]
     }]
     c('b:"false"').should == c("b:'false'")
     c('b:"true"').should == c("b:'true'")
     c('b:"false"').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'b' }, { type: :quote, value: 'false' }]
+      value: [
+        { type: :str, value: 'b', field_type: Numeric },
+        { type: :quote, value: 'false' }
+      ]
     }]
     c('b:"true"').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'b' }, { type: :quote, value: 'true' }]
+      value: [
+        { type: :str, value: 'b', field_type: Numeric },
+        { type: :quote, value: 'true' }
+      ]
     }]
     c('b:foo').should == [{
       type: :colon,
       nest_op: ':',
-      value: [{ type: :str, value: 'b' }, { type: :str, value: 'foo' }]
+      value: [
+        { type: :str, value: 'b', field_type: Numeric },
+        { type: :str, value: 'foo' }
+      ]
     }]
     c('c:true').should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :str, value: /c:true/i }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :str, value: /c:true/i }
+      ]
     }]
     c('c:false').should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :str, value: /c:false/i }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :str, value: /c:false/i }
+      ]
     }]
     c('-c:true')[0][:value].should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :str, value: /c:true/i }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :str, value: /c:true/i }
+      ]
     }]
     c('-c:false')[0][:value].should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :str, value: /c:false/i }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :str, value: /c:false/i }
+      ]
     }]
     c('c:-true').should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :str, value: /c:\-true/i }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :str, value: /c:\-true/i }
+      ]
     }]
     c('c:-false').should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :str, value: /c:\-false/i }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :str, value: /c:\-false/i }
+      ]
     }]
   end
 
@@ -183,24 +255,39 @@ describe CommandSearch::Normalizer do
     norm('', fields).should == []
     norm('foo', fields).should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :str, value: /foo/i }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :str, value: /foo/i }
+      ]
     }]
     norm('"+foo"', fields).should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :quote, value: /(^|\s|[^:+\w])\+foo($|\s|[^:+\w])/ }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :quote, value: /(^|\s|[^:+\w])\+foo($|\s|[^:+\w])/ }
+      ]
     }]
     norm('"foo?"', fields).should == [{
       type: :colon,
-      value: [{ value: 'nnn' }, { type: :quote, value: /(^|\s|[^:+\w])foo\?($|\s|[^:+\w])/ }]
+      value: [
+        { value: 'nnn', field_type: String },
+        { type: :quote, value: /(^|\s|[^:+\w])foo\?($|\s|[^:+\w])/ }
+      ]
     }]
     norm('foo 5', fields).should == [
       {
         type: :colon,
-        value: [{ value: 'nnn' }, { type: :str, value: /foo/i }]
+        value: [
+          { value: 'nnn', field_type: String },
+          { type: :str, value: /foo/i }
+        ]
       },
       {
         type: :colon,
-        value: [{ value: 'nnn' }, { type: :number, value: /5/i }]
+        value: [
+          { value: 'nnn', field_type: String },
+          { type: :number, value: /5/i }
+        ]
       }
     ]
     norm('-(foo|-bar)|3', fields).should == [{
@@ -213,13 +300,19 @@ describe CommandSearch::Normalizer do
             value: [
               {
                 type: :colon,
-                value: [{ value: 'nnn' }, { type: :str, value: /foo/i }]
+                value: [
+                  { value: 'nnn', field_type: String },
+                  { type: :str, value: /foo/i }
+                ]
               },
               {
                 type: :not,
                 value: [{
                   type: :colon,
-                  value: [{ value: 'nnn' }, { type: :str, value: /bar/i }]
+                  value: [
+                    { value: 'nnn', field_type: String },
+                    { type: :str, value: /bar/i }
+                  ]
                 }]
               }
             ]
@@ -227,29 +320,44 @@ describe CommandSearch::Normalizer do
         },
         {
           type: :colon,
-          value: [{ value: 'nnn' }, { type: :number, value: /3/i }]
+          value: [
+            { value: 'nnn', field_type: String },
+            { type: :number, value: /3/i }
+          ]
         }
       ]
     }]
     norm('s:-2', fields).should == [{
       nest_op: ':',
       type: :colon,
-      value: [{ type: :str, value: 's' }, { type: :number, value: /\-2/i }]
+      value: [
+        { type: :str, value: 's', field_type: String },
+        { type: :number, value: /\-2/i }
+      ]
     }]
     norm('s:abc', fields).should == [{
       nest_op: ':',
       type: :colon,
-      value: [{ type: :str, value: 's' }, { type: :str, value: /abc/i }]
+      value: [
+        { type: :str, value: 's', field_type: String },
+        { type: :str, value: /abc/i }
+      ]
     }]
     norm('n:4', fields).should == [{
       nest_op: ':',
       type: :colon,
-      value: [{ type: :str, value: 'n' }, { type: :number, value: 4.0 }]
+      value: [
+        { type: :str, value: 'n', field_type: Numeric },
+        { type: :number, value: 4.0 }
+      ]
     }]
     norm('n:abc', fields).should == [{
       nest_op: ':',
       type: :colon,
-      value: [{ type: :str, value: 'n' }, { type: :str, value: 'abc' }]
+      value: [
+        { type: :str, value: 'n', field_type: Numeric },
+        { type: :str, value: 'abc' }
+      ]
     }]
   end
 
@@ -279,7 +387,7 @@ describe CommandSearch::Normalizer do
         nest_op: ':',
         type: :colon,
         value: [
-          { type: :str, value: 't' },
+          { type: :str, value: 't', field_type: Time },
           {
             type: Time,
             value: [
@@ -297,7 +405,7 @@ describe CommandSearch::Normalizer do
           nest_op: ':',
           type: :colon,
           value: [
-            { type: :str, value: 't' },
+            { type: :str, value: 't', field_type: Time },
             {
               type: Time,
               value: [
@@ -316,7 +424,7 @@ describe CommandSearch::Normalizer do
           nest_op: '<',
           type: :compare,
           value: [
-            { type: :str, value: 't' },
+            { type: :str, value: 't', field_type: Time },
             { type: Time, value: Chronic.parse('1901-01-01 00:00:00') }
           ]
         }]

@@ -303,8 +303,7 @@ describe CommandSearch::Memory do
     search('feathers<cost').count.should == 1
     search('feathers>cost').count.should == 2
     search('cost>cost').count.should == 0
-    # search('cost<=cost').count.should == $hats.count // TODO: ones without a cost are currenty just not matched
-    # which seems to differ from the mongoid $gt and all. worth looking into.
+    search('cost<=cost').count.should == 3 # Nil values disregarded
   end
 
   it 'should handle chained comparisons' do

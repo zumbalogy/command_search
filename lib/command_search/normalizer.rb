@@ -96,22 +96,28 @@ module CommandSearch
       { type: :or, value: new_val }
     end
 
-    def type_cast!(node, fields)
+    def type_cast!(node, fields, cast_all)
       (key_node, search_node) = node[:value]
       key = key_node[:value]
       field = fields[key.to_sym] || fields[key.to_s]
       return unless field
       type = field.is_a?(Class) ? field : field[:type]
+      type = Numeric if type == Integer
+      key_node[:field_type] = type
       cast_bool!(field, search_node)
       return cast_time!(node) if [Time, Date, DateTime].include?(type)
-      return cast_numeric!(search_node) if [Integer, Numeric].include?(type)
-      cast_regex!(search_node)
+      return cast_numeric!(search_node) if Numeric == type
+      if cast_all
+        cast_regex!(search_node)
+      else
+        search_node[:type] = :str if search_node[:type] == :number
+      end
     end
 
-    def normalize!(ast, fields)
+    def normalize!(ast, fields, cast_all = true)
       ast.map! do |node|
         if node[:type] == :and || node[:type] == :or || node[:type] == :not
-          normalize!(node[:value], fields)
+          normalize!(node[:value], fields, cast_all)
           next node
         end
         if node[:type] == :colon || node[:type] == :compare
@@ -127,9 +133,9 @@ module CommandSearch
           node = split_general_fields(node, fields)
         end
         if node[:type] == :or
-          node[:value].each { |x| type_cast!(x, fields) }
+          node[:value].each { |x| type_cast!(x, fields, cast_all) }
         else
-          type_cast!(node, fields)
+          type_cast!(node, fields, cast_all)
         end
         node
       end
