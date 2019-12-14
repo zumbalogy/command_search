@@ -19,9 +19,7 @@ module CommandSearch
       search_node = node[:value].last
       val = search_node[:value]
       type = search_node[:type]
-      if field == '__CommandSearch_dummy_key__'
-        return '0 = 1'
-      end
+      return '0 = 1' if field == '__CommandSearch_dummy_key__'
       if type == Boolean || type == :existence
         false_val = "'f'"
         false_val = 0 if field_node[:field_type] == Numeric
@@ -29,7 +27,12 @@ module CommandSearch
           return "NOT ((#{field} = #{false_val}) OR (#{field} IS NULL))"
         end
         return "((#{field} = #{false_val}) OR (#{field} IS NULL))"
-      elsif type == :quote
+      end
+      if type == Time
+        return '0 = 1' unless val
+        return "(#{field} >= '#{val[0]}') AND (#{field} < '#{val[1]}') AND (#{field} IS NOT NULL)"
+      end
+      if type == :quote
         op = '~'
         val =  "'#{build_quoted_regex(val)}'"
       elsif type == :str
@@ -37,9 +40,6 @@ module CommandSearch
         val = "'#{Regexp.escape(val)}'"
       elsif type == :number
         op = '='
-      elsif type == Time
-        return '0 = 1' unless val
-        return "(#{field} >= '#{val[0]}') AND (#{field} < '#{val[1]}') AND (#{field} IS NOT NULL)"
       end
       "(#{field} #{op} #{val}) AND (#{field} IS NOT NULL)"
     end
