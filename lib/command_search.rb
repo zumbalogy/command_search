@@ -1,7 +1,6 @@
 load(__dir__ + '/command_search/aliaser.rb')
 load(__dir__ + '/command_search/lexer.rb')
 load(__dir__ + '/command_search/parser.rb')
-load(__dir__ + '/command_search/sqlizer.rb')
 load(__dir__ + '/command_search/normalizer.rb')
 load(__dir__ + '/command_search/optimizer.rb')
 
