@@ -151,7 +151,7 @@ module PG_Spec
       Hat.create(title: 'bar 2', starred: false)
       Hat.search('starred:true').count.should == 2
       total = Hat.search('starred:false').count + Hat.search('starred:true').count
-      Hat.all.count.should == total # TODO: update mongo to be aligned with this.
+      Hat.all.count.should == total
     end
 
     it 'should check for existance if passed a boolean for a string field' do
@@ -164,7 +164,7 @@ module PG_Spec
       Hat.search('desk').count.should == 4
       Hat.search('desk2').count.should == 1
       Hat.search('desk2 2').count.should == 1
-      Hat.search('2').count.should == 3 # TODO: add to mongo specs
+      Hat.search('2').count.should == 3
     end
 
     it 'should be able to find things from the tags' do
