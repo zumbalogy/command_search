@@ -19,7 +19,6 @@ module CommandSearch
       search_node = node[:value].last
       val = search_node[:value]
       type = search_node[:type]
-      type = Boolean if type == :existence
       if type == Boolean || type == :existence
         false_val = "'f'"
         false_val = 0 if field_node[:field_type] == Numeric
@@ -72,7 +71,7 @@ module CommandSearch
         elsif type == :compare
           out.push(compare_search(node))
         elsif type == :and
-          node[:value].each { |x| out.push(build_query(x)) }
+          out.push(build_query(node[:value]))
         elsif type == :or
           clauses = node[:value].map { |x| build_query(x) }
           clause = clauses.join(' OR ')
