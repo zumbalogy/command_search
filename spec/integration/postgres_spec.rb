@@ -489,7 +489,6 @@ module PG_Spec
 
     it 'should handle different time data types' do
       class Bat1 < ActiveRecord::Base
-        # CommandSearch.build(:postgres, query, options)
       end
       class Bat2 < ActiveRecord::Base
       end

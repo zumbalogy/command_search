@@ -303,7 +303,7 @@ describe CommandSearch::Memory do
     search('feathers<cost').count.should == 1
     search('feathers>cost').count.should == 2
     search('cost>cost').count.should == 0
-    search('cost<=cost').count.should == 3
+    search('cost<=cost').count.should == 3 # Nil values disregarded
   end
 
   it 'should handle chained comparisons' do
