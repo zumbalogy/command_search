@@ -9,7 +9,7 @@ module CommandSearch
         tail_border = '($|\s|[^:+\w])'
         return head_border + str + tail_border
       end
-      str.gsub!("'", "''") # How to escape single quotes in postgres
+      str.gsub!("'", "''") # Escaping single quotes in postgres
       '\m' + str + '\y'
     end
 
@@ -26,21 +26,19 @@ module CommandSearch
           return "NOT ((#{field} = #{false_val}) OR (#{field} IS NULL))"
         end
         return "((#{field} = #{false_val}) OR (#{field} IS NULL))"
-      end
-
-      if type == :quote
-        val =  "'#{build_quoted_regex(search_node[:original_value])}'"
+      elsif type == :quote
         op = '~'
+        val =  "'#{build_quoted_regex(val)}'"
       elsif type == :str
-        val = "'#{Regexp.escape(search_node[:original_value])}'"
         op = '~*'
+        val = "'#{Regexp.escape(val)}'"
       elsif type == :number
         op = '='
       elsif type == Time
         return '0 = 1' unless val
         return "(#{field} >= '#{val[0]}') AND (#{field} < '#{val[1]}') AND (#{field} IS NOT NULL)"
       end
-      return "(#{field} #{op} #{val}) AND (#{field} IS NOT NULL)"
+      "(#{field} #{op} #{val}) AND (#{field} IS NOT NULL)"
     end
 
     def compare_search(node)

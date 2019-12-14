@@ -104,7 +104,6 @@ module CommandSearch
       type = field.is_a?(Class) ? field : field[:type]
       type = Numeric if type == Integer
       key_node[:field_type] = type
-      search_node[:original_value] = search_node[:value]
       cast_bool!(field, search_node)
       return cast_time!(node) if [Time, Date, DateTime].include?(type)
       return cast_numeric!(search_node) if Numeric == type
@@ -118,7 +117,7 @@ module CommandSearch
     def normalize!(ast, fields, cast_all = true)
       ast.map! do |node|
         if node[:type] == :and || node[:type] == :or || node[:type] == :not
-          normalize!(node[:value], fields)
+          normalize!(node[:value], fields, cast_all)
           next node
         end
         if node[:type] == :colon || node[:type] == :compare
