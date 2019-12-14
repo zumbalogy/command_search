@@ -48,3 +48,11 @@ https://github.com/mojombo/chronic#time-zones
 (looks like user might have to do it since they would need to be using activerecord or such)
 
 Further cleaning up the test suite.
+
+
+make circleCi test multiple ruby versions and such
+maybe add postgres to the list of fuzzed ones and all
+add tests for command_search_spec.rb for dispatch
+add sqlite/etc support
+
+investigate this segfault thing
