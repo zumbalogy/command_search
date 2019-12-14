@@ -2,14 +2,20 @@ module CommandSearch
   module Postgres
     module_function
 
+    def quote_string(str)
+      # activerecord/lib/active_record/connection_adapters/abstract/quoting.rb:62
+      str.gsub!('\\', '\&\&')
+      str.gsub!("'", "''")
+      Regexp.escape(str)
+    end
+
     def build_quoted_regex(input)
-      str = Regexp.escape(input)
+      str = quote_string(input)
       if str[/(^\W)|(\W$)/]
         head_border = '(^|\s|[^:+\w])'
         tail_border = '($|\s|[^:+\w])'
         return head_border + str + tail_border
       end
-      str.gsub!("'", "''") # Escaping single quotes in postgres
       '\m' + str + '\y'
     end
 
@@ -37,7 +43,7 @@ module CommandSearch
         val =  "'#{build_quoted_regex(val)}'"
       elsif type == :str
         op = '~*'
-        val = "'#{Regexp.escape(val)}'"
+        val = "'#{quote_string(val)}'"
       elsif type == :number
         op = '='
       end
