@@ -15,13 +15,16 @@ command_search also supports aliasing so that the following substitutions are ea
 
 command_search does not require an engine and should be easy to set up.
 
+command_search works with [PostgreSQL](https://www.postgresql.org/),
+[MongoDB](https://www.mongodb.com/), and in-memory arrays of Ruby hashes.
+
 command_search is written with performance in mind and should have minimal overhead for most queries.
 
 A sample Rails app using command_search can be seen at [github.com/zumbalogy/command_search_example](https://github.com/zumbalogy/command_search_example).
 
 A live version can be found at [earthquake-search.herokuapp.com](https://earthquake-search.herokuapp.com/).
 
-Feedback, questions, bug reports, pull requests, and feature requests are welcome.
+Feedback, questions, bug reports, pull requests, and suggestions are welcome.
 
 ## Install
 Command Line:
@@ -54,23 +57,14 @@ combination.
 ## Limitations
 The logic can be slow (100ms+) for queries that exceed 10,000 characters.
 In public APIs or performance sensitive use cases, long inputs should
-be truncated or otherwise taken into account.
+be truncated or otherwise accounted for.
 
 Date/Time searches are only parsed into dates for command searches that
 specify (`:`) or compare (`<`, `>`, `<=`, `>=`).
 
 'Fuzzy' searching is not currently supported.
 
-The only currently supported collections to query are
-[MongoDB](https://github.com/mongodb/mongo) collections and in-memory arrays of
-hashes.
-
-SQL support hopefully coming soon.
-
 ## Dependencies
-[Mongoid](https://github.com/mongodb/mongoid) is assumed if using command_search
-to search MongoDB.
-
 [Chronic](https://github.com/mojombo/chronic) is currently used to parse user
 submitted dates, such as `tuesday` or `1/1/11`. Chronic's handling of timezones
 and leap years and such is not perfect, but is only used if 'Date' is declared
@@ -111,6 +105,8 @@ which takes a collection, a query, and an options hash.
   matches the quotes. A query can be altered before being passed to CommandSearch
   to sidestep any limitation. NOTE: If aliasing to something complex, wrapping the
   output in parentheses can help it work as expected with the command_search syntax.
+
+## Examples
 
 An example setup for searching a Foo class in MongoDB:
 ```ruby
@@ -154,7 +150,6 @@ class Foo
 end
 ```
 
-## Examples
 An example setup of using aliases to allow users to choose how a list is sorted:
 ```ruby
 class SortableFoo
