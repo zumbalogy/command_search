@@ -104,6 +104,7 @@ module CommandSearch
       type = field.is_a?(Class) ? field : field[:type]
       type = Numeric if type == Integer
       key_node[:field_type] = type
+      search_node[:original_value] = search_node[:value]
       cast_bool!(field, search_node)
       return cast_time!(node) if [Time, Date, DateTime].include?(type)
       return cast_numeric!(search_node) if Numeric == type

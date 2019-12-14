@@ -35,6 +35,10 @@ module CommandSearch
       ast = CommandSearch.build(:mongo, query, options)
       return source.where(ast)
     end
+    if source.respond_to?(:postgresql_connection)
+      ast = CommandSearch.build(:postgres, query, options)
+      return source.where(ast)
+    end
     ast = CommandSearch.build(:other, query, options)
     source.select { |x| CommandSearch::Memory.check(x, ast) }
   end
