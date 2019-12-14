@@ -9,7 +9,7 @@ module CommandSearch
         tail_border = '($|\s|[^:+\w])'
         return head_border + str + tail_border
       end
-      str.gsub!("'", "''") # TODO: this needs to be smarter, but its how to escape single quotes in postgres
+      str.gsub!("'", "''") # How to escape single quotes in postgres
       '\m' + str + '\y'
     end
 
@@ -29,15 +29,14 @@ module CommandSearch
         return "((#{field} = #{false_val}) OR (#{field} IS NULL))"
       end
 
-      op = '='
       if type == :quote
         val =  "'#{build_quoted_regex(search_node[:original_value])}'"
         op = '~'
       elsif type == :str
         val = "'#{Regexp.escape(search_node[:original_value])}'"
         op = '~*'
-      # elsif type == :number
-        # "#{field} = #{val}"
+      elsif type == :number
+        op = '='
       elsif type == Time
         return '0 = 1' unless val
         return "(#{field} >= '#{val[0]}') AND (#{field} < '#{val[1]}') AND (#{field} IS NOT NULL)"
