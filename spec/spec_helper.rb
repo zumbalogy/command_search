@@ -5,6 +5,16 @@ require('coderay')
 require('pry-byebug')
 require('binding_of_caller')
 
+require('active_record')
+require('pg')
+require('mongoid')
+
+Mongoid.load!(__dir__ + '/assets/mongoid.yml', :test)
+
+db_config = YAML.load_file(__dir__ + '/assets/postgres.yml')
+ActiveRecord::Base.remove_connection
+ActiveRecord::Base.establish_connection(db_config['test'])
+
 def pp(*inputs)
   puts
   inputs.each do |input|

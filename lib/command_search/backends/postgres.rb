@@ -19,6 +19,9 @@ module CommandSearch
       search_node = node[:value].last
       val = search_node[:value]
       type = search_node[:type]
+      if field == '__CommandSearch_dummy_key__'
+        return '0 = 1'
+      end
       if type == Boolean || type == :existence
         false_val = "'f'"
         false_val = 0 if field_node[:field_type] == Numeric

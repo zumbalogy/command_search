@@ -1,7 +1,4 @@
 load(__dir__ + '/../spec_helper.rb')
-require('mongoid')
-
-Mongoid.load!(__dir__ + '/../assets/mongoid.yml', :test)
 
 class Hat
   include Mongoid::Document

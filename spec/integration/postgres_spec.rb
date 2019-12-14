@@ -1,12 +1,6 @@
 load(__dir__ + '/../spec_helper.rb')
-require('active_record')
-require('pg')
 
 module PG_Spec
-
-  db_config = YAML.load_file(__dir__ + '/../assets/postgres.yml')
-  ActiveRecord::Base.remove_connection
-  ActiveRecord::Base.establish_connection(db_config['test'])
 
   ActiveRecord::Schema.define do
     create_table :hats, force: true do |t|
@@ -66,10 +60,6 @@ module PG_Spec
   end
 
   describe Hat do
-
-    before do
-      ActiveRecord::Base.establish_connection(db_config['test'])
-    end
 
     before(:each) do
       Hat.delete_all
