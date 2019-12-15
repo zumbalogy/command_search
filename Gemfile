@@ -7,6 +7,7 @@ group :test, :development do
 
   gem 'activerecord'
   gem 'pg'
+  gem 'sqlite3'
 
   gem 'ruby-prof'
   gem 'benchmark-ips'
