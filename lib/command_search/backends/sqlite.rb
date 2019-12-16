@@ -26,30 +26,34 @@ module CommandSearch
         return '0 = 1' unless val
         return "
           (
-            (#{field} >= '#{val[0]}') AND
-            (#{field} < '#{val[1]}') AND
+            (#{field} > '#{val[0] - 1}') AND
+            (#{field} <= '#{val[1] - 1}') AND
             (#{field} IS NOT NULL)
           )
         "
       end
       if type == :quote
         val = quote_string(val)
-        # TODO: escape * and ? and write tests around that
+        val.gsub!('[', '[[]') # TODO: make tests for these.
+        val.gsub!('*', '[*]')
+        val.gsub!('?', '[?]') # TODO: make tests for these.
+        border = '[ .,()?"\'\']'
         return "
           (
             (#{field} IS NOT NULL) AND
             (
               (#{field} GLOB '#{val}') OR
-              (#{field} GLOB '* #{val} *') OR
-              (#{field} GLOB '* #{val}') OR
-              (#{field} GLOB '#{val} *')
+              (#{field} GLOB '*#{border}#{val}#{border}*') OR
+              (#{field} GLOB '*#{border}#{val}') OR
+              (#{field} GLOB '#{val}#{border}*')
             )
           )
         "
       elsif type == :str
         op = 'LIKE'
-        val = quote_string(val).gsub('%', '\%').gsub('_', '\_')
-        # TODO: make tests for these.
+        val = quote_string(val)
+        val.gsub!('%', '\%')
+        val.gsub!('_', '\_') # TODO: make tests for these.
         val = "'%#{val}%' ESCAPE '\\'"
       elsif type == :number
         op = '='
@@ -101,7 +105,6 @@ module CommandSearch
           out.push("NOT (#{clause})")
         end
       end
-      # pp out
       out.join(' AND ')
     end
   end

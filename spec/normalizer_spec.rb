@@ -264,14 +264,14 @@ describe CommandSearch::Normalizer do
       type: :colon,
       value: [
         { value: 'nnn', field_type: String },
-        { type: :quote, value: /(^|\s|[^:+\w])\+foo($|\s|[^:+\w])/ }
+        { type: :quote, value: /(^|[^:+\w])\+foo($|[^:+\w])/ }
       ]
     }]
     norm('"foo?"', fields).should == [{
       type: :colon,
       value: [
         { value: 'nnn', field_type: String },
-        { type: :quote, value: /(^|\s|[^:+\w])foo\?($|\s|[^:+\w])/ }
+        { type: :quote, value: /(^|[^:+\w])foo\?($|[^:+\w])/ }
       ]
     }]
     norm('foo 5', fields).should == [

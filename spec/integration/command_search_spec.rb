@@ -57,6 +57,7 @@ describe CommandSearch do
   before do
     Mongoid.purge!
     Crow.delete_all
+    Bird.delete_all
     Bird.create(title: 'name name1 1')
     Bird.create(title: 'name name2 2', description: 'desk desk1 1')
     Bird.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
