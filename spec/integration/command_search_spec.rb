@@ -1,5 +1,9 @@
 load(__dir__ + '/../spec_helper.rb')
 
+db_config = YAML.load_file(__dir__ + '/../assets/postgres.yml')
+ActiveRecord::Base.remove_connection
+ActiveRecord::Base.establish_connection(db_config['test'])
+
 describe CommandSearch do
 
   class Bird
@@ -302,7 +306,7 @@ describe CommandSearch do
   it 'should handle fuzzing' do
     check = true
     trials = 500
-    trials = 999000 if ENV['CI']
+    trials = 333000 if ENV['CI']
     trials.times do |i|
       query = (0...24).map { (rand(130)).chr }.join
       begin

@@ -1,22 +1,10 @@
 module CommandSearch
-  module Postgres
+  module Sqlite
     module_function
 
-    def quote_string!(str)
+    def quote_string(str)
       # activerecord/lib/active_record/connection_adapters/abstract/quoting.rb:62
-      str.gsub!('\\', '\&\&')
-      str.gsub!("'", "''")
-    end
-
-    def build_quoted_regex(input)
-      quote_string!(input)
-      str = Regexp.escape(input)
-      if str[/(^\W)|(\W$)/]
-        head_border = '(^|\s|[^:+\w])'
-        tail_border = '($|\s|[^:+\w])'
-        return head_border + str + tail_border
-      end
-      '\m' + str + '\y'
+      str.gsub('\\', '\&\&').gsub("'", "''")
     end
 
     def command_search(node)
@@ -27,7 +15,7 @@ module CommandSearch
       type = search_node[:type]
       return '0 = 1' if field == '__CommandSearch_dummy_key__'
       if type == Boolean || type == :existence
-        false_val = "'f'"
+        false_val = "false"
         false_val = 0 if field_node[:field_type] == Numeric
         if val
           return "NOT ((#{field} = #{false_val}) OR (#{field} IS NULL))"
@@ -45,20 +33,28 @@ module CommandSearch
         "
       end
       if type == :quote
-        op = '~'
-        val =  "'#{build_quoted_regex(val)}'"
+        val = quote_string(val)
+        # TODO: escape * and ? and write tests around that
+        return "
+          (
+            (#{field} IS NOT NULL) AND
+            (
+              (#{field} GLOB '#{val}') OR
+              (#{field} GLOB '* #{val} *') OR
+              (#{field} GLOB '* #{val}') OR
+              (#{field} GLOB '#{val} *')
+            )
+          )
+        "
       elsif type == :str
-        op = '~~*'
-        quote_string!(val) # does this need to be clones?
-        val.gsub!('%', '\%') # TODO: make tests for these
-        val.gsub!('_', '\_')
-        val = "'%#{val}%'"
-        # op = '~*'
-        # val = "'#{Regexp.escape(val)}'" # TODO: benchmark this vs new way
+        op = 'LIKE'
+        val = quote_string(val).gsub('%', '\%').gsub('_', '\_')
+        # TODO: make tests for these.
+        val = "'%#{val}%' ESCAPE '\\'"
       elsif type == :number
         op = '='
       end
-      "(#{field} #{op} #{val}) AND (#{field} IS NOT NULL)"
+      "((#{field} #{op} #{val}) AND (#{field} IS NOT NULL))"
     end
 
     def compare_search(node)
@@ -105,6 +101,7 @@ module CommandSearch
           out.push("NOT (#{clause})")
         end
       end
+      # pp out
       out.join(' AND ')
     end
   end
