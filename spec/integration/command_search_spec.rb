@@ -307,7 +307,7 @@ describe CommandSearch do
   it 'should handle fuzzing' do
     check = true
     trials = 500
-    trials = 333000 if ENV['CI']
+    trials = 123000 if ENV['CI']
     trials.times do |i|
       query = (0...24).map { (rand(130)).chr }.join
       begin
@@ -336,7 +336,7 @@ describe CommandSearch do
 
   it 'should handle permutations' do
     check = true
-    strs = ['a', 'b', 'x', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
+    strs = ['a', 'b', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
     size = 3
     size = 5 if ENV['CI']
     strs.repeated_permutation(size).each do |perm|
