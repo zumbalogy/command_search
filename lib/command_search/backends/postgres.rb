@@ -2,15 +2,14 @@ module CommandSearch
   module Postgres
     module_function
 
-    def quote_string!(str)
+    def quote_string(str)
       # activerecord/lib/active_record/connection_adapters/abstract/quoting.rb:62
-      str.gsub!('\\', '\&\&')
-      str.gsub!("'", "''")
+      str.gsub('\\', '\&\&').gsub("'", "''")
     end
 
     def build_quoted_regex(input)
-      quote_string!(input)
-      str = Regexp.escape(input)
+      str = quote_string(input)
+      str = Regexp.escape(str)
       if str[/(^\W)|(\W$)/]
         head_border = '(^|[^:+\w])'
         tail_border = '($|[^:+\w])'
@@ -49,12 +48,10 @@ module CommandSearch
         val =  "'#{build_quoted_regex(val)}'"
       elsif type == :str
         op = '~~*'
-        quote_string!(val) # does this need to be clones?
-        val.gsub!('%', '\%') # TODO: make tests for these
+        val = quote_string(val) # does this need to be clones?
+        val.gsub!('%', '\%')
         val.gsub!('_', '\_')
         val = "'%#{val}%'"
-        # op = '~*'
-        # val = "'#{Regexp.escape(val)}'" # TODO: benchmark this vs new way
       elsif type == :number
         op = '='
       end

@@ -142,11 +142,6 @@ module SQLite_Spec
       Hat.search('title:a+').count.should == 5
       Hat.search('a+').count.should == 5
 
-      # Hat.create(title: 'z?')
-      # Hat.create(title: 'z-')
-      # Hat.create(title: '[xy]')
-      # Hat.create(title: 'a*b')
-
       Hat.search('title:"a+"').count.should == 2
 
       Hat.search('"a+"').count.should == 2
@@ -165,6 +160,56 @@ module SQLite_Spec
       Hat.search('title:"y"').count.should == 1
       Hat.search('title:"z"').count.should == 1
       Hat.search('title:"y,z"').count.should == 1
+    end
+
+    it 'should be able to handle SQL GLOB characters' do
+      Hat.create(title: 'z?')
+      Hat.create(title: 'z-')
+      Hat.create(title: 'xy')
+      Hat.create(title: 'x')
+      Hat.create(title: 'y')
+      Hat.create(title: '[xy]')
+      Hat.create(title: 'a*b')
+      Hat.create(title: 'aa*b')
+      Hat.create(title: 'hello?!?')
+      Hat.search('"a*b"').count.should == 1
+      Hat.search('a[*]b').count.should == 0
+      Hat.search('[a]').count.should == 0
+      Hat.search('[xy]').count.should == 1
+      Hat.search('z?').count.should == 1
+      Hat.search('"z?"').count.should == 1
+      Hat.search('hello').count.should == 1
+      Hat.search('hello???').count.should == 0
+      Hat.search('"hello???"').count.should == 0
+      Hat.search('hello?!?').count.should == 1
+      Hat.search('"hello?!?"').count.should == 1
+    end
+
+    it 'should be able to handle SQL LIKE characters' do
+      Hat.create(title: 'hello_world')
+      Hat.create(title: 'hello-world')
+      Hat.create(title: 'hello world')
+      Hat.create(title: 'hello__world')
+      Hat.create(title: 'hello--world')
+      Hat.create(title: 'hello%world')
+      Hat.create(title: 'hello%%world')
+      Hat.search('title:hello_world').count.should == 1
+      Hat.search('hello_world').count.should == 1
+      Hat.search('"hello_world"').count.should == 1
+      Hat.search('title:hello-world').count.should == 1
+      Hat.search('hello-world').count.should == 1
+      Hat.search('title:hello__world').count.should == 1
+      Hat.search('hello__world').count.should == 1
+      Hat.search('title:hello--world').count.should == 1
+      Hat.search('hello--world').count.should == 1
+      Hat.search('title:hello--worl%').count.should == 0
+      Hat.search('hello--worl%').count.should == 0
+      Hat.search('"hello--worl%"').count.should == 0
+      Hat.search('title:hello%world').count.should == 1
+      Hat.search('hello%world').count.should == 1
+      Hat.search('title:hello%%world').count.should == 1
+      Hat.search('hello%%world').count.should == 1
+      Hat.search('"hello%%world"').count.should == 1
     end
 
     it 'should be able to search for a boolean' do

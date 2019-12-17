@@ -34,9 +34,9 @@ module CommandSearch
       end
       if type == :quote
         val = quote_string(val)
-        val.gsub!('[', '[[]') # TODO: make tests for these.
+        val.gsub!('[', '[[]')
         val.gsub!('*', '[*]')
-        val.gsub!('?', '[?]') # TODO: make tests for these.
+        val.gsub!('?', '[?]')
         border = '[ .,()?"\'\']'
         return "
           (
@@ -53,7 +53,7 @@ module CommandSearch
         op = 'LIKE'
         val = quote_string(val)
         val.gsub!('%', '\%')
-        val.gsub!('_', '\_') # TODO: make tests for these.
+        val.gsub!('_', '\_')
         val = "'%#{val}%' ESCAPE '\\'"
       elsif type == :number
         op = '='
