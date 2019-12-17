@@ -15,8 +15,11 @@ command_search also supports aliasing so that the following substitutions are ea
 
 command_search does not require an engine and should be easy to set up.
 
-command_search works with [PostgreSQL](https://www.postgresql.org/),
-[MongoDB](https://www.mongodb.com/), and in-memory arrays of Ruby hashes.
+command_search works with
+[PostgreSQL](https://www.postgresql.org/),
+[SQLite](https://www.sqlite.org/),
+[MongoDB](https://www.mongodb.com/),
+and in-memory arrays of Ruby hashes.
 
 command_search is written with performance in mind and should have minimal overhead for most queries.
 
