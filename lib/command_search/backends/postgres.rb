@@ -48,7 +48,7 @@ module CommandSearch
         val =  "'#{build_quoted_regex(val)}'"
       elsif type == :str
         op = '~~*'
-        val = quote_string(val) # does this need to be clones?
+        val = quote_string(val)
         val.gsub!('%', '\%')
         val.gsub!('_', '\_')
         val = "'%#{val}%'"
