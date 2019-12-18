@@ -68,7 +68,7 @@ describe CommandSearch::Mongoer do
     def q2(s); q(s, { f1: { type: String, general_search: true }, str1: String }); end
     q2('"a b"').should == { 'f1' => /\ba\ b\b/ }
     q2("str1:'a-b'").should == { 'str1' => /\ba\-b\b/ }
-    q2("str1:'a+'").should == { 'str1' => /(^|\s|[^:+\w])a\+($|\s|[^:+\w])/ }
+    q2("str1:'a+'").should == { 'str1' => /(^|[^:+\w])a\+($|[^:+\w])/ }
   end
 
   it 'should handle numeric type general fields' do

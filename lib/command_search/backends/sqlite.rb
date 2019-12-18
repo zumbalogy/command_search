@@ -1,21 +1,10 @@
 module CommandSearch
-  module Postgres
+  module Sqlite
     module_function
 
     def quote_string(str)
       # activerecord/lib/active_record/connection_adapters/abstract/quoting.rb:62
       str.gsub('\\', '\&\&').gsub("'", "''")
-    end
-
-    def build_quoted_regex(input)
-      str = quote_string(input)
-      str = Regexp.escape(str)
-      if str[/(^\W)|(\W$)/]
-        head_border = '(^|[^:+\w])'
-        tail_border = '($|[^:+\w])'
-        return head_border + str + tail_border
-      end
-      '\m' + str + '\y'
     end
 
     def command_search(node)
@@ -26,7 +15,7 @@ module CommandSearch
       type = search_node[:type]
       return '0 = 1' if field == '__CommandSearch_dummy_key__'
       if type == Boolean || type == :existence
-        false_val = "'f'"
+        false_val = 'false'
         false_val = 0 if field_node[:field_type] == Numeric
         if val
           return "NOT ((#{field} = #{false_val}) OR (#{field} IS NULL))"
@@ -37,25 +26,39 @@ module CommandSearch
         return '0 = 1' unless val
         return "
           (
-            (#{field} >= '#{val[0]}') AND
-            (#{field} < '#{val[1]}') AND
+            (#{field} > '#{val[0] - 1}') AND
+            (#{field} <= '#{val[1] - 1}') AND
             (#{field} IS NOT NULL)
           )
         "
       end
       if type == :quote
-        op = '~'
-        val =  "'#{build_quoted_regex(val)}'"
+        val = quote_string(val)
+        val.gsub!('[', '[[]')
+        val.gsub!('*', '[*]')
+        val.gsub!('?', '[?]')
+        border = '[ .,()?"\'\']'
+        return "
+          (
+            (#{field} IS NOT NULL) AND
+            (
+              (#{field} GLOB '#{val}') OR
+              (#{field} GLOB '*#{border}#{val}#{border}*') OR
+              (#{field} GLOB '*#{border}#{val}') OR
+              (#{field} GLOB '#{val}#{border}*')
+            )
+          )
+        "
       elsif type == :str
-        op = '~~*'
+        op = 'LIKE'
         val = quote_string(val)
         val.gsub!('%', '\%')
         val.gsub!('_', '\_')
-        val = "'%#{val}%'"
+        val = "'%#{val}%' ESCAPE '\\'"
       elsif type == :number
         op = '='
       end
-      "(#{field} #{op} #{val}) AND (#{field} IS NOT NULL)"
+      "((#{field} #{op} #{val}) AND (#{field} IS NOT NULL))"
     end
 
     def compare_search(node)

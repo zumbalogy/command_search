@@ -1,5 +1,9 @@
 load(__dir__ + '/../spec_helper.rb')
 
+db_config = YAML.load_file(__dir__ + '/../assets/postgres.yml')
+ActiveRecord::Base.remove_connection
+ActiveRecord::Base.establish_connection(db_config['test'])
+
 describe CommandSearch do
 
   class Bird
@@ -53,6 +57,7 @@ describe CommandSearch do
   before do
     Mongoid.purge!
     Crow.delete_all
+    Bird.delete_all
     Bird.create(title: 'name name1 1')
     Bird.create(title: 'name name2 2', description: 'desk desk1 1')
     Bird.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
@@ -302,7 +307,7 @@ describe CommandSearch do
   it 'should handle fuzzing' do
     check = true
     trials = 500
-    trials = 999000 if ENV['CI']
+    trials = 123000 if ENV['CI']
     trials.times do |i|
       query = (0...24).map { (rand(130)).chr }.join
       begin
@@ -331,7 +336,7 @@ describe CommandSearch do
 
   it 'should handle permutations' do
     check = true
-    strs = ['a', 'b', 'x', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
+    strs = ['a', 'b', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
     size = 3
     size = 5 if ENV['CI']
     strs.repeated_permutation(size).each do |perm|
