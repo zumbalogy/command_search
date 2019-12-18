@@ -11,7 +11,14 @@ jobs:
          environment:
            POSTGRES_USER: command_search_user_test
            POSTGRES_DB: command_search_db_test
-      # Specify service dependencies here if necessary
+       - image: circleci/mysql:latest
+         command: [--default-authentication-plugin=mysql_native_password]
+         environment:
+            MYSQL_USER: root
+            MYSQL_HOST: 127.0.0.1
+            MYSQL_ROOT_HOST: "%"
+            MYSQL_DATABASE: command_search_db_test
+            MYSQL_ALLOW_EMPTY_PASSWORD: true
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
 
