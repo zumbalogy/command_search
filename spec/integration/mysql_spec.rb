@@ -2,7 +2,7 @@ load(__dir__ + '/../spec_helper.rb')
 
 module MySQL_Spec
 
-  DB = Mysql2::Client.new(host: 'localhost', username: 'root')
+  DB = Mysql2::Client.new(host: '127.0.0.1', username: 'root')
   DB.select_db('command_search_db_test')
 
   hat_schema = "
