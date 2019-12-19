@@ -5,10 +5,12 @@ require('coderay')
 require('pry-byebug')
 require('binding_of_caller')
 
-require('active_record')
-require('pg')
-require('sqlite3')
 require('mongoid')
+
+require('active_record')
+require('sqlite3')
+require('mysql2')
+require('pg')
 
 Mongoid.load!(__dir__ + '/assets/mongoid.yml', :test)
 

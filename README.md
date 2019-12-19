@@ -17,6 +17,7 @@ command_search does not require an engine and should be easy to set up.
 
 command_search works with
 [PostgreSQL](https://www.postgresql.org/),
+[MySQL](https://www.mysql.com/),
 [SQLite](https://www.sqlite.org/),
 [MongoDB](https://www.mongodb.com/),
 and in-memory arrays of Ruby hashes.

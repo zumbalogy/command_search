@@ -84,11 +84,12 @@ module PG_Spec
 
     it 'should be able to do specific matches' do
       Hat.create(title: 'ann')
+      Hat.create(title: 'ann of blue beaches')
       Hat.create(title: 'anne')
       Hat.create(title: 'nne')
       Hat.create(title: 'nn')
       Hat.create(title: 'zz zyx')
-      Hat.search('"ann"').count.should == 1
+      Hat.search('"ann"').count.should == 2
       Hat.search('"nn"').count.should == 1
       Hat.search('"nne"').count.should == 1
       Hat.search('"zz"').count.should == 1

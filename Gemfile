@@ -6,8 +6,9 @@ group :test, :development do
   gem 'mongoid'
 
   gem 'activerecord'
-  gem 'pg'
   gem 'sqlite3'
+  gem 'mysql2'
+  gem 'pg'
 
   gem 'ruby-prof'
   gem 'benchmark-ips'
