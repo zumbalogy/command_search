@@ -1,49 +1,36 @@
 load(__dir__ + '/../spec_helper.rb')
 
-module SQLite_Spec
+db_config = YAML.load_file(__dir__ + '/../assets/mysql.yml')
+ActiveRecord::Base.remove_connection
+ActiveRecord::Base.establish_connection(db_config['test'])
 
-  DB = SQLite3::Database.new(':memory:')
+module MySQL_Spec
 
-  hat_schema = "
-    Title TEXT,
-    Description TEXT,
-    State TEXT,
-    Tags TEXT,
-    Starred Boolean,
-    Child_id TEXT,
-    Feathers INT,
-    Feathers2 INT,
-    Cost INT,
-    Fav_date DATETIME,
-    Fav_date2 DATETIME
-  "
-  DB.execute("CREATE TABLE IF NOT EXISTS Hats(Id INTEGER PRIMARY KEY, #{hat_schema})")
-  DB.execute("CREATE TABLE IF NOT EXISTS Bats1(Id INTEGER PRIMARY KEY, Fav_date DATE)")
-  DB.execute("CREATE TABLE IF NOT EXISTS Bats2(Id INTEGER PRIMARY KEY, Fav_date DATETIME)")
-
-  class Hat
-    def self.create(attrs)
-      raw_vals = attrs.values.map do |x|
-        next x if x.is_a?(Numeric)
-        next "'#{x.gsub("'", "''")}'" if x.is_a?(String)
-        next x if x.is_a?(FalseClass)
-        next x if x.is_a?(TrueClass)
-        "'#{x}'"
-      end
-      vals = raw_vals.join(',')
-      keys = attrs.keys.join(',')
-      DB.execute("INSERT INTO Hats(#{keys}) VALUES(#{vals})")
+  ActiveRecord::Schema.define do
+    create_table :hats, force: true do |t|
+      t.string :title
+      t.string :description
+      t.string :state
+      t.string :tags
+      t.boolean :starred
+      t.string :child_id
+      t.integer :feathers
+      t.integer :feathers2
+      t.integer :cost
+      t.datetime :fav_date
+      t.datetime :fav_date2
     end
 
-    def self.all
-      DB.execute('SELECT * FROM Hats')
-    end
+    create_table(:bat1s, force: true) { |t| t.date :fav_date }
+    create_table(:bat2s, force: true) { |t| t.datetime :fav_date }
+  end
 
+  class Hat < ActiveRecord::Base
     def self.search(query)
       head_border = '(?<=^|\s|[|(-])'
       tail_border = '(?=$|\s|[|)])'
       sortable_field_names = ['title', 'description']
-      sort_field = 'id'
+      sort_field = nil
       options = {
         fields: {
           child_id: Boolean,
@@ -69,16 +56,17 @@ module SQLite_Spec
           }
         }
       }
-      sql_query = CommandSearch.build(:sqlite, query, options)
-      return DB.execute("SELECT * FROM Hats ORDER BY #{sort_field}") unless sql_query.length > 0
-      DB.execute("SELECT * FROM Hats WHERE #{sql_query} ORDER BY #{sort_field}")
+      sql_query = CommandSearch.build(:mysql, query, options)
+      results = self.where(sql_query)
+      results = results.order(sort_field => :asc) if sort_field
+      return results
     end
   end
 
   describe Hat do
 
     before(:each) do
-      DB.execute('DELETE FROM Hats')
+      Hat.delete_all
       Hat.create(title: 'name name1 1')
       Hat.create(title: 'name name2 2', description: 'desk desk1 1')
       Hat.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
@@ -142,9 +130,7 @@ module SQLite_Spec
       Hat.search('+a').count.should == 3
       Hat.search('title:a+').count.should == 5
       Hat.search('a+').count.should == 5
-
       Hat.search('title:"a+"').count.should == 2
-
       Hat.search('"a+"').count.should == 2
       Hat.search('title:"b+"').count.should == 1
       Hat.search('"b+"').count.should == 1
@@ -354,6 +340,11 @@ module SQLite_Spec
       Hat.search('tag:tags1 title:name3 name desk').count.should == 1
     end
 
+    it 'should be chainable with other selectors' do
+      Hat.search('desc:desk1 2').where(title: 'name name2 2').count.should == 1
+      Hat.where(title: 'name name3 3').search('desk2').where(tags: 'tags, tags1, 1').count.should == 1
+    end
+
     it 'should handle quoted apostrophes' do
       Hat.search("\"someone's iHat\"").count.should == 1
       Hat.search("title:\"someone's iHat\"").count.should == 1
@@ -542,37 +533,30 @@ module SQLite_Spec
         "desk new \n line",
         'zz'
       ]
-      Hat.search('sort:title').map {|x| x[1]}.should == sorted_titles
-      Hat.search('sort:bad_key_that_is_unsearchable').map {|x| x[1]}.should_not == sorted_titles
-      Hat.search('').map {|x| x[1]}.should_not == sorted_titles
-      Hat.search('sort:description').map {|x| x[2]}.should == sorted_desc
-      Hat.search('sort:sdfluho').map {|x| x[2]}.should_not == sorted_desc
-      Hat.search('').map {|x| x[2]}.should_not == sorted_desc
+      Hat.search('sort:title').map(&:title).should == sorted_titles
+      Hat.search('sort:bad_key_that_is_unsearchable').map(&:title).should_not == sorted_titles
+      Hat.search('').map(&:title).should_not == sorted_titles
+      Hat.search('sort:description').map(&:description).should == sorted_desc
+      Hat.search('sort:sdfluho').map(&:description).should_not == sorted_desc
+      Hat.search('').map(&:description).should_not == sorted_desc
     end
 
     it 'should handle different time data types' do
-      class Bat1
-        def self.search(query, options)
-          sql_query = CommandSearch.build(:sqlite, query, options)
-          DB.execute("SELECT * FROM Bats1 WHERE #{sql_query}")
-        end
+      class Bat1 < ActiveRecord::Base
       end
-      class Bat2
-        def self.search(query, options)
-          sql_query = CommandSearch.build(:sqlite, query, options)
-          DB.execute("SELECT * FROM Bats2 WHERE #{sql_query}")
-        end
+      class Bat2 < ActiveRecord::Base
       end
 
       def make_bats(fav_date)
-        DB.execute("INSERT INTO Bats1(Fav_date) VALUES('#{fav_date}')")
-        DB.execute("INSERT INTO Bats2(Fav_date) VALUES('#{fav_date}')")
+        Bat1.create(fav_date: fav_date)
+        Bat2.create(fav_date: fav_date)
       end
 
       def search_bats(query, total)
-        [Date, Time, DateTime].each do |klass|
-          Bat1.search(query, { fields: { fav_date: klass }}).count.should == total
-          Bat2.search(query, { fields: { fav_date: klass }}).count.should == total
+        [Bat1, Bat2].each do |klass|
+          CommandSearch.search(klass, query, { fields: { fav_date: DateTime } }).count.should == total
+          CommandSearch.search(klass, query, { fields: { fav_date: Date } }).count.should == total
+          CommandSearch.search(klass, query, { fields: { fav_date: Time } }).count.should == total
         end
       end
 
@@ -586,7 +570,6 @@ module SQLite_Spec
       make_bats(Time.new(1995, 12, 12))
 
       search_bats('fav_date:"1993"',       0)
-      search_bats('fav_date:"1981"',       0)
       search_bats('fav_date:"1994"',       0)
       search_bats('fav_date:"1995"',       4)
       search_bats('fav_date:"1996"',       0)
@@ -617,9 +600,9 @@ module SQLite_Spec
       Hat.create(title: 'penguin', description: 'panda')
       Hat.create(description: 'panda')
       Hat.create(title: 'penguin')
-      Hat.search('-panda').count.should == Hat.all.count - 2
-      Hat.search('-(penguin panda)').count.should == Hat.all.count - 1
-      Hat.search('-(penguin|panda)').count.should == Hat.all.count - 3
+      Hat.search('-panda').count.should == Hat.count - 2
+      Hat.search('-(penguin panda)').count.should == Hat.count - 1
+      Hat.search('-(penguin|panda)').count.should == Hat.count - 3
       Hat.search('-(penguin panda) panda').count.should == 1
       Hat.search('-(penguin panda) penguin').count.should == 1
       Hat.search('-(penguin panda) penguin panda').count.should == 0

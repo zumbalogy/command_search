@@ -1,5 +1,5 @@
 module CommandSearch
-  module Postgres
+  module Mysql
     module_function
 
     def quote_string(str)
@@ -7,15 +7,15 @@ module CommandSearch
       str.gsub('\\', '\&\&').gsub("'", "''")
     end
 
-    def build_quoted_regex(input)
-      str = quote_string(input)
+    def build_quoted_regex(str)
       str = Regexp.escape(str)
+      str = quote_string(str)
       if str[/(^\W)|(\W$)/]
-        head_border = '(^|[^:+\w])'
-        tail_border = '($|[^:+\w])'
+        head_border = '(^|[^:+[[:alnum:]]])'
+        tail_border = '($|[^:+[[:alnum:]]])'
         return head_border + str + tail_border
       end
-      '\m' + str + '\y'
+      '\\\\b' + str + '\\\\b'
     end
 
     def command_search(node)
@@ -26,28 +26,26 @@ module CommandSearch
       type = search_node[:type]
       return '0 = 1' if field == '__CommandSearch_dummy_key__'
       if type == Boolean || type == :existence
-        false_val = "'f'"
-        false_val = 0 if field_node[:field_type] == Numeric
         if val
-          return "NOT ((#{field} = #{false_val}) OR (#{field} IS NULL))"
+          return "(NOT ((#{field} IS NULL) OR (#{field} LIKE '0')))"
         end
-        return "((#{field} = #{false_val}) OR (#{field} IS NULL))"
+        return "((#{field} IS NULL) OR (#{field} LIKE '0'))"
       end
       if type == Time
         return '0 = 1' unless val
         return "
           (
-            (#{field} >= '#{val[0]}') AND
-            (#{field} < '#{val[1]}') AND
+            (#{field} > '#{val[0] - 1}') AND
+            (#{field} <= '#{val[1] - 1}') AND
             (#{field} IS NOT NULL)
           )
         "
       end
       if type == :quote
-        op = '~'
+        op = 'RLIKE BINARY'
         val = "'#{build_quoted_regex(val)}'"
       elsif type == :str
-        op = '~~*'
+        op = 'LIKE'
         val = quote_string(val)
         val.gsub!('%', '\%')
         val.gsub!('_', '\_')
@@ -55,7 +53,7 @@ module CommandSearch
       elsif type == :number
         op = '='
       end
-      "(#{field} #{op} #{val}) AND (#{field} IS NOT NULL)"
+      "((#{field} #{op} #{val}) AND (#{field} IS NOT NULL))"
     end
 
     def compare_search(node)
@@ -102,6 +100,7 @@ module CommandSearch
           out.push("NOT (#{clause})")
         end
       end
+      # pp out
       out.join(' AND ')
     end
   end

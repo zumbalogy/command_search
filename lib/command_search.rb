@@ -8,6 +8,7 @@ load(__dir__ + '/command_search/backends/memory.rb')
 load(__dir__ + '/command_search/backends/mongoer.rb')
 load(__dir__ + '/command_search/backends/postgres.rb')
 load(__dir__ + '/command_search/backends/sqlite.rb')
+load(__dir__ + '/command_search/backends/mysql.rb')
 
 class Boolean; end
 
@@ -29,6 +30,10 @@ module CommandSearch
       Normalizer.normalize!(ast, fields, false)
       return Sqlite.build_query(ast)
     end
+    if type == :mysql
+      Normalizer.normalize!(ast, fields, false)
+      return Mysql.build_query(ast)
+    end
     Normalizer.normalize!(ast, fields)
     return Mongoer.build_query(ast) if type == :mongo
     ast
@@ -45,6 +50,10 @@ module CommandSearch
     end
     if source.respond_to?(:sqlite3_connection)
       ast = CommandSearch.build(:sqlite, query, options)
+      return source.where(ast)
+    end
+    if source.respond_to?(:mysql2_connection)
+      ast = CommandSearch.build(:mysql, query, options)
       return source.where(ast)
     end
     ast = CommandSearch.build(:other, query, options)
