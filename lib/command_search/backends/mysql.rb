@@ -100,7 +100,6 @@ module CommandSearch
           out.push("NOT (#{clause})")
         end
       end
-      # pp out
       out.join(' AND ')
     end
   end
