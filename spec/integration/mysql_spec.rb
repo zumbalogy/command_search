@@ -23,6 +23,7 @@ module MySQL_Spec
   DB.query("CREATE TABLE IF NOT EXISTS Bats2(Id INTEGER PRIMARY KEY, Fav_date DATETIME)")
 
   class Hat
+    E = (0..).each
     def self.create(attrs)
       raw_vals = attrs.values.map do |x|
         next x if x.is_a?(Numeric)
@@ -36,7 +37,7 @@ module MySQL_Spec
       end
       vals = raw_vals.join(',')
       keys = attrs.keys.join(',')
-      DB.query("INSERT INTO Hats(#{keys}) VALUES(#{vals})")
+      DB.query("INSERT INTO Hats(Id, #{keys}) VALUES(#{E.next}, #{vals})")
     end
 
     def self.all
