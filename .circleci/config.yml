@@ -68,10 +68,10 @@ jobs:
           command: |
             sudo apt-get install default-mysql-client
 
-      - run:
-          name: Start MySQL CLI
-          command: |
-            mysql.server start
+      # - run:
+      #     name: Start MySQL CLI
+      #     command: |
+      #       mysql.server start
 
       # # Database setup
       # - run: bundle exec rake db:create
