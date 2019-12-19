@@ -86,7 +86,6 @@ module MySQL_Spec
       DB.query('DELETE FROM Hats')
       DB.query('DELETE FROM Bats1')
       DB.query('DELETE FROM Bats2')
-      sleep 0.02
       Hat.create(title: 'name name1 1')
       Hat.create(title: 'name name2 2', description: 'desk desk1 1')
       Hat.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
@@ -548,13 +547,12 @@ module MySQL_Spec
         "desk new \n line",
         'zz'
       ]
-      pp Hat.search('sort:title').to_a
-      Hat.search('sort:title').map { |x| x['title'] }.should == sorted_titles
-      Hat.search('sort:bad_key_that_is_unsearchable').map { |x| x['title'] }.should_not == sorted_titles
-      Hat.search('').map { |x| x['title'] }.should_not == sorted_titles
-      Hat.search('sort:description').map { |x| x['description'] }.should == sorted_desc
-      Hat.search('sort:sdfluho').map { |x| x['description'] }.should_not == sorted_desc
-      Hat.search('').map { |x| x['description'] }.should_not == sorted_desc
+      Hat.search('sort:title').map { |x| x.values[1] }.should == sorted_titles
+      Hat.search('sort:bad_key_that_is_unsearchable').map { |x| x.values[1] }.should_not == sorted_titles
+      Hat.search('').map { |x| x.values[1] }.should_not == sorted_titles
+      Hat.search('sort:description').map { |x| x.values[2] }.should == sorted_desc
+      Hat.search('sort:sdfluho').map { |x| x.values[2] }.should_not == sorted_desc
+      Hat.search('').map { |x| x.values[2] }.should_not == sorted_desc
     end
 
     it 'should handle different time data types' do
