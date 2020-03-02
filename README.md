@@ -1,5 +1,8 @@
 # Command Search
 [![CircleCI](https://circleci.com/gh/zumbalogy/command_search.svg?style=svg)](https://circleci.com/gh/zumbalogy/command_search)
+[![Gem Version](https://badge.fury.io/rb/command_search.svg)](https://badge.fury.io/rb/command_search)
+[![Downloads](https://img.shields.io/gem/dt/command_search.svg?style=flat)](https://rubygems.org/gems/command_search)
+
 
 A Ruby gem to help let users query collections.
 
