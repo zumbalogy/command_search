@@ -5,13 +5,11 @@ show example using aliases to support commas in numbers
 or something. that does not validate commas being every 3. maybe:
 /(?<=\d),\d\d\d/
 
-look into
-Even with existence boolean, this should maybe check that the existing value is not false.
-in mongoer.rb, memory.rb might need that too.
-
 show example of it playing friendly with pagination for mongo/memory.
 
 maybe support a real regex type. using that could mean certain things are not needed.
+(one feature that would be possible with this: specify a certain number of matches. like,
+this name field must have the string ":)" 3 times.)
 
 it could be nice to be able to have an alias where the proper name is off limits.
 
@@ -20,19 +18,12 @@ support relations
 
 more customizable syntax
 
-One potential future feature
-would be to be able to specify a certain number of matches. like,
-this name field must have the string ":)" 3 times. having
-an option to pass though to real regexes might solve this.
-
 chronic thinks that "2000" means 20:20 today, not year 2000.
 for colons, though confusing for compares:
 it would be nice if "foo:monday" matched any date on a monday, not just like this monday.
 
 q2('-(-1 2 -abc)').should == q2('-(-1) -(2) abc') is currently equivalent logically, but not the same exact query .
 multiple NORs under same parent can be merged together.
-
-consider that it might make the api simpler just to make everything "allow existence boolean"
 
 https://apidock.com/rails/v4.2.7/ActiveRecord/QueryMethods/readonly
 
