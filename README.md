@@ -18,7 +18,7 @@ command_search makes it easy to add syntax and macros for users.
 The query `A+` could be handled as `grade>=95`.
 Some examples:
 * `$99` --> `price:99`
-* `starred` --> `liked_at:true` (can match a non-nil value)
+* `starred` --> `liked_at:true` (to match non-nil values)
 * `hair=blue` --> `hair:blue`
 * `name:alice` --> `user_name:alice`
 * `sent_by:me` --> `sent_by:59guwJphUhqfd2A` (but with the actual ID)
@@ -85,7 +85,7 @@ An array of hashes or a class connected to MongoDB, MySQL, SQLite, or PostgreSQL
 A string to used to search the collection.
 
 **Options:**
-A hash that has the keys `fields` and, optionally, `aliases`.
+A hash that has the keys `fields` and `aliases`.
 
  - fields:
 
@@ -102,7 +102,7 @@ A hash that has the keys `fields` and, optionally, `aliases`.
 
  - aliases:
 
-   A hash that maps strings or regexes to strings or procs.
+   An optional hash that maps strings or regexes to strings or procs.
    Parts of the query that match will be replaced by the string or the returned value of the proc.
 
    String keys are case insensitive, respect word boundaries, and skip quoted sections of the query.
