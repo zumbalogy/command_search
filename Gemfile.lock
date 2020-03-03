@@ -78,6 +78,9 @@ DEPENDENCIES
   rspec_junit_formatter
   ruby-prof
   sqlite3
+<<<<<<< Updated upstream
 
 BUNDLED WITH
    2.1.2
+=======
+>>>>>>> Stashed changes
