@@ -3,33 +3,32 @@
 [![Gem Version](https://badge.fury.io/rb/command_search.svg)](https://badge.fury.io/rb/command_search)
 [![Downloads](https://img.shields.io/gem/dt/command_search.svg?style=flat)](https://rubygems.org/gems/command_search)
 
+**command_search** is a Ruby gem to help users query collections.
 
-A Ruby gem to help let users query collections.
-
-command_search should make it easy to create search inputs where
-users can search for `flamingos` or `author:herbert`, as well
-as using negations, comparisons, ors, and ands.
-
-command_search also supports aliasing so that the following substitutions are easy to make:
-* `name:alice` to `user_name:alice`
-* `A+` to `grade>=97`
-* `user:me` to `user:59guwJphUhqfd2A` (but with the actual ID)
-* `hair=blue` to `hair:blue`
-
-command_search does not require an engine and should be easy to set up.
-
-command_search works with
+It works with
 [PostgreSQL](https://www.postgresql.org/),
 [MySQL](https://www.mysql.com/),
 [SQLite](https://www.sqlite.org/),
 [MongoDB](https://www.mongodb.com/),
-and in-memory arrays of Ruby hashes.
+and arrays of hashes.
+
+It provides basic search functionality as well as as quotation, negation, comparison, or, and and logic, so users can search for `flamingos` or `author:herbert` or `price<200 discount`.
+
+command_search makes it easy to add syntax and macros for users.
+The query `A+` could be handled as `grade>=95`.
+Some examples:
+* `$99` --> `price:99`
+* `starred` --> `liked_at:true` (can match a non-nil value)
+* `hair=blue` --> `hair:blue`
+* `name:alice` --> `user_name:alice`
+* `sent_by:me` --> `sent_by:59guwJphUhqfd2A` (but with the actual ID)
 
 command_search is written with performance in mind and should have minimal overhead for most queries.
+It does not require an engine and should be easy to set up.
 
-A sample Rails app using command_search can be seen at [github.com/zumbalogy/command_search_example](https://github.com/zumbalogy/command_search_example).
-
-A live version can be found at [earthquake-search.herokuapp.com](https://earthquake-search.herokuapp.com/).
+An example Rails app using command_search:
+[earthquake-search.herokuapp.com](https://earthquake-search.herokuapp.com/)
+([code](https://github.com/zumbalogy/command_search_example)).
 
 Feedback, questions, bug reports, pull requests, and suggestions are welcome.
 
@@ -44,22 +43,27 @@ gem 'command_search'
 ```
 
 ## Syntax
-Normal queries like `friday dinner`, `shoelace`, or `treehouse` work normally,
-and will perform case-insensitive partial matching per space-delineated part of
-the query. The order of the parts should not affect the search results. A user
-can specify full-word and case-sensitive query parts by using quotation marks,
-so the search `'ann'` will not match "anne" or `"bob"` to not match "bobby".
-Quoted query parts can search for whole phrases, such as `"You had me at
-HELLO!"`. Collections can also be queried with commands, which can be used in
-combination.
+Basic queries like `friday dinner`, `shoelace`, or `treehouse` will perform order-agnostic case-insensitive partial matching per space-delineated part of the query.
+The query `fire ants` will match "PANTS ON FIRE".
+
+Quoted text can search for whole phrases or full names, such as `"You had me at HELLO!"` or `artist:"Ilya Repin"`.
+Quoted text is case sensitive and only matches full words.
+The query `"ann"` will not match "anne" or "ANN".
+
 
 | Command | Character            | Examples                               |
 | ----    | -----                | ----------                             |
 | Specify | `:`                  | `attachment:true`, `grade:A`           |
-| And     | `(...)`              | `(error important)`, `liked poked` (Note: space is an implicit and) |
+| And     | `(...)`              | `(error important)`, `liked poked` (Space is an implicit AND) |
 | Or      | `\|`                 | `color\|colour`, `red\|orange\|yellow` |
-| Compare | `<`, `>`, `<=`, `>=` | `created_at<monday`, `100<=pokes`      |
+| Compare | `<`, `>`, `<=`, `>=` | `created_at<monday`, `100<=pokes`, `height>width`      |
 | Negate  | `-`                  | `-error`, `-(sat\|sun)`                |
+
+## Dependencies
+[Chronic](https://github.com/mojombo/chronic)
+is currently used to parse dates, such as `created_at>tuesday` or `send_on:1/1/11`.
+Chronic's handling of timezones and leap years is not perfect.
+It is only used if 'Date' is declared as a field type in the config.
 
 ## Limitations
 The logic can be slow (100ms+) for queries that exceed 10,000 characters.
@@ -71,13 +75,9 @@ specify (`:`) or compare (`<`, `>`, `<=`, `>=`).
 
 'Fuzzy' searching is not currently supported.
 
-## Dependencies
-[Chronic](https://github.com/mojombo/chronic) is currently used to parse user
-submitted dates, such as `tuesday` or `1/1/11`. Chronic's handling of timezones
-and leap years and such is not perfect, but is only used if 'Date' is declared
-as a field type in the config.
-
 ## Setup
+command_search provides 
+
 To query collections, command_search provides the CommandSearch.search function,
 which takes a collection, a query, and an options hash.
 
@@ -140,7 +140,7 @@ class Foo
         star: :starred,
         tags: { type: String, general_search: true },
         tag: :tags,
-        feathers: [Numeric, :allow_existence_boolean],
+        feathers: { type: Numeric, allow_existence_boolean: true },
         cost: Numeric,
         fav_date: Time
       },

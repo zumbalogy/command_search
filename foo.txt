@@ -1,0 +1,8 @@
+mention unicode
+and also competiroe.
+
+
+maybe mention https://github.com/wvanbergen/scoped_search as an alternative
+
+
+have one of readme examples be non-mongo

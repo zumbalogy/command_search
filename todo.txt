@@ -35,3 +35,5 @@ https://github.com/mojombo/chronic#time-zones
 Further cleaning up the test suite.
 
 make circleCi test multiple ruby versions and such
+
+a script to bundle, install DB deps, set up dbs. 
