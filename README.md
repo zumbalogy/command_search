@@ -6,10 +6,10 @@
 **command_search** is a Ruby gem to help users query collections.
 
 It works with
-[PostgreSQL](https://www.postgresql.org/),
+[MongoDB](https://www.mongodb.com/),
 [MySQL](https://www.mysql.com/),
 [SQLite](https://www.sqlite.org/),
-[MongoDB](https://www.mongodb.com/),
+[PostgreSQL](https://www.postgresql.org/),
 and arrays of hashes.
 
 It provides basic search functionality as well as as quotation, negation, comparison, or, and and logic, so users can search for `flamingos` or `author:herbert` or `price<200 discount`.
@@ -76,42 +76,46 @@ specify (`:`) or compare (`<`, `>`, `<=`, `>=`).
 'Fuzzy' searching is not currently supported.
 
 ## Setup
-command_search provides 
+The `CommandSearch.search` function takes a collection, a query, and an options hash.
 
-To query collections, command_search provides the CommandSearch.search function,
-which takes a collection, a query, and an options hash.
+**Collection:**
+An array of hashes or a class connected to MongoDB, MySQL, SQLite, or PostgreSQL.
 
-* Collection: Either an array of hashes or a class that is a Mongoid::Document.
+**Query:**
+A string to used to search the collection.
 
-* Query: The string to use to search the collection, such as 'user:me' or 'bee|wasp'.
+**Options:**
+A hash that has the keys `fields` and, optionally, `aliases`.
 
-* Options: A hash that describes how to search the collection.
+ - fields:
 
-  * fields: A hash that maps symbols matching a field's name
-  to its type, another symbol as an alias, or a hash. Valid types are `String`,
-  `Boolean`, `Numeric`, and `Time`.
-  Fields to be searched though when no field is specified in the query should be
-  marked like so: `description: { type: String, general_search: true }`
-  `Boolean` fields will check for existence of a value if the underlying
-  data is not actually a boolean, so the query `bookmarked:true` could work even
-  if the bookmarked field is a timestamp. To be able to query the bookmarked
-  field as both a timestamp and a boolean, a symbol can be added to the value
-  in the hash like so: `bookmarked: { type: Time, allow_existence_boolean: true }`.
+   A hash that maps a field's name to a type. Valid types are `String`, `Boolean`, `Numeric`, and `Time`.
 
-  * aliases: A hash that maps strings or regex to strings or procs.
-  CommandSearch will iterate though the hash and substitute parts of the query
-  that match the key with the value or the returned value of the proc. The procs
-  will be called once per match with the value of the match and are free to have
-  closures and side effects.
-  This happens before any other parsing or searching steps.
-  Keys that are strings will be converted into a regex that is case insensitive,
-  respects word boundaries, and does not alias quoted sections of the query. Note
-  that, for aliasing purposes, specifying and comparing query parts are treated as
-  whole words, so `'foo' => 'bar'` will not effect the query `baz:foo`.
-  Regex keys will be used as is, but respect user quotations unless the regex
-  matches the quotes. A query can be altered before being passed to CommandSearch
-  to sidestep any limitation. NOTE: If aliasing to something complex, wrapping the
-  output in parentheses can help it work as expected with the command_search syntax.
+   Boolean fields will check for existence of a value if the underlying data is not actually a boolean.
+   To query the `foo` field as both a timestamp and a boolean, a field can be configured like so:
+   `foo: { type: Time, allow_existence_boolean: true }`.
+
+    Fields to be searched across when no field is specified can be marked like so:
+    `bar: { type: String, general_search: true }`
+
+    A symbol can also be mapped to the symbol of another field as a simple alias.
+
+ - aliases:
+
+   A hash that maps strings or regexes to strings or procs.
+   Parts of the query that match will be replaced by the string or the returned value of the proc.
+
+   String keys are case insensitive, respect word boundaries, and skip quoted sections of the query.
+   Query parts that specify their fields are also skipped, so `'foo' => 'bar'` will not effect the query `baz:foo`.
+
+   Regex keys can match anything outside of quotations (and can explicitly match quotes).
+
+   Procs are called once per match and are passed the matching value.
+   Procs are free to have closures and side effects.
+
+   A query can be altered before being passed to CommandSearch to sidestep any limitation.
+
+   TIP: If aliasing to something complex, wrapping the output in parentheses can help it work as expected when combined with other syntax.
 
 ## Examples
 
