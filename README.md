@@ -12,7 +12,7 @@ It works with
 [PostgreSQL](https://www.postgresql.org/),
 and arrays of hashes.
 
-It provides basic search functionality as well as as quotation, negation, comparison, or, and and logic, so users can search for `flamingos` or `author:herbert` or `price<200 discount`.
+It provides basic search functionality as well as as quotation, negation, comparison, date handling, OR, and AND logic, so users can search for `flamingos` or `author:herbert` or `price<200 discount`.
 
 command_search makes it easy to add syntax and macros for users.
 The query `A+` could be handled as `grade>=95`.
