@@ -40,7 +40,7 @@ module CommandSearch
   end
 
   def search(source, query, options)
-    if source.respond_to?(:mongo_client) && source.queryable
+    if source.respond_to?(:mongo_client)
       ast = CommandSearch.build(:mongo, query, options)
       return source.where(ast)
     end
