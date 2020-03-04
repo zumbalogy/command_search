@@ -51,7 +51,10 @@ module CommandSearch
         end
         val = [input[i - 1], input[i + 1]]
         cluster_or!(val)
-        input[(i - 1)..(i + 1)] = { type: :or, value: val }
+        input[i][:type] = :or
+        input[i][:value] = val
+        input.delete_at(i + 1)
+        input.delete_at(i - 1)
       end
     end
 
@@ -66,22 +69,21 @@ module CommandSearch
           input.delete_at(i)
           next
         end
-        input[i..(i + 1)] = {
-          type: :not,
-          value: [input[i + 1]]
-        }
+        input[i][:type] = :not
+        input[i][:value] = [input[i + 1]]
+        input.delete_at(i + 1)
       end
     end
 
-    def unchain!(input, types)
-      i = 0
-      while i < input.length - 2
+    def unchain!(input)
+      i = 1
+      while i < input.length - 3
         left = input[i][:type]
         right = input[i + 2][:type]
-        if types.include?(left) && types.include?(right)
-          input.insert(i + 1, input[i + 1].clone())
-        end
         i += 1
+        next unless left == :colon || left == :compare
+        next unless right == :colon || right == :compare
+        input.insert(i, input[i].clone())
       end
     end
 
@@ -99,17 +101,17 @@ module CommandSearch
       input.delete_at(i - 1)
     end
 
-    def clean_ununusable!(input)
+    def clean!(input)
       return unless input.any?
-      if [:compare, :colon].include?(input.first[:type])
+      if input[0][:type] == :colon || input[0][:type] == :compare
         merge_right!(input, 0)
       end
-      if [:compare, :colon].include?(input.last[:type])
+      if input[-1][:type] == :colon || input[-1][:type] == :compare
         merge_left!(input, input.length - 1)
       end
       i = 1
       while i < input.length - 1
-        next i += 1 unless [:compare, :colon].include?(input[i][:type])
+        next i += 1 unless input[i][:type] == :colon || input[i][:type] == :compare
         if input[i + 1][:type] == :minus
           merge_right!(input, i + 1)
         elsif ![:str, :number, :quote].include?(input[i - 1][:type])
@@ -123,8 +125,8 @@ module CommandSearch
     end
 
     def parse!(input)
-      clean_ununusable!(input)
-      unchain!(input, [:colon, :compare])
+      clean!(input)
+      unchain!(input)
       cluster_cmds!(input)
       group_parens!(input)
       cluster_not!(input)
