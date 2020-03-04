@@ -87,14 +87,14 @@ module CommandSearch
       end
     end
 
-    def merge_right!(input, i)
+    def r_merge!(input, i)
       input[i][:type] = :str
       return unless input[i + 1] && input[i + 1][:type] == :str
       input[i][:value] = input[i][:value] + input[i + 1][:value]
       input.delete_at(i + 1)
     end
 
-    def merge_left!(input, i)
+    def l_merge!(input, i)
       input[i][:type] = :str
       return unless input[i - 1] && input[i - 1][:type] == :str
       input[i][:value] = input[i - 1][:value] + input[i][:value]
@@ -104,20 +104,20 @@ module CommandSearch
     def clean!(input)
       return unless input.any?
       if input[0][:type] == :colon || input[0][:type] == :compare
-        merge_right!(input, 0)
+        r_merge!(input, 0)
       end
       if input[-1][:type] == :colon || input[-1][:type] == :compare
-        merge_left!(input, input.length - 1)
+        l_merge!(input, input.length - 1)
       end
       i = 1
       while i < input.length - 1
         next i += 1 unless input[i][:type] == :colon || input[i][:type] == :compare
         if input[i + 1][:type] == :minus
-          merge_right!(input, i + 1)
+          r_merge!(input, i + 1)
         elsif ![:str, :number, :quote].include?(input[i - 1][:type])
-          merge_right!(input, i)
+          r_merge!(input, i)
         elsif ![:str, :number, :quote].include?(input[i + 1][:type])
-          merge_left!(input, i)
+          l_merge!(input, i)
         else
           i += 1
         end
