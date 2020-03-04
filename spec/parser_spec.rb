@@ -586,11 +586,12 @@ describe CommandSearch::Parser do
   end
 
   it 'should handle wacky combinations' do
-    parse(':').should == [{ type: :str, value: ':' }]
+    parse('').should == []
     parse('|').should == []
     parse('(-)').should == []
     parse('(|)').should == []
     parse(' ( ( ()) -(()  )) ').should == []
+    parse(':').should == [{ type: :str, value: ':' }]
     parse('foo -').should == [{ type: :str, value: 'foo' }]
     parse('<|a').should == [
       {

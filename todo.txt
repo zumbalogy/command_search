@@ -36,4 +36,4 @@ Further cleaning up the test suite.
 
 make circleCi test multiple ruby versions and such
 
-a script to bundle, install DB deps, set up dbs. 
+a script to bundle, install DB deps, set up dbs.

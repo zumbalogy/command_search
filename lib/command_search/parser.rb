@@ -85,33 +85,40 @@ module CommandSearch
       end
     end
 
-    def merge_strs(input, (x, y))
-      if input[y] && input[y][:type] == :str
-        values = input.map { |x| x[:value] }
-        { type: :str, value: values.join() }
-      else
-        input[x][:type] = :str
-        input
-      end
+    def merge_right!(input, i)
+      input[i][:type] = :str
+      return unless input[i + 1] && input[i + 1][:type] == :str
+      input[i][:value] = input[i][:value] + input[i + 1][:value]
+      input.delete_at(i + 1)
+    end
+
+    def merge_left!(input, i)
+      input[i][:type] = :str
+      return unless input[i - 1] && input[i - 1][:type] == :str
+      input[i][:value] = input[i - 1][:value] + input[i][:value]
+      input.delete_at(i - 1)
     end
 
     def clean_ununusable!(input)
-      i = 1
-      while i < input.length
-        next i += 1 unless input[i][:type] == :minus
-        next i += 1 unless [:compare, :colon].include?(input[i - 1][:type])
-        input[i..i + 1] = merge_strs(input[i..i + 1], [0, 1])
+      return unless input.any?
+      if [:compare, :colon].include?(input.first[:type])
+        merge_right!(input, 0)
       end
-      i = 0
-      while i < input.length
-        next i += 1 if ![:compare, :colon].include?(input[i][:type])
-        next i += 1 if i > 0 &&
-          (i < input.count - 1) &&
-          [:str, :number, :quote].include?(input[i - 1][:type]) &&
-          [:str, :number, :quote].include?(input[i + 1][:type])
-
-        input[i..i + 1] = merge_strs(input[i..i + 1], [0, 1])
-        input[i - 1..i] = merge_strs(input[i - 1..i], [1, 0]) if i > 0
+      if [:compare, :colon].include?(input.last[:type])
+        merge_left!(input, input.length - 1)
+      end
+      i = 1
+      while i < input.length - 1
+        next i += 1 unless [:compare, :colon].include?(input[i][:type])
+        if input[i + 1][:type] == :minus
+          merge_right!(input, i + 1)
+        elsif ![:str, :number, :quote].include?(input[i - 1][:type])
+          merge_right!(input, i)
+        elsif ![:str, :number, :quote].include?(input[i + 1][:type])
+          merge_left!(input, i)
+        else
+          i += 1
+        end
       end
     end
 
