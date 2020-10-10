@@ -1,8 +1,7 @@
-# NOTE: This module supports does not support Mysql eariler than 8.0, due to
-# changes in how word breaks are handled in regexes.
+# NOTE: This module supports MySql 5.7 with its distinct word break regex rules.
 
 module CommandSearch
-  module Mysql
+  module MysqlV5
     module_function
 
     def quote_string(str)
@@ -14,11 +13,11 @@ module CommandSearch
       str = Regexp.escape(str)
       str = quote_string(str)
       if str[/(^\W)|(\W$)/]
-        head_border = '(^|[^:+[[:alnum:]]])'
-        tail_border = '($|[^:+[[:alnum:]]])'
+        head_border = '(^|[[:<:]]|\\\\()'
+        tail_border = '($|[[:>:]]|\\\\))'
         return head_border + str + tail_border
       end
-      '\\\\b' + str + '\\\\b'
+      '[[:<:]]' + str + '[[:>:]]'
     end
 
     def command_search(node)

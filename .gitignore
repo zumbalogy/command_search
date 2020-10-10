@@ -1,3 +1,4 @@
 /command_search-*.gem
 *.~undo-tree~
 *.*~
+/coverage

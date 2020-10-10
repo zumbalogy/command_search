@@ -9,6 +9,7 @@ load(__dir__ + '/command_search/backends/mongoer.rb')
 load(__dir__ + '/command_search/backends/postgres.rb')
 load(__dir__ + '/command_search/backends/sqlite.rb')
 load(__dir__ + '/command_search/backends/mysql.rb')
+load(__dir__ + '/command_search/backends/mysql_v5.rb')
 
 class Boolean; end
 
