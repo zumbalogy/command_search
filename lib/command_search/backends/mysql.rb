@@ -11,8 +11,8 @@ module CommandSearch
       str = Regexp.escape(str)
       str = quote_string(str)
       if str[/(^\W)|(\W$)/]
-        head_border = '([[:<:]]|^)'
-        tail_border = '([[:>:]]|$)'
+        head_border = '(^|[[:<:]]|\\\\()'
+        tail_border = '($|[[:>:]]|\\\\))'
         return head_border + str + tail_border
       end
       '[[:<:]]' + str + '[[:>:]]'

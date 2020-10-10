@@ -145,22 +145,26 @@ module MySQL_Spec
       Hat.create(title: '.a+.')
       Hat.create(title: '(b+)')
       Hat.create(title: 'c?')
+      Hat.create(title: '(+d)')
       Hat.create(title: 'x,y,z')
-      Hat.search('title:+').count.should == 8
-      Hat.search('+').count.should == 8
+      Hat.search('title:+').count.should == 9
+      Hat.search('+').count.should == 9
       Hat.search('title:+a').count.should == 3
       Hat.search('+a').count.should == 3
       Hat.search('title:a+').count.should == 5
       Hat.search('a+').count.should == 5
       Hat.search('title:"a+"').count.should == 2
       Hat.search('"a+"').count.should == 2
+      Hat.search('title:b+').count.should == 1
+      Hat.search('b+').count.should == 1
       Hat.search('title:"b+"').count.should == 1
       Hat.search('"b+"').count.should == 1
       Hat.search('title:"c"').count.should == 1
       Hat.search('"c"').count.should == 1
       Hat.search('title:"c?"').count.should == 1
+      Hat.search('title:"+d"').count.should == 1
+      Hat.search('title:"(+d)"').count.should == 1
       Hat.search('"c?"').count.should == 1
-
       Hat.search('"x"').count.should == 1
       Hat.search('y').count.should == 1
       Hat.search('"y"').count.should == 1
