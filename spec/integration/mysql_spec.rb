@@ -2,8 +2,11 @@ load(__dir__ + '/../spec_helper.rb')
 
 module MySQL_Spec
 
+  db_name = 'command_search_db_test'
   DB = Mysql2::Client.new(host: '127.0.0.1', username: 'root')
-  DB.select_db('command_search_db_test')
+  DB.query("DROP DATABASE IF EXISTS #{db_name}")
+  DB.query("CREATE DATABASE #{db_name}")
+  DB.select_db(db_name)
 
   hat_schema = "
     Title TEXT,
@@ -23,7 +26,7 @@ module MySQL_Spec
   DB.query("CREATE TABLE IF NOT EXISTS Bats2(Id INTEGER PRIMARY KEY, Fav_date DATETIME)")
 
   class Hat
-    E = (0..).each
+    E = (0..9999999).each
     def self.create(attrs)
       raw_vals = attrs.values.map do |x|
         next x if x.is_a?(Numeric)
@@ -570,7 +573,7 @@ module MySQL_Spec
         end
       end
 
-      E = (0...).each
+      E = (0...999999999).each
       def make_bats(fav_date)
         e = E.next()
         DB.query("INSERT INTO Bats1(Id, Fav_date) VALUES(#{e}, '#{fav_date.strftime('%Y-%m-%d %H:%M:%S')}')")

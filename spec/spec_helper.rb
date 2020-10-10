@@ -1,3 +1,9 @@
+require 'simplecov'
+
+SimpleCov.start do
+  add_filter "spec/"
+end
+
 load(__dir__ + '/../lib/command_search.rb')
 
 require('rspec')
