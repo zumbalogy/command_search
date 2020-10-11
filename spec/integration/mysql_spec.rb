@@ -7,6 +7,7 @@ module MySQL_Spec
   DB.query("DROP DATABASE IF EXISTS #{db_name}")
   DB.query("CREATE DATABASE #{db_name}")
   DB.select_db(db_name)
+  DB_VERSION = DB.query('SHOW VARIABLES WHERE Variable_name = "version"').first['Value']
 
   hat_schema = "
     Title TEXT,
@@ -77,7 +78,9 @@ module MySQL_Spec
           }
         }
       }
-      sql_query = CommandSearch.build(:mysql, query, options)
+      version = :mysql
+      version = :mysqlV5 if DB_VERSION[0] == '5'
+      sql_query = CommandSearch.build(version, query, options)
       return DB.query("SELECT * FROM Hats ORDER BY `#{sort_field}`") unless sql_query.length > 0
       DB.query("SELECT * FROM Hats WHERE #{sql_query} ORDER BY `#{sort_field}`")
     end

@@ -35,6 +35,10 @@ module CommandSearch
       Normalizer.normalize!(ast, fields, false)
       return Mysql.build_query(ast)
     end
+    if type == :mysqlV5
+      Normalizer.normalize!(ast, fields, false)
+      return MysqlV5.build_query(ast)
+    end
     Normalizer.normalize!(ast, fields)
     return Mongoer.build_query(ast) if type == :mongo
     ast
