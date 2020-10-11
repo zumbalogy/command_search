@@ -13,7 +13,9 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_ROOT_PASSWORD: password
+          # MYSQL_ROOT_PASSWORD: password
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=12s
@@ -26,8 +28,8 @@ jobs:
       run: |
         apt-get update
         apt-get install -y mysql-client
-        mysql --host mysql -uroot -ppassword -e "SHOW DATABASES"
-        mysql --host mysql -uroot -ppassword -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
+        mysql --host mysql -uroot -e "SHOW DATABASES"
+        mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
         echo "$MYSQL_PORT"
         echo "$MYSQL_PORT"
         echo "$MYSQL_PORT"
