@@ -20,7 +20,7 @@ jobs:
           --health-cmd="mysqladmin ping"
           --health-interval=8s
           --health-timeout=4s
-          --health-retries=2
+          --health-retries=4
       postgres:
         image: postgres
         env:
@@ -32,7 +32,7 @@ jobs:
           --health-cmd pg_isready
           --health-interval 8s
           --health-timeout 4s
-          --health-retries 2
+          --health-retries 4
     steps:
     - uses: actions/checkout@v2
     - name: Setup Ruby
