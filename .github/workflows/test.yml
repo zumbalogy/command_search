@@ -27,6 +27,9 @@ jobs:
         apt-get update
         apt-get install -y mysql-client
         mysql --host mysql -uroot -ppassword -e "SHOW DATABASES"
+        echo $MYSQL_PORT
+        echo $MYSQL_PORT
+        echo $MYSQL_PORT
 
 
 
