@@ -1,4 +1,3 @@
-name: Test
 jobs:
   test-container:
     runs-on: ubuntu-latest
