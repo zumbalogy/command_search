@@ -28,8 +28,8 @@ jobs:
       run: |
         apt-get update
         apt-get install -y mysql-client
-        mysql --host mysql -uroot -e "SHOW DATABASES"
         mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
+        mysql --host mysql -uroot -e "SHOW DATABASES"
         echo "$MYSQL_PORT"
         echo "$MYSQL_PORT"
         echo "$MYSQL_PORT"
