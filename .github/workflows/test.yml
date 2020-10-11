@@ -1,33 +1,21 @@
 name: Test
-on:
-  push:
-    branches: [ master ]
-  pull_request:
 jobs:
-  build:
+  test-container:
     runs-on: ubuntu-latest
+    container: ubuntu
     services:
-      mysql:
+      mydb:
         image: mysql:5.7
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: true
-          MYSQL_DATABASE: command_search_db_test
-          # MYSQL_ROOT_PASSWORD: root
-          # MYSQL_USER: root
-        ports:
-        - 3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=8s
-          --health-timeout=4s
-          --health-retries=2
+          MYSQL_ROOT_PASSWORD: password
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
-    - uses: actions/checkout@v2
-    - name: Apt Install
-      run: sudo apt-get install -y -qq build-essential gnupg2 procps default-libmysqlclient-dev
-    - name: Setup Mysql
+    - name: Verify MySQL connection from container
       run: |
-        mysql -uroot -h127.0.0.1 -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
+        apt-get update
+        apt-get install -y mysql-client
+        mysql --host mydb -uroot -ppassword -e "SHOW DATABASES"
+
 
 
 
