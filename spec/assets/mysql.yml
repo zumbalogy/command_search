@@ -7,7 +7,7 @@ development:
   socket: /tmp/mysql.sock
   pool: 5
   username: root
-  password: ''
+  password: root
   port: <%= ENV.fetch("MYSQL_PORT") { '3306' } %>
 
 test:
@@ -19,5 +19,5 @@ test:
   socket: /tmp/mysql.sock
   pool: 5
   username: root
-  password: ''
+  password: root
   port: <%= ENV.fetch("MYSQL_PORT") { '3306' } %>
