@@ -12,14 +12,14 @@ jobs:
         env:
           MYSQL_DATABASE: command_search_db_test
           MYSQL_USER: root
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
         ports:
         - 3306
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=8s
           --health-timeout=4s
-          --health-retries=4
+          --health-retries=2
       postgres:
         image: postgres
         env:
@@ -31,7 +31,7 @@ jobs:
           --health-cmd pg_isready
           --health-interval 8s
           --health-timeout 4s
-          --health-retries 4
+          --health-retries 2
     steps:
     - uses: actions/checkout@v2
     - name: Setup Ruby
@@ -39,7 +39,10 @@ jobs:
       with:
         ruby-version: 2.7.1
     - name: Apt Install
-      run: sudo apt-get install -y -qq build-essential gnupg2 procps default-libmysqlclient-dev  libsqlite3-dev
+      run: sudo apt-get install -y -qq build-essential gnupg2 procps default-libmysqlclient-dev libsqlite3-dev
+    - name: Setup Mysql
+      run: |
+        mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
     - name: Bundle
       run: |
         gem install bundler -v 2.1.4
@@ -47,5 +50,4 @@ jobs:
     - name: Rspec
       run: bundle exec rspec
       env:
-        MYSQL_PASSWORD99: root
         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
