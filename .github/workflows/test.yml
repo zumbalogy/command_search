@@ -42,7 +42,7 @@ jobs:
       run: sudo apt-get install -y -qq build-essential gnupg2 procps default-libmysqlclient-dev libsqlite3-dev
     - name: Setup Mysql
       run: |
-        mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
+        mysql -uroot -h127.0.0.1 -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
     - name: Bundle
       run: |
         gem install bundler -v 2.1.4
