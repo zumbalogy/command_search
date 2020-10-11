@@ -1,0 +1,32 @@
+name: Test
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: command_search_db_test
+          MYSQL_ROOT_PASSWORD: ''
+          MYSQL_USER: root
+        ports:
+        - 3306
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Ruby
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.7.1
+    - name: Apt Install
+      run: sudo apt-get install -y -qq build-essential gnupg2 procps default-libmysqlclient-dev
+    - name: Bundle
+      run: |
+        gem install bundler -v 2.1.4
+        bundle install --path=vendor/bundle --local --deployment --jobs=4 --retry=2
+    - name: Rspec
+      run: |
+        bundle exec rspec --format progress
