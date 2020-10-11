@@ -13,7 +13,7 @@ jobs:
           MYSQL_DATABASE: command_search_db_test
           MYSQL_HOST: 127.0.0.1
           MYSQL_USER: root
-          MYSQL_ROOT_HOST: "%"
+          MYSQL_ROOT_PASSWORD: root
           MYSQL_ALLOW_EMPTY_PASSWORD: true
         ports:
         - 3306
@@ -48,3 +48,5 @@ jobs:
         bundle install --jobs=4 --retry=2
     - name: Rspec
       run: bundle exec rspec
+      env:
+        MYSQL_PASSWORD: root

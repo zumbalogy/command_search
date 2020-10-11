@@ -8,7 +8,7 @@ development:
   socket: /tmp/mysql.sock
   pool: 5
   username: root
-  password: ''
+  password: <%= ENV.fetch("MYSQL_PASSWORD") { '' } %>
 
 test:
   adapter: mysql2
@@ -20,4 +20,4 @@ test:
   socket: /tmp/mysql.sock
   pool: 5
   username: root
-  password: ''
+  password: <%= ENV.fetch("MYSQL_PASSWORD") { '' } %>
