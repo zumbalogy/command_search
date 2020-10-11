@@ -10,21 +10,23 @@ jobs:
     runs-on: ubuntu-latest
     container: ubuntu
     services:
-      mydb:
+      mysql:
         image: mysql:5.7
         env:
           MYSQL_ROOT_PASSWORD: password
         options: >-
-          --health-cmd="mysqladmin ping" 
+          --health-cmd="mysqladmin ping"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
     steps:
     - name: Verify MySQL connection from container
+      env:
+        MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
       run: |
         apt-get update
         apt-get install -y mysql-client
-        mysql --host mydb -uroot -ppassword -e "SHOW DATABASES"
+        mysql --host mysql -uroot -ppassword -e "SHOW DATABASES"
 
 
 
