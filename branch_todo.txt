@@ -1,0 +1,5 @@
+add tests for sql thats build by each mysql module
+
+make a thing that can test against diff versions (ruby versions or activerecord/bds maybe or diff docker images for diff db versions)
+https://github.com/makandra/gemika
+https://github.com/thoughtbot/appraisal
