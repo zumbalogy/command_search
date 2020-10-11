@@ -1,10 +1,8 @@
-name: Rails Unit Tests
-
+name: Tests
 on:
   push:
     branches: [ master ]
   pull_request:
-
 jobs:
   test-container:
     runs-on: ubuntu-latest
@@ -13,16 +11,14 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
-          # MYSQL_ROOT_PASSWORD: password
           MYSQL_ALLOW_EMPTY_PASSWORD: true
-
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=12s
           --health-timeout=6s
           --health-retries=6
     steps:
-    - name: Verify MySQL connection from container
+    - name: Setup MySQL
       env:
         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
       run: |
@@ -30,9 +26,23 @@ jobs:
         apt-get install -y mysql-client
         mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
         mysql --host mysql -uroot -e "SHOW DATABASES"
-        echo "$MYSQL_PORT"
-        echo "$MYSQL_PORT"
-        echo "$MYSQL_PORT"
+    - uses: actions/checkout@v2
+    - name: Setup Ruby
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.7.1
+    - name: Apt Install
+      run: sudo apt-get install -y -qq build-essential gnupg2 procps default-libmysqlclient-dev libsqlite3-dev
+    # - name: Bundle
+    #   run: |
+    #     gem install bundler -v 2.1.4
+    #     bundle install --jobs=4 --retry=2
+    # - name: Rspec
+    #   run: bundle exec rspec
+      # env:
+      #   MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+
+
 
 
 
