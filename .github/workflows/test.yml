@@ -40,6 +40,8 @@ jobs:
         ruby-version: 2.7.1
     - name: Apt Install
       run: sudo apt-get install -y -qq build-essential gnupg2 procps default-libmysqlclient-dev default-mysql-client libsqlite3-dev
+    -name: Init Database
+      run: mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE IF NOT EXISTS db1;'
     - name: Bundle
       run: |
         gem install bundler -v 2.1.4
