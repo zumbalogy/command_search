@@ -61,10 +61,6 @@ jobs:
           command: |
             sudo apt-get install default-mysql-client
 
-      # # Database setup
-      # - run: bundle exec rake db:create
-      # - run: bundle exec rake db:schema:load
-
       - run:
           name: run tests
           command: |
