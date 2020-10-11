@@ -11,10 +11,11 @@ jobs:
         image: mysql:5.7
         env:
           MYSQL_DATABASE: command_search_db_test
-          MYSQL_ROOT_PASSWORD: ''
+          MYSQL_ROOT_PASSWORD: root
           MYSQL_USER: root
         ports:
         - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
       postgres:
         image: postgres
         env:
@@ -37,5 +38,4 @@ jobs:
         gem install bundler -v 2.1.4
         bundle install --jobs=4 --retry=2
     - name: Rspec
-      run: |
-        bundle exec rspec --format progress
+      run: bundle exec rspec
