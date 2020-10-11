@@ -4,10 +4,10 @@ development:
   collation: utf8mb4_unicode_ci
   host: 127.0.0.1
   database: command_search_db_dev
-  socket: /tmp/mysql.sock
+  # socket: /tmp/mysql.sock
   pool: 5
   username: root
-  password: ''
+  password: <%= ENV.fetch("MYSQL_PASSWORD") { '' } %>
   port: <%= ENV.fetch("MYSQL_PORT") { '3306' } %>
 
 test:
@@ -16,8 +16,8 @@ test:
   collation: utf8mb4_unicode_ci
   host: 127.0.0.1
   database: command_search_db_test
-  socket: /tmp/mysql.sock
+  # socket: /tmp/mysql.sock
   pool: 5
   username: root
-  password: ''
+  password: <%= ENV.fetch("MYSQL_PASSWORD") { '' } %>
   port: <%= ENV.fetch("MYSQL_PORT") { '3306' } %>
