@@ -25,7 +25,6 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: _
           POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_USER: command_search_user_test
           POSTGRES_DB: command_search_db_test
