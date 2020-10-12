@@ -10,7 +10,7 @@ jobs:
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: true
         ports:
-        - 3306:3306 
+        - 3306:3306
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=12s
@@ -36,6 +36,8 @@ jobs:
         apt-get install -y mysql-client
         mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
         mysql --host mysql -uroot -e "SHOW DATABASES"
+        mysql --host mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'port';"
+        mysql --host mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'hostname';"
     - uses: actions/checkout@v2
     - name: Setup Ruby
       uses: actions/setup-ruby@v1
