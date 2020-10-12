@@ -4,7 +4,7 @@ module MySQL_Spec
 
   db_name = 'command_search_db_test'
   DB = Mysql2::Client.new(
-    host: '127.0.0.1',
+    host: 'mysql',
     username: 'root',
     password: '',
     pool: 5,
