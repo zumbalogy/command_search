@@ -4,7 +4,7 @@ module MySQL_Spec
 
   db_name = 'command_search_db_test'
   DB = Mysql2::Client.new(
-    host: ENV.fetch("MYSQL_HOST") { '127.0.0.1' },
+    host: ENV['CI'] ? 'mysql' : '127.0.0.1',
     port: ENV.fetch("MYSQL_PORT") { '3306' },
     username: 'root',
     password: '',
