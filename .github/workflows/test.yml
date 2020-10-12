@@ -34,6 +34,7 @@ jobs:
       run: |
         apt-get update
         apt-get install -y mysql-client
+        lsof -i -P -n | grep LISTEN
         mysql -h 127.0.0.1 -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
         mysql -h 127.0.0.1 -uroot -e "SHOW DATABASES"
         mysql -h 127.0.0.1 -uroot -e "SHOW VARIABLES WHERE Variable_name = 'port';"
