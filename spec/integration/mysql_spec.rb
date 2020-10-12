@@ -3,7 +3,12 @@ load(__dir__ + '/../spec_helper.rb')
 module MySQL_Spec
 
   db_name = 'command_search_db_test'
-  DB = Mysql2::Client.new(host: '127.0.0.1', username: 'root')
+  DB = Mysql2::Client.new(
+    host: '127.0.0.1',
+    username: 'root',
+    port: ENV.fetch("MYSQL_PORT") { '3306' }
+  )
+
   DB.query("DROP DATABASE IF EXISTS #{db_name}")
   DB.query("CREATE DATABASE #{db_name}")
   DB.select_db(db_name)
