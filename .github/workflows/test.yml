@@ -35,7 +35,7 @@ jobs:
       run: apt-get install -yqq libpq-dev libsqlite3-dev
     - name: Bundle
       run: |
-        gem install bundler -v 2.1.4
+        gem install bundler
         bundle install --jobs=4 --retry=2
     # - name: Rspec
     #   run: bundle exec rspec
