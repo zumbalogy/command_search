@@ -36,10 +36,10 @@ jobs:
       run: |
         apt-get update
         apt-get install -y mysql-client
-        mysql -h 127.0.0.1 -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
-        mysql -h 127.0.0.1 -uroot -e "SHOW DATABASES"
-        mysql -h 127.0.0.1 -uroot -e "SHOW VARIABLES WHERE Variable_name = 'port';"
-        mysql -h 127.0.0.1 -uroot -e "SHOW VARIABLES WHERE Variable_name = 'hostname';"
+        mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
+        mysql -uroot -e "SHOW DATABASES"
+        mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'port';"
+        mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'hostname';"
     - uses: actions/checkout@v2
     - name: Setup Ruby
       uses: actions/setup-ruby@v1
