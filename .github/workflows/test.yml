@@ -9,6 +9,8 @@ jobs:
         image: mysql:5.7
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: true
+        ports:
+        - 3306
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=12s
@@ -27,8 +29,8 @@ jobs:
           --health-retries 2
     steps:
     - name: Setup MySQL
-      env:
-        MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+      # env:
+      #   MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
       run: |
         apt-get update
         apt-get install -y mysql-client
