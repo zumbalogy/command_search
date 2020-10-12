@@ -47,11 +47,9 @@ jobs:
         gem install bundler
         bundle install --jobs=4 --retry=2
     - name: Rspec
-      run: MYSQL_HOST=mysql bundle exec rspec
+      run: bundle exec rspec
       env:
         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
-        MYSQL_HOST: mysql
-
 
 
 # name: Test
