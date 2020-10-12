@@ -29,15 +29,15 @@ jobs:
       #     --health-retries 2
     steps:
     - name: Setup MySQL
-      env:
-        MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+      # env:
+      #   MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
       run: |
         apt-get update
         apt-get install -y mysql-client
-        mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
-        mysql --host mysql -uroot -e "SHOW DATABASES"
-        mysql --host mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'port';"
-        mysql --host mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'hostname';"
+        mysql -h 127.0.0.1 -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
+        mysql -h 127.0.0.1 -uroot -e "SHOW DATABASES"
+        mysql -h 127.0.0.1 -uroot -e "SHOW VARIABLES WHERE Variable_name = 'port';"
+        mysql -h 127.0.0.1 -uroot -e "SHOW VARIABLES WHERE Variable_name = 'hostname';"
     - uses: actions/checkout@v2
     - name: Setup Ruby
       uses: actions/setup-ruby@v1
