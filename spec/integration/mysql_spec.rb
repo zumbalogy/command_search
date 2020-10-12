@@ -8,7 +8,7 @@ module MySQL_Spec
     username: 'root',
     password: '',
     pool: 5,
-    socket: '/tmp/mysql.sock'
+    socket: '/tmp/mysql.sock',
     encoding: 'utf8mb4',
     collation: 'utf8mb4_unicode_ci',
     port: ENV.fetch("MYSQL_PORT") { '3306' }
