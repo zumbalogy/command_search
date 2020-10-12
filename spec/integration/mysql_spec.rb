@@ -1,5 +1,14 @@
 load(__dir__ + '/../spec_helper.rb')
 
+puts ENV.fetch("DATABASE_HOST")
+puts ENV.fetch("DATABASE_HOST")
+puts ENV.fetch("DATABASE_HOST")
+puts ENV.fetch("DATABASE_HOST")
+puts ENV.fetch("DATABASE_HOST")
+puts ENV.fetch("DATABASE_HOST")
+puts ENV.fetch("DATABASE_HOST")
+puts ENV.fetch("DATABASE_HOST")
+
 module MySQL_Spec
 
   db_name = 'command_search_db_test'
