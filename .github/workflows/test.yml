@@ -9,6 +9,7 @@ jobs:
         image: mysql:5.7
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_HOST: 127.0.0.1
         ports:
         - 3306:3306
         options: >-
@@ -34,7 +35,6 @@ jobs:
       run: |
         apt-get update
         apt-get install -y mysql-client
-        lsof -i -P -n | grep LISTEN
         mysql -h 127.0.0.1 -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
         mysql -h 127.0.0.1 -uroot -e "SHOW DATABASES"
         mysql -h 127.0.0.1 -uroot -e "SHOW VARIABLES WHERE Variable_name = 'port';"
