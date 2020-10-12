@@ -29,7 +29,7 @@ jobs:
       with:
         ruby-version: 2.7.1
     - name: Apt Install
-      run: apt-get install -yqq libpq-dev rubygems ruby ruby-dev rubygems-integration sqlite3 libsqlite3-dev
+      run: apt-get install -yqq build-essential libpq-dev rubygems ruby ruby-dev rubygems-integration sqlite3 libsqlite3-dev
     - name: Bundle
       run: |
         ruby -v
