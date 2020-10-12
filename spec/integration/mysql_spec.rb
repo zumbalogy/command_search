@@ -4,14 +4,13 @@ module MySQL_Spec
 
   db_name = 'command_search_db_test'
   DB = Mysql2::Client.new(
-    host: 'mysql',
+    host: ENV.fetch("MYSQL_HOST") { '127.0.0.1' },
+    port: ENV.fetch("MYSQL_PORT") { '3306' },
     username: 'root',
     password: '',
-    pool: 5,
     socket: '/tmp/mysql.sock',
     encoding: 'utf8mb4',
-    collation: 'utf8mb4_unicode_ci',
-    port: ENV.fetch("MYSQL_PORT") { '3306' }
+    collation: 'utf8mb4_unicode_ci'
   )
 
   DB.query("DROP DATABASE IF EXISTS #{db_name}")

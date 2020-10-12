@@ -14,6 +14,17 @@ jobs:
           --health-interval=12s
           --health-timeout=6s
           --health-retries=6
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_USER: command_search_user_test
+          POSTGRES_DB: command_search_db_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 8s
+          --health-timeout 4s
+          --health-retries 2
     steps:
     - name: Setup MySQL
       env:
@@ -39,6 +50,7 @@ jobs:
       run: bundle exec rspec
       env:
         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+        MYSQL_HOST: mysql
 
 
 
