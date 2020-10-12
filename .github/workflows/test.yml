@@ -32,7 +32,7 @@ jobs:
       with:
         ruby-version: 2.7.1
     - name: Apt Install
-      run: apt-get install -y -qq libsqlite3-dev
+      run: apt-get install -y -qq build-essential gnupg2 procps libsqlite3-dev
     - name: Bundle
       run: |
         gem install bundler -v 2.1.4
