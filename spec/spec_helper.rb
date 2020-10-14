@@ -27,8 +27,7 @@ Mongoid.configure do |config|
   }
 end
 
-Mongo::Logger.logger.level = Logger::FATAL
-
+# Mongo::Logger.logger.level = Logger::FATAL
 
 def pp(*inputs)
   puts
