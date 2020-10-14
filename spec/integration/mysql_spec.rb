@@ -12,14 +12,6 @@ module MySQL_Spec
     host: ENV.fetch("MYSQL_HOST") { '127.0.0.1' },
     port:  ENV.fetch("MYSQL_PORT") { '3306' },
     username: 'root',
-    # password: '',
-    # socket: '/tmp/mysql.sock',
-    # encoding: 'utf8mb4',
-    # collation: 'utf8mb4_unicode_ci'
-    # password: '',
-    # socket: '/tmp/mysql.sock',
-    # encoding: 'utf8mb4',
-    # collation: 'utf8mb4_unicode_ci'
   )
 
   DB.query("DROP DATABASE IF EXISTS #{db_name}")
