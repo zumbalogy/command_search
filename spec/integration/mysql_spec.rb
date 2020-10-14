@@ -1,22 +1,16 @@
 load(__dir__ + '/../spec_helper.rb')
 
-puts ENV.fetch("MYSQL_PORT")
-puts ENV.fetch("MYSQL_PORT")
-puts ENV.fetch("MYSQL_PORT")
-puts ENV.fetch("MYSQL_PORT")
-puts ENV.fetch("MYSQL_PORT")
-puts ENV.fetch("MYSQL_PORT")
+puts 999
 puts ENV.fetch("MYSQL_PORT")
 puts ENV.fetch("MYSQL_HOST")
-puts ENV.fetch("MYSQL_HOST")
-puts ENV.fetch("MYSQL_HOST")
+puts 999
 
 module MySQL_Spec
 
   db_name = 'command_search_db_test'
   DB = Mysql2::Client.new(
-    host: '127.0.0.1',
-    port: '3306',
+    host: ENV.fetch("MYSQL_HOST") { '127.0.0.1' },
+    port:  ENV.fetch("MYSQL_PORT") { '3306' },
     username: 'root',
     password: '',
     socket: '/tmp/mysql.sock',
