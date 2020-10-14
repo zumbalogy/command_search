@@ -1,8 +1,8 @@
 load(__dir__ + '/../spec_helper.rb')
 
 puts 999
-puts ENV.fetch("MYSQL_PORT")
-puts ENV.fetch("MYSQL_HOST")
+puts ENV.fetch("MYSQL_PORT") { 'nope' }
+puts ENV.fetch("MYSQL_HOST") { 'nope' }
 puts 999
 
 module MySQL_Spec
