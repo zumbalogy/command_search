@@ -4,11 +4,16 @@ ActiveRecord::Base.remove_connection
 
 describe CommandSearch do
 
-  # ['mysql', 'postgres'].each do |db_version|
-  ['mysql'].each do |db_version|
+
+  default_ports = {
+    'mysql' => '3306',
+    'postgres' => '5432'
+  }
+
+  ['mysql', 'postgres'].each do |db_version|
     db_config = YAML.load_file("#{__dir__}/../assets/#{db_version}.yml")['test']
     db_config['host'] = ENV.fetch("#{db_version.upcase}_HOST") { '127.0.0.1' }
-    db_config['port'] = ENV.fetch("#{db_version.upcase}_PORT") { '3306' }
+    db_config['port'] = ENV.fetch("#{db_version.upcase}_PORT") { default_ports[db_version] }
     ActiveRecord::Base.establish_connection(db_config)
 
     class Bird

@@ -8,7 +8,7 @@ jobs:
       mongodb:
         image: mongo:4.2
         ports:
-        - 27017:27017
+          - 27017:27017
       mysql:
         image: mysql:5.7
         env:
@@ -22,17 +22,19 @@ jobs:
           --health-interval=12s
           --health-timeout=6s
           --health-retries=6
-      # postgres:
-      #   image: postgres
-      #   env:
-      #     POSTGRES_HOST_AUTH_METHOD: trust
-      #     POSTGRES_USER: command_search_user_test
-      #     POSTGRES_DB: command_search_db_test
-      #   options: >-
-      #     --health-cmd pg_isready
-      #     --health-interval 8s
-      #     --health-timeout 4s
-      #     --health-retries 2
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_USER: command_search_user_test
+          POSTGRES_DB: command_search_db_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 8s
+          --health-timeout 4s
+          --health-retries 2
     steps:
     - name: Setup MySQL
       run: |
@@ -59,62 +61,5 @@ jobs:
         MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
         MYSQL_HOST: mysql
         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
-
-
-
-
-# name: Test
-# on:
-#   push:
-#     branches: [ master ]
-#   pull_request:
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     services:
-#       mysql:
-#         image: mysql:5.7
-#         env:
-#           MYSQL_DATABASE: command_search_db_test
-#           MYSQL_ROOT_PASSWORD: root
-#           MYSQL_USER: root
-#           # MYSQL_HOST: 127.0.0.1
-#           # MYSQL_ALLOW_EMPTY_PASSWORD: true
-#           # MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
-#         ports:
-#         - 3306
-#         options: >-
-#           --health-cmd="mysqladmin ping"
-#           --health-interval=8s
-#           --health-timeout=4s
-#           --health-retries=2
-#       postgres:
-#         image: postgres
-#         env:
-#           POSTGRES_HOST_AUTH_METHOD: trust
-#           POSTGRES_USER: command_search_user_test
-#           POSTGRES_DB: command_search_db_test
-#         options: >-
-#           --health-cmd pg_isready
-#           --health-interval 8s
-#           --health-timeout 4s
-#           --health-retries 2
-#     steps:
-#     - uses: actions/checkout@v2
-#     - name: Setup Ruby
-#       uses: actions/setup-ruby@v1
-#       with:
-#         ruby-version: 2.7.1
-#     - name: Apt Install
-#       run: sudo apt-get install -y -qq build-essential gnupg2 procps default-libmysqlclient-dev libsqlite3-dev
-#     - name: Setup Mysql
-#       run: |
-#         mysql -uroot -h127.0.0.1 -proot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
-#     - name: Bundle
-#       run: |
-#         gem install bundler -v 2.1.4
-#         bundle install --jobs=4 --retry=2
-#     - name: Rspec
-#       run: bundle exec rspec
-#       env:
-#         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+        POSTGRES_HOST: postgres
+        POSTGRES_PORT: ${{ job.services.postgres.ports['5432'] }}
