@@ -5,10 +5,10 @@ jobs:
     runs-on: ubuntu-latest
     container: ubuntu
     services:
-      # mongodb:
-      #   image: mongo:3.4.23
-      #   ports:
-      #   - 27017:27017
+      mongodb:
+        image: mongo:3.4.23
+        ports:
+        - 27017:27017
       mysql:
         image: mysql:5.7
         env:
@@ -33,12 +33,20 @@ jobs:
       #     --health-interval 8s
       #     --health-timeout 4s
       #     --health-retries 2
+    steps:
     - name: Setup MySQL
       run: |
         apt-get update
         apt-get install -y mysql-client
+        echo mysql
+        echo ${{ job.services.mysql.ports['3306'] }}
+        echo ${{ job.services.mysql }}
+        echo ${{ job.services.mysql.host }}
+        echo ${{ job.services.mysql.hostname }}
         mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
         mysql --host mysql -uroot -e "SHOW DATABASES"
+        mysql --host mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'port';"
+        mysql --host mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'hostname';"
     - uses: actions/checkout@v2
     - name: Setup Ruby
       uses: actions/setup-ruby@v1
