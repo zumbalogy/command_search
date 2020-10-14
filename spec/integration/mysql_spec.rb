@@ -7,7 +7,9 @@ puts ENV.fetch("MYSQL_PORT")
 puts ENV.fetch("MYSQL_PORT")
 puts ENV.fetch("MYSQL_PORT")
 puts ENV.fetch("MYSQL_PORT")
-puts ENV.fetch("MYSQL_PORT")
+puts ENV.fetch("MYSQL_HOST")
+puts ENV.fetch("MYSQL_HOST")
+puts ENV.fetch("MYSQL_HOST")
 
 module MySQL_Spec
 

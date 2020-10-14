@@ -59,7 +59,7 @@ jobs:
       run: bundle exec rspec
       env:
         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
-        MYSQL_HOST: mysql
+        MYSQL_HOST: ${{ mysql }}
 
 
 
