@@ -3,11 +3,13 @@ load(__dir__ + '/../spec_helper.rb')
 ActiveRecord::Base.remove_connection
 
 # ['mysql', 'postgres'].each do |db_version|
-[].each do |db_version|
+['mysql'].each do |db_version|
 
-  db_config = YAML.load_file("#{__dir__}/../assets/#{db_version}.yml")
+  db_config = YAML.load_file("#{__dir__}/../assets/#{db_version}.yml")['test']
+  db_config['host'] = ENV.fetch("#{db_version.upcase}_HOST") { '127.0.0.1' }
+  db_config['port'] = ENV.fetch("#{db_version.upcase}_PORT") { '3306' }
   ActiveRecord::Base.remove_connection
-  ActiveRecord::Base.establish_connection(db_config['test'])
+  ActiveRecord::Base.establish_connection(db_config)
 
   describe CommandSearch do
 
