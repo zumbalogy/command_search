@@ -2,16 +2,14 @@ load(__dir__ + '/../spec_helper.rb')
 
 ActiveRecord::Base.remove_connection
 
-# ['mysql', 'postgres'].each do |db_version|
-['mysql'].each do |db_version|
+describe CommandSearch do
 
-  db_config = YAML.load_file("#{__dir__}/../assets/#{db_version}.yml")['test']
-  db_config['host'] = ENV.fetch("#{db_version.upcase}_HOST") { '127.0.0.1' }
-  db_config['port'] = ENV.fetch("#{db_version.upcase}_PORT") { '3306' }
-  ActiveRecord::Base.remove_connection
-  ActiveRecord::Base.establish_connection(db_config)
-
-  describe CommandSearch do
+  # ['mysql', 'postgres'].each do |db_version|
+  ['mysql'].each do |db_version|
+    db_config = YAML.load_file("#{__dir__}/../assets/#{db_version}.yml")['test']
+    db_config['host'] = ENV.fetch("#{db_version.upcase}_HOST") { '127.0.0.1' }
+    db_config['port'] = ENV.fetch("#{db_version.upcase}_PORT") { '3306' }
+    ActiveRecord::Base.establish_connection(db_config)
 
     class Bird
       include Mongoid::Document
@@ -61,7 +59,20 @@ ActiveRecord::Base.remove_connection
       CommandSearch.search($birds, query, options).count.should == expected
     end
 
-    before do
+    before(:all) do
+      ActiveRecord::Schema.define do
+        create_table :crows, force: true do |t|
+          t.string :title
+          t.string :description
+          t.string :state
+          t.string :tags
+          t.boolean :starred
+          t.string :child_id
+          t.integer :feathers
+          t.integer :cost
+          t.datetime :fav_date
+        end
+      end
       Mongoid.purge!
       Crow.delete_all
       Bird.delete_all
