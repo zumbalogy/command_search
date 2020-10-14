@@ -6,9 +6,9 @@ jobs:
     container: ubuntu
     services:
       mongodb:
-        image: mongo:4.4.1-bionic
-        ports:
-          - 27017
+        image: circleci/mongo:latest
+        # ports:
+        #   - 27017
       mysql:
         image: mysql:5.7
         env:
