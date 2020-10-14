@@ -1,13 +1,13 @@
 load(__dir__ + '/../spec_helper.rb')
 
-puts ENV.fetch("DATABASE_HOST")
-puts ENV.fetch("DATABASE_HOST")
-puts ENV.fetch("DATABASE_HOST")
-puts ENV.fetch("DATABASE_HOST")
-puts ENV.fetch("DATABASE_HOST")
-puts ENV.fetch("DATABASE_HOST")
-puts ENV.fetch("DATABASE_HOST")
-puts ENV.fetch("DATABASE_HOST")
+puts ENV.fetch("MYSQL_HOST")
+puts ENV.fetch("MYSQL_HOST")
+puts ENV.fetch("MYSQL_HOST")
+puts ENV.fetch("MYSQL_HOST")
+puts ENV.fetch("MYSQL_HOST")
+puts ENV.fetch("MYSQL_HOST")
+puts ENV.fetch("MYSQL_HOST")
+puts ENV.fetch("MYSQL_HOST")
 
 module MySQL_Spec
 
