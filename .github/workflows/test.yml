@@ -30,40 +30,36 @@ jobs:
       #     --health-timeout 4s
       #     --health-retries 2
     steps:
-    - name: Start MongoDB
+    - name: Setup MongoDB
       uses: supercharge/mongodb-github-action@1.3.0
       with:
         mongodb-version: 4.4.1
-    - name: Setup MySQL
+    - name: debug mongo
       run: |
-        apt-get update
-        apt-get install -y mysql-client
-        echo mysql
-        echo ${{ job.services.mysql.ports['3306'] }}
-        echo ${{ job.services.mysql }}
-        echo ${{ job.services.mysql.host }}
-        echo ${{ job.services.mysql.hostname }}
-        mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
-        mysql --host mysql -uroot -e "SHOW DATABASES"
-        mysql --host mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'port';"
-        mysql --host mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'hostname';"
-    - uses: actions/checkout@v2
-    - name: Setup Ruby
-      uses: actions/setup-ruby@v1
-      with:
-        ruby-version: 2.7.1
-    - name: Apt Install
-      run: apt-get install -yqq build-essential gnupg2 procps libpq-dev rubygems ruby ruby-dev rubygems-integration sqlite3 libsqlite3-dev libmysqlclient-dev mysql-client
-    - name: Bundle
-      run: |
-        ruby -v
-        gem install bundler
-        bundle install --jobs=4 --retry=2
-    - name: Rspec
-      run: bundle exec rspec
-      env:
-        MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
-        MYSQL_HOST: mysql
+        mongod --version
+    # - name: Setup MySQL
+    #   run: |
+    #     apt-get update
+    #     apt-get install -y mysql-client
+    #     mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
+    #     mysql --host mysql -uroot -e "SHOW DATABASES"
+    # - uses: actions/checkout@v2
+    # - name: Setup Ruby
+    #   uses: actions/setup-ruby@v1
+    #   with:
+    #     ruby-version: 2.7.1
+    # - name: Apt Install
+    #   run: apt-get install -yqq build-essential gnupg2 procps libpq-dev rubygems ruby ruby-dev rubygems-integration sqlite3 libsqlite3-dev libmysqlclient-dev mysql-client
+    # - name: Bundle
+    #   run: |
+    #     ruby -v
+    #     gem install bundler
+    #     bundle install --jobs=4 --retry=2
+    # - name: Rspec
+    #   run: bundle exec rspec
+    #   env:
+    #     MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+    #     MYSQL_HOST: mysql
 
 
 
