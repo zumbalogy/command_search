@@ -6,9 +6,9 @@ jobs:
     container: ubuntu
     services:
       mongodb:
-        image: circleci/mongo:latest
-        # ports:
-        #   - 27017
+        image: mongo:4.4.1-bionic
+        ports:
+          - 27017:27017
       mysql:
         image: mysql:5.7
         env:
@@ -16,7 +16,7 @@ jobs:
           MYSQL_HOST: 127.0.0.1
           MYSQL_HOSTNAME: 127.0.0.1
         ports:
-        - 3306:3306
+          - 3306:3306
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=12s
@@ -37,6 +37,9 @@ jobs:
           --health-retries 2
     steps:
     - uses: actions/checkout@v2
+    - name: Setup Mongo
+      run: |
+        mongod
     - name: Setup MySQL
       run: |
         apt-get update
@@ -58,7 +61,7 @@ jobs:
       run: bundle exec rspec
       env:
         MONGODB_HOST: mongodb
-        MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
+        MONGODB_PORT: ${{ job.services.mongodb.ports['27017'] }}
         MYSQL_HOST: mysql
         MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
         POSTGRES_HOST: postgres

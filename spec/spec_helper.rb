@@ -23,11 +23,11 @@ Mongoid.configure do |config|
   port = ENV.fetch("MONGODB_PORT") { '27017' }
   config.clients.default = {
     hosts: ["#{host}:#{port}"],
-    database: 'mongoid_test',
+    database: 'mongoid_test'
   }
 end
 
-Mongo::Logger.logger.level = Logger::FATAL
+# Mongo::Logger.logger.level = Logger::FATAL
 
 def pp(*inputs)
   puts
