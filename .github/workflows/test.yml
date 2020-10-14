@@ -5,10 +5,10 @@ jobs:
     runs-on: ubuntu-latest
     container: ubuntu
     services:
-      mongodb:
-        image: mongo:4.4.1-bionic
-        ports:
-          - 27017:27017
+      # mongodb:
+      #   image: mongo:4.4.1-bionic
+      #   ports:
+      #     - 27017:27017
       # mysql:
       #   image: mysql:5.7
       #   env:
@@ -41,29 +41,35 @@ jobs:
       run: |
         apt-get update
         apt-get install -yqq build-essential gnupg2 procps libpq-dev rubygems ruby ruby-dev rubygems-integration sqlite3 libsqlite3-dev libmysqlclient-dev mysql-client mongodb-clients
-    - name: Setup Mongo
+
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.2.0
+      with:
+        mongodb-version: 4.4.1
+
+    # - name: Setup Mongo
+    #   run: |
+    #     mkdir -p /mongodata
+    #     docker run -it -v mongodata:/data/db --name mongodb -d mongo
+    - name: Setup MySQL
       run: |
-        mkdir -p /mongodata
-        docker run -it -v mongodata:/data/db --name mongodb -d mongo
-    # - name: Setup MySQL
-    #   run: |
-    #     mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
-    #     mysql --host mysql -uroot -e "SHOW DATABASES"
-    # - name: Setup Ruby
-    #   uses: actions/setup-ruby@v1
-    #   with:
-    #     ruby-version: 2.7.1
-    # - name: Bundle
-    #   run: |
-    #     ruby -v
-    #     gem install bundler
-    #     bundle install --jobs=4 --retry=2
-    # - name: Rspec
-    #   run: bundle exec rspec
-    #   env:
-    #     MONGODB_HOST: mongodb
-    #     MONGODB_PORT: ${{ job.services.mongodb.ports['27017'] }}
-    #     MYSQL_HOST: mysql
-    #     MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
-    #     POSTGRES_HOST: postgres
-    #     POSTGRES_PORT: ${{ job.services.postgres.ports['5432'] }}
+        mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
+        mysql --host mysql -uroot -e "SHOW DATABASES"
+    - name: Setup Ruby
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.7.1
+    - name: Bundle
+      run: |
+        ruby -v
+        gem install bundler
+        bundle install --jobs=4 --retry=2
+    - name: Rspec
+      run: bundle exec rspec
+      env:
+        # MONGODB_HOST: mongodb
+        # MONGODB_PORT: ${{ job.services.mongodb.ports['27017'] }}
+        MYSQL_HOST: mysql
+        MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+        POSTGRES_HOST: postgres
+        POSTGRES_PORT: ${{ job.services.postgres.ports['5432'] }}
