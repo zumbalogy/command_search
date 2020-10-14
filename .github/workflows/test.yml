@@ -44,10 +44,7 @@ jobs:
         mongod
     - name: Setup MySQL
       run: |
-        apt-get update
-        apt-get install -y mysql-client
         mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
-        mysql --host mysql -uroot -e "SHOW DATABASES"
     - name: Setup Ruby
       uses: actions/setup-ruby@v1
       with:
