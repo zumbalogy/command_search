@@ -18,7 +18,16 @@ require('sqlite3')
 require('mysql2')
 require('pg')
 
-Mongoid.load!(__dir__ + '/assets/mongoid.yml', :test)
+Mongoid.configure do |config|
+  host = ENV.fetch("MONGODB_HOST") { 'localhost' }
+  port = ENV.fetch("MONGODB_PORT") { '27017' }
+  config.clients.default = {
+    hosts: ["#{host}:#{port}"],
+    database: 'mongoid_test',
+  }
+end
+
+Mongo::Logger.logger.level = Logger::FATAL
 
 def pp(*inputs)
   puts
