@@ -4,6 +4,18 @@ ActiveRecord::Base.remove_connection
 
 describe CommandSearch do
 
+  class Bird
+    include Mongoid::Document
+    field :title,       type: String
+    field :description, type: String
+    field :state,       type: String
+    field :tags,        type: String
+    field :starred,     type: Boolean
+    field :child_id,    type: String
+    field :feathers,    type: Integer
+    field :cost,        type: Integer
+    field :fav_date,    type: Time
+  end
 
   default_ports = {
     'mysql' => '3306',
@@ -15,33 +27,6 @@ describe CommandSearch do
     db_config['host'] = ENV.fetch("#{db_version.upcase}_HOST") { '127.0.0.1' }
     db_config['port'] = ENV.fetch("#{db_version.upcase}_PORT") { default_ports[db_version] }
     ActiveRecord::Base.establish_connection(db_config)
-
-    class Bird
-      include Mongoid::Document
-      field :title,       type: String
-      field :description, type: String
-      field :state,       type: String
-      field :tags,        type: String
-      field :starred,     type: Boolean
-      field :child_id,    type: String
-      field :feathers,    type: Integer
-      field :cost,        type: Integer
-      field :fav_date,    type: Time
-    end
-
-    ActiveRecord::Schema.define do
-      create_table :crows, force: true do |t|
-        t.string :title
-        t.string :description
-        t.string :state
-        t.string :tags
-        t.boolean :starred
-        t.string :child_id
-        t.integer :feathers
-        t.integer :cost
-        t.datetime :fav_date
-      end
-    end
 
     class Crow < ActiveRecord::Base
     end
