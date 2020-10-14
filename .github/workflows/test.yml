@@ -41,7 +41,6 @@ jobs:
         mysql -h mysql -uroot -e "SHOW DATABASES"
         mysql -h mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'port';"
         mysql -h mysql -uroot -e "SHOW VARIABLES WHERE Variable_name = 'hostname';"
-        sudo /etc/init.d/mysql start
     - uses: actions/checkout@v2
     - name: Setup Ruby
       uses: actions/setup-ruby@v1
