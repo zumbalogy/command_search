@@ -3,7 +3,7 @@ load(__dir__ + '/../spec_helper.rb')
 ActiveRecord::Base.remove_connection
 
 # ['mysql', 'postgres'].each do |db_version|
-['postgres'].each do |db_version|
+[].each do |db_version|
 
   db_config = YAML.load_file("#{__dir__}/../assets/#{db_version}.yml")
   ActiveRecord::Base.remove_connection
