@@ -6,9 +6,9 @@ jobs:
     container: ubuntu
     services:
       mongodb:
-        image: mongo:4.2
+        image: mongo:4.4.1-bionic
         ports:
-          - 27017:27017
+          - 27017
       mysql:
         image: mysql:5.7
         env:
@@ -36,13 +36,13 @@ jobs:
           --health-timeout 4s
           --health-retries 2
     steps:
+    - uses: actions/checkout@v2
     - name: Setup MySQL
       run: |
         apt-get update
         apt-get install -y mysql-client
         mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
         mysql --host mysql -uroot -e "SHOW DATABASES"
-    - uses: actions/checkout@v2
     - name: Setup Ruby
       uses: actions/setup-ruby@v1
       with:
