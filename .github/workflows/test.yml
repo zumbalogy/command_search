@@ -6,7 +6,7 @@ jobs:
     container: ubuntu
     services:
       mongodb:
-        image: mongo:4.4.1
+        image: mongo:4.2
         ports:
         - 27017:27017
       mysql:
