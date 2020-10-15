@@ -22,7 +22,7 @@ describe CommandSearch do
     'postgres' => '5432'
   }
 
-  ['mysql', 'postgres'].each do |db_version|
+  ['mysql'].each do |db_version|
     db_config = YAML.load_file("#{__dir__}/../assets/#{db_version}.yml")['test']
     db_config['host'] = ENV.fetch("#{db_version.upcase}_HOST") { '127.0.0.1' }
     db_config['port'] = ENV.fetch("#{db_version.upcase}_PORT") { default_ports[db_version] }
@@ -44,7 +44,7 @@ describe CommandSearch do
     ]
 
     def search_all(query, options, expected)
-      # CommandSearch.search(Bird, query, options).count.should == expected
+      CommandSearch.search(Bird, query, options).count.should == expected
       CommandSearch.search(Crow, query, options).count.should == expected
       CommandSearch.search($birds, query, options).count.should == expected
     end
