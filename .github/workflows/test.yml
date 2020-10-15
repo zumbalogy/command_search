@@ -9,6 +9,8 @@ jobs:
         image: mongo:4.4.1-bionic
         ports:
           - 27017:27017
+        options: >-
+          --connectWithNoPrimary=true
       mysql:
         image: mysql:5.7
         env:
@@ -56,8 +58,8 @@ jobs:
     - name: Rspec
       run: bundle exec rspec
       env:
-        # MONGODB_HOST: mongodb
-        # MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
+        MONGODB_HOST: mongodb
+        MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
         MYSQL_HOST: mysql
         MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
         POSTGRES_HOST: postgres
