@@ -44,7 +44,7 @@ jobs:
         apt-get install -yqq ruby ruby-dev
         apt-get install -yqq rubygems rubygems-integration
         apt-get install -yqq sqlite3 libsqlite3-dev
-        apt-get install -yqq libmysqlclient-dev mysql-client
+        apt-get install -yqq mysql-client libmysqlclient-dev
         apt-get install -yqq mongodb-clients
     - name: Setup MySQL
       run: |
