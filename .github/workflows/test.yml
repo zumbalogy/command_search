@@ -36,11 +36,11 @@ jobs:
       #     --health-timeout 4s
       #     --health-retries 2
     steps:
-    - uses: actions/checkout@v2
+    # - uses: actions/checkout@v2
     - name: Apt Install
       run: |
         apt-get update
-        apt-get install -yqq build-essential gnupg2 procps libpq-dev rubygems ruby ruby-dev rubygems-integration sqlite3 libsqlite3-dev libmysqlclient-dev mysql-client mongodb-clients mongodb-org
+        apt-get install -yqq build-essential gnupg2 procps libpq-dev rubygems ruby ruby-dev rubygems-integration sqlite3 libsqlite3-dev libmysqlclient-dev mysql-client mongodb-clients
     - name: Setup Mongo
       run: |
         mongod
