@@ -41,7 +41,6 @@ jobs:
       run: |
         apt-get update
         apt-get install -yqq build-essential gnupg2 procps libpq-dev
-        apt-get install -yqq ruby-dev rubygems rubygems-integration
         apt-get install -yqq sqlite3 libsqlite3-dev
         apt-get install -yqq mysql-client libmysqlclient-dev
         apt-get install -yqq mongodb-clients
