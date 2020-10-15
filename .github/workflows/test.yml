@@ -3,6 +3,7 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
+    container: ubuntu
     services:
       mongodb:
         image: mongo:4.4.1-bionic
@@ -46,7 +47,7 @@ jobs:
       run: |
         apt-get update
         apt-get install -yqq build-essential gnupg2 procps libpq-dev
-        apt-get install -yqq rubygems rubygems-integration
+        apt-get install -yqq ruby-dev rubygems rubygems-integration
         apt-get install -yqq sqlite3 libsqlite3-dev
         apt-get install -yqq mysql-client libmysqlclient-dev
         apt-get install -yqq mongodb-clients
@@ -59,6 +60,7 @@ jobs:
         bundler-cache: true
     - name: Bundle
       run: |
+        ruby -v
         bundle config path vendor/bundle
         bundle install --jobs 4 --retry 3
     - name: Rspec
