@@ -23,6 +23,9 @@ unless ENV['MONGOID_CONFIGURED']
   Mongoid.configure do |config|
     host = ENV.fetch("MONGODB_HOST") { 'localhost' }
     port = ENV.fetch("MONGODB_PORT") { '27017' }
+    puts "host and port !!!!!!!!!!!"
+    puts host
+    puts port
     config.clients.default = {
       hosts: ["#{host}:#{port}"],
       database: 'mongoid_test'
