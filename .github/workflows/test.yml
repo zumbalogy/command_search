@@ -57,10 +57,11 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.7.1
-    - name: Bundle
-      run: |
-        bundle config path vendor/bundle
-        bundle install --jobs 4 --retry 3
+        bundler-cache: true
+    # - name: Bundle
+    #   run: |
+    #     bundle config path vendor/bundle
+    #     bundle install --jobs 4 --retry 3
     - name: Rspec
       run: bundle exec rspec
       env:
