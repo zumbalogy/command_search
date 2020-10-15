@@ -37,12 +37,6 @@ jobs:
           --health-retries 2
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      with:
-        path: vendor/bundle
-        key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-gems-
     - name: Apt Install
       run: |
         apt-get update
@@ -54,15 +48,13 @@ jobs:
     - name: Setup MySQL
       run: |
         mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/setup-ruby@v1
       with:
-        ruby-version: 2.7.2
-        bundler-cache: true
+        ruby-version: 2.7.1
     - name: Bundle
       run: |
-        ruby -v
-        bundle config path vendor/bundle
-        bundle install --jobs 4 --retry 3
+        gem install bundler
+        bundle install --jobs=4 --retry=2
     - name: Rspec
       run: bundle exec rspec
       env:
