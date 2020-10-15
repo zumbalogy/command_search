@@ -45,6 +45,7 @@ jobs:
         apt-get install -yqq rubygems rubygems-integration
         apt-get install -yqq sqlite3 libsqlite3-dev
         apt-get install -yqq libmysqlclient-dev mysql-client
+        apt-get install -yqq mongodb-clients
     - name: Setup MySQL
       run: |
         mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
@@ -54,7 +55,6 @@ jobs:
         ruby-version: 2.7.1
     - name: Bundle
       run: |
-        ruby -v
         gem install bundler
         bundle install --jobs=4 --retry=2
     - name: Rspec
