@@ -21,7 +21,7 @@ require('pg')
 unless ENV['MONGOID_CONFIGURED']
   ENV['MONGOID_CONFIGURED'] = 'true'
   Mongoid.configure do |config|
-    host = ENV.fetch("MONGODB_HOST") { 'localhost' }
+    host = ENV.fetch("MONGODB_HOST") { '0.0.0.0' }
     port = ENV.fetch("MONGODB_PORT") { '27017' }
     puts "host and port !!!!!!!!!!!"
     puts host
