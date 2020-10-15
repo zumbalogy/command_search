@@ -312,65 +312,65 @@ describe CommandSearch do
       check.should == true
     end
 
-    # it 'should handle fuzzing' do
-    #   check = true
-    #   trials = 500
-    #   trials = 123000 if ENV['CI']
-    #   trials.times do |i|
-    #     query = (0...24).map { (rand(130)).chr }.join
-    #     begin
-    #       list = [
-    #         { foo: query },
-    #         { bar: query }
-    #       ]
-    #       options = {
-    #         fields: {
-    #           foo: { type: String },
-    #           bar: { type: Numeric, general_search: true }
-    #         }
-    #       }
-    #       CommandSearch.search(list, query, options)
-    #       CommandSearch.search(Bird, query, options)
-    #       CommandSearch.search(Crow, query, options)
-    #       CommandSearch.search($birds, query, options)
-    #     rescue
-    #       puts query.inspect
-    #       check = false
-    #       break
-    #     end
-    #   end
-    #   check.should == true
-    # end
-    #
-    # it 'should handle permutations' do
-    #   check = true
-    #   strs = ['a', 'b', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
-    #   size = 3
-    #   size = 5 if ENV['CI']
-    #   strs.repeated_permutation(size).each do |perm|
-    #     begin
-    #       list = [
-    #         { foo: perm.join() },
-    #         { bar: 'abcdefg' },
-    #         { baz: 34, abc: 'xyz' },
-    #       ]
-    #       options = {
-    #         fields: {
-    #           foo: { type: String },
-    #           bar: { type: Numeric, general_search: true }
-    #         }
-    #       }
-    #       query = perm.join()
-    #       CommandSearch.search(list, query, options)
-    #       CommandSearch.search(Bird, query, options)
-    #       CommandSearch.search(Crow, query, options)
-    #       CommandSearch.search($birds, query, options)
-    #     rescue
-    #       print(perm.join(), '    ')
-    #       check = false
-    #     end
-    #   end
-    #   check.should == true
-    # end
+    it 'should handle fuzzing' do
+      check = true
+      trials = 500
+      # trials = 123000 if ENV['CI']
+      trials.times do |i|
+        query = (0...24).map { (rand(130)).chr }.join
+        begin
+          list = [
+            { foo: query },
+            { bar: query }
+          ]
+          options = {
+            fields: {
+              foo: { type: String },
+              bar: { type: Numeric, general_search: true }
+            }
+          }
+          CommandSearch.search(list, query, options)
+          CommandSearch.search(Bird, query, options)
+          CommandSearch.search(Crow, query, options)
+          CommandSearch.search($birds, query, options)
+        rescue
+          puts query.inspect
+          check = false
+          break
+        end
+      end
+      check.should == true
+    end
+
+    it 'should handle permutations' do
+      check = true
+      strs = ['a', 'b', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
+      size = 3
+      # size = 5 if ENV['CI']
+      strs.repeated_permutation(size).each do |perm|
+        begin
+          list = [
+            { foo: perm.join() },
+            { bar: 'abcdefg' },
+            { baz: 34, abc: 'xyz' },
+          ]
+          options = {
+            fields: {
+              foo: { type: String },
+              bar: { type: Numeric, general_search: true }
+            }
+          }
+          query = perm.join()
+          CommandSearch.search(list, query, options)
+          CommandSearch.search(Bird, query, options)
+          CommandSearch.search(Crow, query, options)
+          CommandSearch.search($birds, query, options)
+        rescue
+          print(perm.join(), '    ')
+          check = false
+        end
+      end
+      check.should == true
+    end
   end
 end
