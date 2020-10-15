@@ -1,9 +1,8 @@
 name: Tests
 on: [push]
 jobs:
-  test-container:
+  test:
     runs-on: ubuntu-latest
-    container: ubuntu
     services:
       mongodb:
         image: mongo:4.4.1-bionic
@@ -54,15 +53,14 @@ jobs:
     - name: Setup MySQL
       run: |
         mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
-    - name: Setup Ruby
-      uses: ruby/setup-ruby@v1
+    - uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.7.2
         bundler-cache: true
-    # - name: Bundle
-    #   run: |
-    #     bundle config path vendor/bundle
-    #     bundle install --jobs 4 --retry 3
+    - name: Bundle
+      run: |
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
     - name: Rspec
       run: bundle exec rspec
       env:
