@@ -57,8 +57,8 @@ jobs:
       run: bundle exec rspec
       env:
         MONGODB_HOST: mongodb
-        MONGODB_PORT: ${{ job.services.mongodb.ports['27017'] }}
+        MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
         MYSQL_HOST: mysql
-        MYSQL_PORT: ${{ job.services.mysql.ports['3306'] }}
+        MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
         POSTGRES_HOST: postgres
-        POSTGRES_PORT: ${{ job.services.postgres.ports['5432'] }}
+        POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
