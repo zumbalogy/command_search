@@ -55,7 +55,6 @@ jobs:
         ruby-version: 2.7.1
     - name: Bundle
       run: |
-        gem install bundler
         bundle install --jobs=4 --retry=2
     - name: Rspec
       run: bundle exec rspec
