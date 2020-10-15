@@ -44,7 +44,6 @@ jobs:
         apt-get install -yqq ruby-dev rubygems
         apt-get install -yqq sqlite3 libsqlite3-dev
         apt-get install -yqq mysql-client libmysqlclient-dev
-        apt-get install -yqq mongodb-clients
     - name: Setup MySQL
       run: |
         mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
