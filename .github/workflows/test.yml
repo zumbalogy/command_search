@@ -41,7 +41,8 @@ jobs:
       run: |
         apt-get update
         apt-get install -yqq build-essential gnupg2 procps libpq-dev
-        apt-get install -yqq rubygems ruby rubygems-integration
+        apt-get install -yqq ruby ruby-dev
+        apt-get install -yqq rubygems rubygems-integration
         apt-get install -yqq sqlite3 libsqlite3-dev
         apt-get install -yqq libmysqlclient-dev mysql-client
     - name: Setup MySQL
