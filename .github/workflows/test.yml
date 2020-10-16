@@ -5,13 +5,20 @@ jobs:
     strategy:
       matrix:
         include:
+          - mysql: mysql:5.6
+            mongo: mongo:4.0
+            postgres: postgres:9.5
           - mysql: mysql:5.7
+            mongo: mongo:4.2-bionic
+            postgres: postgres:10
           - mysql: mysql:8
+            mongo: mongo:4.4.1-bionic
+            postgres: postgres:13
     runs-on: ubuntu-latest
     container: ubuntu
     services:
       mongodb:
-        image: mongo:4.4.1-bionic
+        image: ${{ matrix.mongo }}
         ports:
           - 27017:27017
       mysql:
@@ -28,7 +35,7 @@ jobs:
           --health-timeout=6s
           --health-retries=6
       postgres:
-        image: postgres
+        image: ${{ matrix.postgres }}
         ports:
           - 5432:5432
         env:
