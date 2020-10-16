@@ -12,6 +12,10 @@ module MySQL_Spec
   DB.query("DROP DATABASE IF EXISTS #{db_name}")
   DB.query("CREATE DATABASE #{db_name}")
   DB.select_db(db_name)
+  puts DB.query('SHOW VARIABLES WHERE Variable_name = "version"')
+  puts DB.query('SHOW VARIABLES WHERE Variable_name = "version"')
+  puts DB.query('SHOW VARIABLES WHERE Variable_name = "version"')
+  puts DB.query('SHOW VARIABLES WHERE Variable_name = "version"')
   DB_VERSION = DB.query('SHOW VARIABLES WHERE Variable_name = "version"').first['Value']
 
   hat_schema = "
