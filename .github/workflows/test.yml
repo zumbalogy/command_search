@@ -54,7 +54,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Apt Install
         run: |
-          apt-get update
           apt-get install -yqq build-essential libpq-dev
           apt-get install -yqq ruby-dev rubygems
           apt-get install -yqq sqlite3 libsqlite3-dev
