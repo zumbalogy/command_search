@@ -5,12 +5,15 @@ jobs:
     strategy:
       matrix:
         include:
+          - mysql: mariadb:latest
+            mongo: mongo:3.6
+            postgres: postgres:9.5
           - mysql: mysql:5.6
             mongo: mongo:4.0
-            postgres: postgres:9.5
+            postgres: postgres:9
           - mysql: mysql:5.7
             mongo: mongo:4.2-bionic
-            postgres: postgres:10
+            postgres: postgres:11
           - mysql: mysql:8.0
             mongo: mongo:4.4.1-bionic
             postgres: postgres:13
