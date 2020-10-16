@@ -2,6 +2,9 @@ name: Tests
 on: [push]
 jobs:
   test:
+    strategy:
+      matrix:
+        mysql: [5.7, 8]
     runs-on: ubuntu-latest
     container: ubuntu
     services:
@@ -10,7 +13,7 @@ jobs:
         ports:
           - 27017
       mysql:
-        image: mysql:5.7
+        image: mysql:${{ matrix.mysql }}
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: true
           MYSQL_HOST: 127.0.0.1
