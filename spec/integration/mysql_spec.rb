@@ -14,6 +14,7 @@ module MySQL_Spec
   DB.select_db(db_name)
   puts DB.query('SHOW VARIABLES').to_a
   DB_VERSION = DB.query('SHOW VARIABLES WHERE Variable_name = "version"').first['Value']
+  DB_COMMENT = DB.query('SHOW VARIABLES WHERE Variable_name = "version_comment"').first['Value']
 
   hat_schema = "
     Title TEXT,
@@ -85,7 +86,7 @@ module MySQL_Spec
         }
       }
       version = :mysql
-      version = :mysqlV5 if DB_VERSION[0] == '5'
+      version = :mysqlV5 if DB_VERSION[0] == '5' || DB_COMMENT.include?(/maria/i)
       sql_query = CommandSearch.build(version, query, options)
       return DB.query("SELECT * FROM Hats ORDER BY `#{sort_field}`") unless sql_query.length > 0
       DB.query("SELECT * FROM Hats WHERE #{sql_query} ORDER BY `#{sort_field}`")
