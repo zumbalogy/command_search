@@ -1,4 +1,4 @@
-# NOTE: This module supports does not support Mysql eariler than 8.0, due to
+# NOTE: This module supports does not support MariaDB or eariler Mysql versions than 8.0, due to
 # changes in how word breaks are handled in regexes.
 
 module CommandSearch
