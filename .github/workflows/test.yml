@@ -1,100 +1,62 @@
-name: Rails Unit Tests
-
-on: [push, pull_request]
-
+name: Tests
+on: [push]
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
-
+    container: ubuntu
     services:
-      db:
-        image: postgres:11
-        ports: ['5432:5432']
+      mongodb:
+        image: mongo:4.4.1-bionic
+        ports:
+          - 27017:27017
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_HOSTNAME: 127.0.0.1
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=12s
+          --health-timeout=6s
+          --health-retries=6
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_USER: command_search_user_test
+          POSTGRES_DB: command_search_db_test
         options: >-
           --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
+          --health-interval 8s
+          --health-timeout 4s
+          --health-retries 2
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Ruby 2.6
-      uses: actions/setup-ruby@v1
-      with:
-        ruby-version: 2.6
-    - name: Build and test with Rake
-      env:
-        PGHOST: 127.0.0.1
-        PGUSER: postgres
-        RAILS_ENV: test
+    - name: Apt Install
       run: |
-        sudo apt-get -yqq install libpq-dev
+        apt-get update
+        apt-get install -yqq build-essential gnupg2 libpq-dev
+        apt-get install -yqq ruby-dev rubygems
+        apt-get install -yqq sqlite3 libsqlite3-dev
+        apt-get install -yqq mysql-client libmysqlclient-dev
+    - name: Setup MySQL
+      run: |
+        mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
+    - name: Bundle
+      run: |
         gem install bundler
-        bundle install --jobs 4 --retry 3
-        bundle exec rspec
-
-# name: Tests
-# on: [push]
-# jobs:
-#   test:
-#     runs-on: ubuntu-latest
-#     container: ubuntu
-#     services:
-#       mongodb:
-#         image: mongo:4.4.1-bionic
-#         ports:
-#           - 27017:27017
-#       mysql:
-#         image: mysql:5.7
-#         env:
-#           MYSQL_ALLOW_EMPTY_PASSWORD: true
-#           MYSQL_HOST: 127.0.0.1
-#           MYSQL_HOSTNAME: 127.0.0.1
-#         ports:
-#           - 3306:3306
-#         options: >-
-#           --health-cmd="mysqladmin ping"
-#           --health-interval=12s
-#           --health-timeout=6s
-#           --health-retries=6
-#       postgres:
-#         image: postgres
-#         ports:
-#           - 5432:5432
-#         env:
-#           POSTGRES_HOST_AUTH_METHOD: trust
-#           POSTGRES_USER: command_search_user_test
-#           POSTGRES_DB: command_search_db_test
-#         options: >-
-#           --health-cmd pg_isready
-#           --health-interval 8s
-#           --health-timeout 4s
-#           --health-retries 2
-#     steps:
-#     - uses: actions/checkout@v2
-#     - name: Apt Install
-#       run: |
-#         apt-get update
-#         apt-get install -yqq build-essential gnupg2 libpq-dev
-#         apt-get install -yqq sqlite3 libsqlite3-dev
-#         apt-get install -yqq mysql-client libmysqlclient-dev
-#     - name: Setup MySQL
-#       run: |
-#         mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
-#     - uses: actions/setup-ruby@v1
-#       with:
-#         ruby-version: 2.7
-#     - name: Bundle
-#       run: |
-#         gem install bundler
-#         bundle install --jobs=4 --retry=2
-#     - name: Rspec
-#       run: bundle exec rspec
-#       env:
-#         MONGODB_HOST: mongodb
-#         MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
-#         MYSQL_HOST: mysql
-#         MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
-#         POSTGRES_HOST: postgres
-#         POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+        bundle install --jobs=4 --retry=2
+    - name: Rspec
+      run: bundle exec rspec
+      env:
+        MONGODB_HOST: mongodb
+        MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
+        MYSQL_HOST: mysql
+        MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
+        POSTGRES_HOST: postgres
+        POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
