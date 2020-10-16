@@ -7,4 +7,4 @@ https://github.com/thoughtbot/appraisal
 
 
 note in readme about
-hor mysql5 and mariaDB need to be 
+how mysql5 and mariaDB need to be specific to use old mysql
