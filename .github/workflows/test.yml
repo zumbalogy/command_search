@@ -27,6 +27,7 @@ jobs:
       mysql:
         image: ${{ matrix.mysql }}
         env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
           MYSQL_HOST: 127.0.0.1
           MYSQL_HOSTNAME: 127.0.0.1
         ports:
@@ -68,9 +69,9 @@ jobs:
       - name: Rspec
         run: bundle exec rspec
         env:
-          MONGODB_HOST: mongodb
-          MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
           MYSQL_HOST: mysql
           MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
+          MONGODB_HOST: mongodb
+          MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
           POSTGRES_HOST: postgres
           POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
