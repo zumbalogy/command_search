@@ -4,7 +4,7 @@ jobs:
   test:
     strategy:
       matrix:
-        mysql: [mysql:5.7, mysql:8]
+        mysql: ["mysql:5.7", "mysql:8"]
     runs-on: ubuntu-latest
     container: ubuntu
     services:
