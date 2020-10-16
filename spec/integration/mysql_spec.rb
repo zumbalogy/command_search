@@ -86,7 +86,7 @@ module MySQL_Spec
         }
       }
       version = :mysql
-      version = :mysqlV5 if DB_VERSION[0] == '5' || DB_COMMENT.include?(/maria/i)
+      version = :mysqlV5 if DB_VERSION[0] == '5' || DB_COMMENT[/maria/i]
       sql_query = CommandSearch.build(version, query, options)
       return DB.query("SELECT * FROM Hats ORDER BY `#{sort_field}`") unless sql_query.length > 0
       DB.query("SELECT * FROM Hats WHERE #{sql_query} ORDER BY `#{sort_field}`")
