@@ -11,9 +11,12 @@ jobs:
           - mysql: mysql:5.7
             mongo: mongo:4.2-bionic
             postgres: postgres:10
-          - mysql: mysql:8
+          - mysql: mysql:8.0
             mongo: mongo:4.4.1-bionic
             postgres: postgres:13
+          - mysql: mysql:latest
+            mongo: mongo:latest
+            postgres: postgres:latest
     runs-on: ubuntu-latest
     container: ubuntu
     services:
