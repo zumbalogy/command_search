@@ -8,3 +8,4 @@ https://github.com/thoughtbot/appraisal
 
 note in readme about
 how mysql5 and mariaDB need to be specific to use old mysql
+(and switch docs to use the "command_search.build" fn maybe
