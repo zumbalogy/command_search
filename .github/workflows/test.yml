@@ -62,11 +62,6 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
-      # - name: Apt Install
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -yqq build-essential
-      #     sudo apt-get install -yqq sqlite3 libsqlite3-dev
       - name: Bundle
         run: |
           bundle config path vendor/bundle
@@ -74,9 +69,6 @@ jobs:
       - name: Rspec
         run: bundle exec rspec
         env:
-        #   MYSQL_HOST: mysql
           MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
-        #   MONGODB_HOST: mongodb
           MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
-        #   POSTGRES_HOST: postgres
           POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
