@@ -65,7 +65,8 @@ jobs:
       - name: Apt Install
         run: |
           sudo apt-get update
-          sudo apt-get install -yqq libsqlite3-dev
+          sudo apt-get install -yqq build-essential
+          sudo apt-get install -yqq sqlite3 libsqlite3-dev
       # - name: Apt Install
       #   run: |
       #     sudo apt-get update
