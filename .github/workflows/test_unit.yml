@@ -21,9 +21,5 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
       - run: |
-          gem install bundler -v 2.0.2
-          gem update --system
-          bundle update --bundler
-          bundle config path vendor/bundle
           bundle install --without=integration --jobs 4 --retry 2
           bundle exec rspec spec/*.rb
