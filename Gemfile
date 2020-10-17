@@ -12,8 +12,6 @@ group :test do
   gem 'coderay'
   gem 'pry-byebug'
   gem 'binding_of_caller'
-
-  gem 'simplecov'
 end
 
 group :integration do

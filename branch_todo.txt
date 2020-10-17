@@ -24,3 +24,8 @@ maybe does not work
 ---
 
 test against diff versions of sqlite.
+
+
+--
+gem 'simplecov'
+get 100% test coverage for units (command_search only one missing i think)
