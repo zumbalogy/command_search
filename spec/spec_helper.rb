@@ -24,8 +24,8 @@ begin
     end
     Mongo::Logger.logger.level = Logger::FATAL
   end
-rescue
-  puts "DB Integrations Failed"
+rescue LoadError
+  puts "DB Integration Setup Failed"
 end
 
 def pp(*inputs)
