@@ -65,7 +65,6 @@ jobs:
       - name: Apt Install
         run: |
           sudo apt-get update
-          sudo apt-get install -yqq build-essential
           sudo apt-get install -yqq mysql-client libmysqlclient-dev
       # - name: Apt Install
       #   run: |
