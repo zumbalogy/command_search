@@ -28,22 +28,22 @@ jobs:
           - 27017:27017
       mysql:
         image: ${{ matrix.mysql }}
+        options: --health-cmd "mysqladmin ping"
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: true
           MYSQL_HOST: 127.0.0.1
           MYSQL_HOSTNAME: 127.0.0.1
         ports:
           - 3306:3306
-        options: --health-cmd "mysqladmin ping"
       postgres:
         image: ${{ matrix.postgres }}
+        options: --health-cmd pg_isready
         ports:
           - 5432:5432
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_USER: command_search_user_test
           POSTGRES_DB: command_search_db_test
-        options: --health-cmd pg_isready
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
