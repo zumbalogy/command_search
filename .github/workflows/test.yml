@@ -36,9 +36,9 @@ jobs:
           - 3306:3306
         options: >-
           --health-cmd "mysqladmin ping"
-          --health-interval 12s
-          --health-timeout 6s
-          --health-retries 6
+          --health-interval 8s
+          --health-timeout 4s
+          --health-retries 2
       postgres:
         image: ${{ matrix.postgres }}
         ports:
@@ -62,13 +62,12 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
-      - name: Bundle
-        run: |
-          bundle config path vendor/bundle
-          bundle install --jobs 4 --retry 2
-      - name: Rspec
-        run: bundle exec rspec
-        env:
+      - env:
           MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
           MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
           POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+        run: |
+          sqlite3 --version
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 2
+          bundle exec rspec
