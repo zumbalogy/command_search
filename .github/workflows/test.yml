@@ -62,11 +62,11 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
-      - name: Apt Install
-        run: |
-          sudo apt-get update
-          sudo apt-get install -yqq build-essential
-          sudo apt-get install -yqq sqlite3 libsqlite3-dev
+      # - name: Apt Install
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -yqq build-essential
+      #     sudo apt-get install -yqq sqlite3 libsqlite3-dev
       - name: Bundle
         run: |
           bundle config path vendor/bundle
