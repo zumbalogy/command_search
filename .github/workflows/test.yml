@@ -24,12 +24,16 @@ jobs:
     services:
       mongodb:
         image: ${{ matrix.mongo }}
+        ports:
+          - 27017:27017
       mysql:
         image: ${{ matrix.mysql }}
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: true
           MYSQL_HOST: 127.0.0.1
           MYSQL_HOSTNAME: 127.0.0.1
+        ports:
+          - 3306:3306
         options: >-
           --health-cmd "mysqladmin ping"
           --health-interval 12s
@@ -37,6 +41,8 @@ jobs:
           --health-retries 6
       postgres:
         image: ${{ matrix.postgres }}
+        ports:
+          - 5432:5432
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_USER: command_search_user_test
