@@ -2,13 +2,9 @@ source 'https://rubygems.org'
 
 gem 'chronic'
 
-group :test, :development do
-  gem 'mongoid'
-
-  gem 'activerecord'
-  gem 'sqlite3'
-  gem 'mysql2'
-  gem 'pg'
+group :test do
+  gem 'rspec'
+  gem 'rspec_junit_formatter' # for CircleCi
 
   gem 'ruby-prof'
   gem 'benchmark-ips'
@@ -16,10 +12,14 @@ group :test, :development do
   gem 'coderay'
   gem 'pry-byebug'
   gem 'binding_of_caller'
+
+  gem 'simplecov'
 end
 
-group :test do
-  gem 'rspec'
-  gem 'rspec_junit_formatter' # for CircleCi
-  gem 'simplecov'
+group :integration do
+  gem 'mongoid'
+  gem 'activerecord'
+  gem 'sqlite3'
+  gem 'mysql2'
+  gem 'pg'
 end
