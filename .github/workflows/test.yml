@@ -36,10 +36,10 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=12s
-          --health-timeout=6s
-          --health-retries=6
+          --health-cmd "mysqladmin ping"
+          --health-interval 12s
+          --health-timeout 6s
+          --health-retries 6
       postgres:
         image: ${{ matrix.postgres }}
         ports:
