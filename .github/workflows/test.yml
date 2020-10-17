@@ -65,16 +65,17 @@ jobs:
         run: |
           apt-get update
           apt-get install -yqq build-essential libpq-dev
-          apt-get install -yqq libsqlite3-dev
+          apt-get install -yqq sqlite3 libsqlite3-dev
           apt-get install -yqq mysql-client libmysqlclient-dev
       - name: Setup MySQL
         run: |
           mysql --host mysql -uroot -e 'CREATE DATABASE IF NOT EXISTS command_search_db_test;'
-      - uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby
         with:
           ruby-version: 2.6
       - name: Bundle
         run: |
+          which ruby
           bundle config path vendor/bundle
           bundle install --jobs=4 --retry=2
       - name: Rspec
