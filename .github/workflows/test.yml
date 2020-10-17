@@ -83,10 +83,10 @@ jobs:
           bundle install --jobs 4 --retry 2
       - name: Rspec
         run: bundle exec rspec
-        env:
-          MYSQL_HOST: mysql
-          MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
-          MONGODB_HOST: mongodb
-          MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
-          POSTGRES_HOST: postgres
-          POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+        # env:
+        #   MYSQL_HOST: mysql
+        #   MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
+        #   MONGODB_HOST: mongodb
+        #   MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
+        #   POSTGRES_HOST: postgres
+        #   POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
