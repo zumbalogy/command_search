@@ -1,11 +1,12 @@
 load(__dir__ + '/../lib/command_search.rb')
 
 require('rspec')
-require('coderay')
-require('pry-byebug')
-require('binding_of_caller')
 
 begin
+  require('coderay')
+  require('pry-byebug')
+  require('binding_of_caller')
+
   require('mongoid')
   require('active_record')
   require('sqlite3')
@@ -25,7 +26,7 @@ begin
     Mongo::Logger.logger.level = Logger::FATAL
   end
 rescue LoadError
-  puts "DB Integration Setup Failed"
+  puts "Gem Loading Failed"
 end
 
 def pp(*inputs)
