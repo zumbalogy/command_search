@@ -62,10 +62,10 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.6
-      - env:
-          MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
-          MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
-          POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
+      # - env:
+      #     MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
+      #     MONGODB_PORT: ${{ job.services.mongodb.ports[27017] }}
+      #     POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
         run: |
           sqlite3 --version
           bundle config path vendor/bundle

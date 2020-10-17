@@ -13,7 +13,14 @@ how mysql5 and mariaDB need to be specific to use old mysql
 
 break fuzzing out into own test file.
 
+---
 
---
 
-make sure tests are using proper mysql version on github actions
+2018-01-22 (3.22.0)
+maybe does not work
+
+
+
+---
+
+test against diff versions of sqlite.
