@@ -41,44 +41,44 @@ jobs:
             bundle install --jobs=4 --retry=3 --path vendor/bundle
 
       - save_cache:
-      #     paths:
-      #       - ./vendor/bundle
-      #     key: v1-dependencies-{{ checksum "Gemfile.lock" }}
-      #
-      # - run:
-      #     name: Waiting for MySQL to be ready
-      #     command: |
-      #       for i in `seq 1 30`;
-      #       do
-      #         nc -z 127.0.0.1 3306 && echo Success && exit 0
-      #         echo -n .
-      #         sleep 1
-      #       done
-      #       echo Failed waiting for MySQL && exit 1
-      #
-      # - run:
-      #     name: Install MySQL CLI
-      #     command: |
-      #       sudo apt-get install default-mysql-client
-      #
-      # # # Database setup
-      # # - run: bundle exec rake db:create
-      # # - run: bundle exec rake db:schema:load
-      #
-      # - run:
-      #     name: run tests
-      #     command: |
-      #       mkdir /tmp/test-results
-      #       TEST_FILES="$(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)"
-      #
-      #       bundle exec rspec --format RspecJunitFormatter \
-      #                         --out /tmp/test-results/rspec.xml \
-      #                         --format progress \
-      #                         $TEST_FILES
-      #
-      # - run:
-      #     name: run benchmarks
-      #     command: bundle exec ruby benches/mongoer_bench.rb
+          paths:
+            - ./vendor/bundle
+          key: v1-dependencies-{{ checksum "Gemfile.lock" }}
+
+      - run:
+          name: Waiting for MySQL to be ready
+          command: |
+            for i in `seq 1 30`;
+            do
+              nc -z 127.0.0.1 3306 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for MySQL && exit 1
+
+      - run:
+          name: Install MySQL CLI
+          command: |
+            sudo apt-get install default-mysql-client
+
+      # # Database setup
+      # - run: bundle exec rake db:create
+      # - run: bundle exec rake db:schema:load
+
+      - run:
+          name: run tests
+          command: |
+            mkdir /tmp/test-results
+            TEST_FILES="$(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)"
+
+            bundle exec rspec --format RspecJunitFormatter \
+                              --out /tmp/test-results/rspec.xml \
+                              --format progress \
+                              $TEST_FILES
+
+      - run:
+          name: run benchmarks
+          command: bundle exec ruby benches/mongoer_bench.rb
 
       - store_test_results:
           path: /tmp/test-results
