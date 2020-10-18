@@ -19,7 +19,6 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
       - run: |
-          gem install bundler -v 2
           gem update --system
           bundle update --bundler
           bundle config set without 'integrations extras'
