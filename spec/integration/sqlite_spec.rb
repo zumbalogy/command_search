@@ -218,9 +218,9 @@ module SQLite_Spec
     end
 
     it 'should be able to search for a boolean' do
-      Hat.create(title: 'foo', starred: true)
-      Hat.create(title: 'bar', starred: true)
-      Hat.create(title: 'bar 2', starred: false)
+      Hat.create(title: 'foo', starred: 1)
+      Hat.create(title: 'bar', starred: 1)
+      Hat.create(title: 'bar 2', starred: 0)
       Hat.search('starred:true').count.should == 2
       total = Hat.search('starred:false').count + Hat.search('starred:true').count
       Hat.all.count.should == total
