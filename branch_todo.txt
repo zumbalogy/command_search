@@ -54,11 +54,3 @@ Run which sqlite3
 
 
 cache gems by sqlite version (if need be)
-
-
------
-
-
-maybe revert gemfile file
-
-maybe put back codecov.

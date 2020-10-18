@@ -5,6 +5,7 @@ begin
   require('coderay')
   require('pry-byebug')
   require('binding_of_caller')
+  require('simplecov')
 
   def pp(*inputs)
     puts
@@ -27,6 +28,10 @@ begin
 
   RSpec.configure do |config|
     config.expect_with(:rspec) { |c| c.syntax = :should }
+  end
+
+  SimpleCov.start do
+    add_filter "spec/"
   end
 
 rescue LoadError
