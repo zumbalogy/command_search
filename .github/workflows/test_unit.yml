@@ -37,4 +37,4 @@ jobs:
       - run: |
           gem install chronic
           gem install rspec
-          bundle exec rspec spec/*.rb
+          rspec spec/*.rb
