@@ -32,10 +32,6 @@ module SQLite_Spec
       end
       vals = raw_vals.join(',')
       keys = attrs.keys.join(',')
-      puts "INSERT INTO Hats(#{keys}) VALUES(#{vals})";
-      puts "INSERT INTO Hats(#{keys}) VALUES(#{vals})";
-      puts "INSERT INTO Hats(#{keys}) VALUES(#{vals})";
-      puts "INSERT INTO Hats(#{keys}) VALUES(#{vals})";
       DB.execute("INSERT INTO Hats(#{keys}) VALUES(#{vals})")
     end
 
