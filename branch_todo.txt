@@ -32,3 +32,14 @@ get 100% test coverage for units (command_search only one missing i think)
 
 
 ironically: simpleCov only works with ruby>2.5, thus i had to remove it to get better "coverage" (of the actually relevant type. could have maybe downgraded it or such but not worth the time).
+
+
+--------
+
+merge two github actions into one file
+
+
+
+----
+
+skip osx for the tests
