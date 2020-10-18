@@ -31,6 +31,8 @@ jobs:
         options: --health-cmd "mysqladmin ping"
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_HOSTNAME: 127.0.0.1
         ports:
           - 3306:3306
       postgres:
@@ -50,8 +52,6 @@ jobs:
           key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: ${{ runner.os }}-gems-
       - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.6
       - run: |
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 2
