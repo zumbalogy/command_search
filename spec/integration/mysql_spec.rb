@@ -1,4 +1,4 @@
-load(__dir__ + '/../spec_helper.rb')
+load(__dir__ + '/integration_helper.rb')
 
 module MySQL_Spec
 
@@ -14,17 +14,6 @@ module MySQL_Spec
   DB.select_db(db_name)
   DB_VERSION = DB.query('SHOW VARIABLES WHERE Variable_name = "version"').first['Value']
   DB_COMMENT = DB.query('SHOW VARIABLES WHERE Variable_name = "version_comment"').first['Value']
-
-  puts "red"
-  puts "red"
-  puts "red"
-  puts "red"
-  puts DB_VERSION
-  puts DB_VERSION
-  puts DB_COMMENT
-  puts DB_COMMENT
-  puts "orange"
-  puts "orange"
 
   hat_schema = "
     Title TEXT,

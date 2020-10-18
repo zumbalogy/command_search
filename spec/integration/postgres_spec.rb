@@ -1,4 +1,4 @@
-load(__dir__ + '/../spec_helper.rb')
+load(__dir__ + '/integration_helper.rb')
 
 db_config = YAML.load_file(__dir__ + '/../assets/postgres.yml')['test']
 db_config['host'] = '127.0.0.1'

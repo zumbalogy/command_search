@@ -1,4 +1,4 @@
-load(__dir__ + '/../spec_helper.rb')
+load(__dir__ + '/integration_helper.rb')
 
 describe CommandSearch::Memory do
 
