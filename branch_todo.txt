@@ -71,4 +71,6 @@ Run which sqlite3
 
 -----
 
-cache gems by sqlite version
+
+
+cache gems by sqlite version (if need be)
