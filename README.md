@@ -1,4 +1,5 @@
 # Command Search
+[![Github Actions](https://github.com/zumbalogy/command_search/workflows/Tests/badge.svg)](https://github.com/zumbalogy/command_search/actions?query=workflow%3ATests)
 [![Gem Version](https://badge.fury.io/rb/command_search.svg)](https://badge.fury.io/rb/command_search)
 [![Downloads](https://img.shields.io/gem/dt/command_search.svg?style=flat)](https://rubygems.org/gems/command_search)
 
