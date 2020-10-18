@@ -16,11 +16,6 @@ break fuzzing out into own test file.
 ---
 
 
-2018-01-22 (3.22.0)
-maybe does not work
-
-
-
 ---
 
 test against diff versions of sqlite.
@@ -36,16 +31,7 @@ ironically: simpleCov only works with ruby>2.5, thus i had to remove it to get b
 
 --------
 
-merge two github actions into one file
 
-
-
-----
-
-skip osx for the tests
-
-
-----------
 
 github has this version
 1m 21s
