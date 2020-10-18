@@ -56,12 +56,6 @@ Run which sqlite3
 cache gems by sqlite version (if need be)
 
 
-....
-
-can maybe remove this after circleCI
-gem 'rspec_junit_formatter' # for CircleCi
-
-
 -----
 
 

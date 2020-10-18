@@ -21,6 +21,4 @@ group :extras do
   gem 'coderay'
   gem 'pry-byebug'
   gem 'binding_of_caller'
-
-  gem 'rspec_junit_formatter' # for CircleCi
 end
