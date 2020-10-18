@@ -67,3 +67,8 @@ MYSQL_HOST: 127.0.0.1
 
 Run which sqlite3
 /usr/bin/sqlite3
+
+
+-----
+
+cache gems by sqlite version

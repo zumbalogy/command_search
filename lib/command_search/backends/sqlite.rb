@@ -15,12 +15,10 @@ module CommandSearch
       type = search_node[:type]
       return '0 = 1' if field == '__CommandSearch_dummy_key__'
       if type == Boolean || type == :existence
-        false_val = 'false'
-        false_val = 0 if field_node[:field_type] == Numeric
         if val
-          return "NOT ((#{field} = #{false_val}) OR (#{field} IS NULL))"
+          return "NOT ((#{field} = 0) OR (#{field} IS NULL))"
         end
-        return "((#{field} = #{false_val}) OR (#{field} IS NULL))"
+        return "((#{field} = 0) OR (#{field} IS NULL))"
       end
       if type == Time
         return '0 = 1' unless val
