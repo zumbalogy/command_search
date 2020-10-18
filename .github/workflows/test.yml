@@ -4,27 +4,7 @@ jobs:
   unit:
     strategy:
       matrix:
-        ruby: [2.4, 2.5, 2.6, 2.7, head, jruby, truffleruby]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: ${{ runner.os }}-gems-
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-      - run: |
-          bundle config path vendor/bundle
-          bundle config set without 'integrations extras'
-          bundle install --jobs 4 --retry 2
-          bundle exec rspec spec/*.rb
-  old_rubies:
-    strategy:
-      matrix:
-        ruby: [2.1, 2.2, 2.3]
+        ruby: [2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, head, jruby, truffleruby]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
