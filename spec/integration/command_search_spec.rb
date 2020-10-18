@@ -25,33 +25,30 @@ $ducks = [
   { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' }
 ]
 
-ActiveRecord::Base.remove_connection()
+def setup_table(table_name, config)
+  ActiveRecord::Base.establish_connection(config)
+  ActiveRecord::Schema.define do
+    create_table table_name, force: true do |t|
+      t.string :title
+      t.string :description
+      t.string :state
+      t.string :tags
+      t.boolean :starred
+      t.string :child_id
+      t.integer :feathers
+      t.integer :cost
+      t.datetime :fav_date
+    end
+  end
+end
 
 PG_CONFIG = YAML.load_file("#{__dir__}/../assets/postgres.yml")['test']
+MYSQL_CONFIG = YAML.load_file("#{__dir__}/../assets/mysql.yml")['test']
+
 class Hawk < ActiveRecord::Base
   establish_connection(PG_CONFIG)
-  class << self
-    undef_method :mysql2_connection if respond_to?(:mysql2_connection)
-  end
 end
 
-ActiveRecord::Base.establish_connection(PG_CONFIG)
-ActiveRecord::Schema.define do
-  create_table :hawks, force: true do |t|
-    t.string :title
-    t.string :description
-    t.string :state
-    t.string :tags
-    t.boolean :starred
-    t.string :child_id
-    t.integer :feathers
-    t.integer :cost
-    t.datetime :fav_date
-  end
-end
-ActiveRecord::Base.remove_connection(PG_CONFIG)
-
-MYSQL_CONFIG = YAML.load_file("#{__dir__}/../assets/mysql.yml")['test']
 class Crow < ActiveRecord::Base
   establish_connection(MYSQL_CONFIG)
   class << self
@@ -59,21 +56,8 @@ class Crow < ActiveRecord::Base
   end
 end
 
-ActiveRecord::Base.establish_connection(MYSQL_CONFIG)
-ActiveRecord::Schema.define do
-  create_table :crows, force: true do |t|
-    t.string :title
-    t.string :description
-    t.string :state
-    t.string :tags
-    t.boolean :starred
-    t.string :child_id
-    t.integer :feathers
-    t.integer :cost
-    t.datetime :fav_date
-  end
-end
-ActiveRecord::Base.remove_connection(MYSQL_CONFIG)
+setup_table(:hawks, PG_CONFIG)
+setup_table(:crows, MYSQL_CONFIG)
 
 def search_all(query, options, expected)
   CommandSearch.search(Owl, query, options).count.should == expected
