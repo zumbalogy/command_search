@@ -1,4 +1,4 @@
-# NOTE: This module supports MariaDB and MySql 5.7 with its distinct word break regex rules.
+# NOTE: This module supports MariaDB and MySql 5 with its distinct word break regex rules.
 
 module CommandSearch
   module MysqlV5
