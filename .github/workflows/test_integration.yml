@@ -31,7 +31,7 @@ jobs:
         options: --health-cmd "mysqladmin ping"
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: true
-          MYSQL_HOSTNAME: 127.0.0.1
+          MYSQL_HOST: 127.0.0.1
         ports:
           - 3306:3306
       postgres:
