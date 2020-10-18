@@ -59,6 +59,7 @@ jobs:
         ports:
           - 5432:5432
         env:
+          POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_USER: command_search_user_test
           POSTGRES_DB: command_search_db_test
     steps:
