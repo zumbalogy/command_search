@@ -26,8 +26,8 @@ module SQLite_Spec
       raw_vals = attrs.values.map do |x|
         next x if x.is_a?(Numeric)
         next "'#{x.gsub("'", "''")}'" if x.is_a?(String)
-        next x if x.is_a?(FalseClass)
-        next x if x.is_a?(TrueClass)
+        next 0 if x.is_a?(FalseClass)
+        next 1 if x.is_a?(TrueClass)
         "'#{x}'"
       end
       vals = raw_vals.join(',')
@@ -214,9 +214,9 @@ module SQLite_Spec
     end
 
     it 'should be able to search for a boolean' do
-      Hat.create(title: 'foo', starred: 1)
-      Hat.create(title: 'bar', starred: 1)
-      Hat.create(title: 'bar 2', starred: 0)
+      Hat.create(title: 'foo', starred: true)
+      Hat.create(title: 'bar', starred: true)
+      Hat.create(title: 'bar 2', starred: false)
       Hat.search('starred:true').count.should == 2
       total = Hat.search('starred:false').count + Hat.search('starred:true').count
       Hat.all.count.should == total
