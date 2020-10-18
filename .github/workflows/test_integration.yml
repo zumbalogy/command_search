@@ -56,7 +56,7 @@ jobs:
           ruby-version: 2.6
       - run: |
           sudo apt-get update
-          sudo apt list -a sqlite3
+          sudo apt-get install sqlite3
           sqlite3 --version
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 2
