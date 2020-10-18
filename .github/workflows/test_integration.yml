@@ -55,6 +55,7 @@ jobs:
         with:
           ruby-version: 2.6
       - run: |
+          sudo apt-get update
           sudo apt list -a sqlite3
           sqlite3 --version
           bundle config path vendor/bundle

@@ -43,3 +43,14 @@ merge two github actions into one file
 ----
 
 skip osx for the tests
+
+
+----------
+
+github has this version
+1m 21s
+Run sqlite3 --version
+3.22.0 2018-01-22 18:45:57 0c55d179733b46d8d0ba4d88e01a25e10677046ee3da1d5b1581e86726f2alt1
+
+
+locally i have 3.31.1 2020-01-27 19:55:54 3bfa9cc97da10598521b342961df8f5f68c7388fa117345eeb516eaa837balt1
