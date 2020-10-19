@@ -2,36 +2,6 @@ load(__dir__ + '/integration_helper.rb')
 
 module MySQL_Spec
 
-  db_name = 'isolated_command_search_db_test'
-  DB = Mysql2::Client.new(
-    host: '127.0.0.1',
-    port:  '3306',
-    username: 'root',
-  )
-
-  DB.query("DROP DATABASE IF EXISTS #{db_name}")
-  DB.query("CREATE DATABASE #{db_name}")
-  DB.select_db(db_name)
-  DB_VERSION = DB.query('SHOW VARIABLES WHERE Variable_name = "version"').first['Value']
-  DB_COMMENT = DB.query('SHOW VARIABLES WHERE Variable_name = "version_comment"').first['Value']
-
-  hat_schema = "
-    Title TEXT,
-    Description TEXT,
-    State TEXT,
-    Tags TEXT,
-    Starred Boolean,
-    Child_id TEXT,
-    Feathers INT,
-    Feathers2 INT,
-    Cost INT,
-    Fav_date DATETIME,
-    Fav_date2 DATETIME
-  "
-  DB.query("CREATE TABLE IF NOT EXISTS Hats(Id INTEGER PRIMARY KEY, #{hat_schema})")
-  DB.query("CREATE TABLE IF NOT EXISTS Bats1(Id INTEGER PRIMARY KEY, Fav_date DATE)")
-  DB.query("CREATE TABLE IF NOT EXISTS Bats2(Id INTEGER PRIMARY KEY, Fav_date DATETIME)")
-
   class Hat
     E = (0..9999999).each
     def self.create(attrs)
@@ -93,6 +63,38 @@ module MySQL_Spec
   end
 
   describe Hat do
+
+    before(:all) do
+      db_name = 'isolated_command_search_db_test'
+      DB = Mysql2::Client.new(
+        host: '127.0.0.1',
+        port:  '3306',
+        username: 'root',
+      )
+
+      DB.query("DROP DATABASE IF EXISTS #{db_name}")
+      DB.query("CREATE DATABASE #{db_name}")
+      DB.select_db(db_name)
+      DB_VERSION = DB.query('SHOW VARIABLES WHERE Variable_name = "version"').first['Value']
+      DB_COMMENT = DB.query('SHOW VARIABLES WHERE Variable_name = "version_comment"').first['Value']
+
+      hat_schema = "
+        Title TEXT,
+        Description TEXT,
+        State TEXT,
+        Tags TEXT,
+        Starred Boolean,
+        Child_id TEXT,
+        Feathers INT,
+        Feathers2 INT,
+        Cost INT,
+        Fav_date DATETIME,
+        Fav_date2 DATETIME
+      "
+      DB.query("CREATE TABLE IF NOT EXISTS Hats(Id INTEGER PRIMARY KEY, #{hat_schema})")
+      DB.query("CREATE TABLE IF NOT EXISTS Bats1(Id INTEGER PRIMARY KEY, Fav_date DATE)")
+      DB.query("CREATE TABLE IF NOT EXISTS Bats2(Id INTEGER PRIMARY KEY, Fav_date DATETIME)")
+    end
 
     before(:each) do
       DB.query('DELETE FROM Hats')
