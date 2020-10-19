@@ -9,10 +9,8 @@ require('pg')
 unless ENV['MONGOID_CONFIGURED']
   ENV['MONGOID_CONFIGURED'] = 'true'
   Mongoid.configure do |config|
-    host = 'localhost'
-    port = ENV.fetch("MONGODB_PORT") { '27017' }
     config.clients.default = {
-      hosts: ["#{host}:#{port}"],
+      hosts: ['localhost:27017'],
       database: 'mongoid_test'
     }
   end

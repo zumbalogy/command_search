@@ -1,7 +1,12 @@
 load(__dir__ + '/../lib/command_search.rb')
 
+require('rspec')
+
+RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = :should }
+end
+
 begin
-  require('rspec')
   require('coderay')
   require('pry-byebug')
   # require('binding_of_caller')
@@ -25,10 +30,6 @@ begin
 
   Pry.commands.alias_command('bb', 'disable-pry')
   Pry.commands.alias_command('kill', 'disable-pry')
-
-  RSpec.configure do |config|
-    config.expect_with(:rspec) { |c| c.syntax = :should }
-  end
 
   SimpleCov.start do
     add_filter "spec/"

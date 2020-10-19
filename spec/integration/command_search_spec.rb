@@ -70,10 +70,6 @@ class Crow < ActiveRecord::Base
   end
 end
 
-setup_table(:hawks, PG_CONFIG)
-setup_table(:crows, MYSQL_CONFIG)
-setup_table(:swans, SQLITE_CONFIG)
-
 def search_all(query, options, expected)
   CommandSearch.search(Owl, query, options).count.should == expected
   CommandSearch.search(Crow, query, options).count.should == expected
@@ -84,6 +80,10 @@ end
 
 describe CommandSearch do
   before(:all) do
+    setup_table(:hawks, PG_CONFIG)
+    setup_table(:crows, MYSQL_CONFIG)
+    setup_table(:swans, SQLITE_CONFIG)
+
     Mongoid.purge!
     Crow.delete_all
     Swan.delete_all

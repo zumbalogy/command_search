@@ -2,7 +2,7 @@ load(__dir__ + '/integration_helper.rb')
 
 db_config = YAML.load_file(__dir__ + '/../assets/postgres.yml')['test']
 db_config['host'] = '127.0.0.1'
-db_config['port'] = ENV.fetch("POSTGRES_PORT") { '5432' }
+db_config['port'] = '5432'
 ActiveRecord::Base.remove_connection
 ActiveRecord::Base.establish_connection(db_config)
 
