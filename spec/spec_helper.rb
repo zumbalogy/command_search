@@ -4,7 +4,7 @@ begin
   require('rspec')
   require('coderay')
   require('pry-byebug')
-  require('binding_of_caller')
+  # require('binding_of_caller')
   require('simplecov')
 
   def pp(*inputs)
