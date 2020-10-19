@@ -80,9 +80,9 @@ end
 
 describe CommandSearch do
   before(:all) do
-    # setup_table(:hawks, PG_CONFIG)
-    # setup_table(:crows, MYSQL_CONFIG)
-    # setup_table(:swans, SQLITE_CONFIG)
+    setup_table(:hawks, PG_CONFIG)
+    setup_table(:crows, MYSQL_CONFIG)
+    setup_table(:swans, SQLITE_CONFIG)
 
     Mongoid.purge!
     Crow.delete_all
