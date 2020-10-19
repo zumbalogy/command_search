@@ -34,6 +34,6 @@ begin
     add_filter "spec/"
   end
 
-rescue LoadError
-  puts "Gem Loading Failed"
+rescue LoadError => e
+  puts "Gem Loading Failed: #{e}"
 end
