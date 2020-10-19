@@ -1,27 +1,27 @@
 load(__dir__ + '/integration_helper.rb')
 
+DB.select_db('command_search_db_test')
+DB_VERSION = DB.query('SHOW VARIABLES WHERE Variable_name = "version"').first['Value']
+DB_COMMENT = DB.query('SHOW VARIABLES WHERE Variable_name = "version_comment"').first['Value']
+
+hat_schema = "
+Title TEXT,
+Description TEXT,
+State TEXT,
+Tags TEXT,
+Starred Boolean,
+Child_id TEXT,
+Feathers INT,
+Feathers2 INT,
+Cost INT,
+Fav_date DATETIME,
+Fav_date2 DATETIME
+"
+DB.query("CREATE TABLE IF NOT EXISTS Hats(Id INTEGER PRIMARY KEY, #{hat_schema})")
+DB.query("CREATE TABLE IF NOT EXISTS Bats1(Id INTEGER PRIMARY KEY, Fav_date DATE)")
+DB.query("CREATE TABLE IF NOT EXISTS Bats2(Id INTEGER PRIMARY KEY, Fav_date DATETIME)")
+
 module MySQL_Spec
-
-  DB.select_db('command_search_db_test')
-  DB_VERSION = DB.query('SHOW VARIABLES WHERE Variable_name = "version"').first['Value']
-  DB_COMMENT = DB.query('SHOW VARIABLES WHERE Variable_name = "version_comment"').first['Value']
-
-  hat_schema = "
-    Title TEXT,
-    Description TEXT,
-    State TEXT,
-    Tags TEXT,
-    Starred Boolean,
-    Child_id TEXT,
-    Feathers INT,
-    Feathers2 INT,
-    Cost INT,
-    Fav_date DATETIME,
-    Fav_date2 DATETIME
-  "
-  DB.query("CREATE TABLE IF NOT EXISTS Hats(Id INTEGER PRIMARY KEY, #{hat_schema})")
-  DB.query("CREATE TABLE IF NOT EXISTS Bats1(Id INTEGER PRIMARY KEY, Fav_date DATE)")
-  DB.query("CREATE TABLE IF NOT EXISTS Bats2(Id INTEGER PRIMARY KEY, Fav_date DATETIME)")
 
   class Hat
     E = (0..9999999).each
@@ -84,10 +84,6 @@ module MySQL_Spec
   end
 
   describe Hat do
-
-    before(:all) do
-
-    end
 
     before(:each) do
       DB.query('DELETE FROM Hats')
