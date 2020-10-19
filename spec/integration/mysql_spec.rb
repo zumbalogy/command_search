@@ -5,17 +5,17 @@ DB_VERSION = DB.query('SHOW VARIABLES WHERE Variable_name = "version"').first['V
 DB_COMMENT = DB.query('SHOW VARIABLES WHERE Variable_name = "version_comment"').first['Value']
 
 hat_schema = "
-Title TEXT,
-Description TEXT,
-State TEXT,
-Tags TEXT,
-Starred Boolean,
-Child_id TEXT,
-Feathers INT,
-Feathers2 INT,
-Cost INT,
-Fav_date DATETIME,
-Fav_date2 DATETIME
+  Title TEXT,
+  Description TEXT,
+  State TEXT,
+  Tags TEXT,
+  Starred Boolean,
+  Child_id TEXT,
+  Feathers INT,
+  Feathers2 INT,
+  Cost INT,
+  Fav_date DATETIME,
+  Fav_date2 DATETIME
 "
 DB.query("CREATE TABLE IF NOT EXISTS Hats(Id INTEGER PRIMARY KEY, #{hat_schema})")
 DB.query("CREATE TABLE IF NOT EXISTS Bats1(Id INTEGER PRIMARY KEY, Fav_date DATE)")
