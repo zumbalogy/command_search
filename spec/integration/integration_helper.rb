@@ -24,6 +24,6 @@ DB = Mysql2::Client.new(
   port:  '3306',
   username: 'root',
 )
-DB.select_db(mysql_db_name)
 DB.query("DROP DATABASE IF EXISTS #{mysql_db_name}")
 DB.query("CREATE DATABASE #{mysql_db_name}")
+DB.select_db(mysql_db_name)
