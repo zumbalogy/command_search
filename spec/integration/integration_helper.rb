@@ -1,8 +1,6 @@
-$CONFIGURED ||= false
-return if $CONFIGURED
-$CONFIGURED = true
-
-puts "hello"
+$INTEGRATION_SPECS_CONFIGURED ||= false
+return if $INTEGRATION_SPECS_CONFIGURED
+$INTEGRATION_SPECS_CONFIGURED = true
 
 load(__dir__ + '/../spec_helper.rb')
 
