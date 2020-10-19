@@ -40,10 +40,12 @@ def setup_table(table_name, config)
       t.datetime :fav_date
     end
   end
+  ActiveRecord::Base.remove_connection(config)
 end
 
 PG_CONFIG = YAML.load_file("#{__dir__}/../assets/postgres.yml")['test']
 MYSQL_CONFIG = YAML.load_file("#{__dir__}/../assets/mysql.yml")['test']
+SQLITE_CONFIG = YAML.load_file("#{__dir__}/../assets/sqlite.yml")['test']
 
 class Hawk < ActiveRecord::Base
   establish_connection(PG_CONFIG)
@@ -51,18 +53,32 @@ end
 
 class Crow < ActiveRecord::Base
   establish_connection(MYSQL_CONFIG)
+end
+
+class Swan < ActiveRecord::Base
+  establish_connection(SQLITE_CONFIG)
   class << self
     undef :postgresql_connection
+    undef :mysql2_connection
+  end
+end
+
+class Crow < ActiveRecord::Base
+  class << self
+    undef :postgresql_connection
+    undef :sqlite3_connection
   end
 end
 
 setup_table(:hawks, PG_CONFIG)
 setup_table(:crows, MYSQL_CONFIG)
+setup_table(:swans, SQLITE_CONFIG)
 
 def search_all(query, options, expected)
   CommandSearch.search(Owl, query, options).count.should == expected
   CommandSearch.search(Crow, query, options).count.should == expected
   CommandSearch.search(Hawk, query, options).count.should == expected
+  CommandSearch.search(Swan, query, options).count.should == expected
   CommandSearch.search($ducks, query, options).count.should == expected
 end
 
@@ -70,7 +86,10 @@ describe CommandSearch do
   before(:all) do
     Mongoid.purge!
     Crow.delete_all
+    Swan.delete_all
+    Hawk.delete_all
     Owl.delete_all
+
     Owl.create(title: 'name name1 1')
     Owl.create(title: 'name name2 2', description: 'desk desk1 1')
     Owl.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
@@ -100,6 +119,16 @@ describe CommandSearch do
     Hawk.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
     Hawk.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
     Hawk.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
+
+    Swan.create(title: 'name name1 1')
+    Swan.create(title: 'name name2 2', description: 'desk desk1 1')
+    Swan.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
+    Swan.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
+    Swan.create(description: "desk new \n line")
+    Swan.create(tags: "multi tag, 'quoted tag'")
+    Swan.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
+    Swan.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
+    Swan.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
   end
 
   it 'should be able to determine in memory vs mongo searches' do
