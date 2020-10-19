@@ -65,10 +65,12 @@ module MySQL_Spec
   describe Hat do
 
     before(:all) do
-      db_name = 'isolated_command_search_db_test'
+      db_name = 'command_search_db_test'
+      # db_name = 'isolated_command_search_db_test'
       DB = Mysql2::Client.new(
         host: '127.0.0.1',
-        port:  '3306',
+        # port:  '3306',
+        port:  ENV.fetch("MYSQL_PORT") { '3306' },
         username: 'root',
       )
 
