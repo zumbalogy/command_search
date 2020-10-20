@@ -1,4 +1,27 @@
-load(__dir__ + '/integration_helper.rb')
+load(__dir__ + '/../spec_helper.rb')
+
+db_config = YAML.load_file(__dir__ + '/../assets/postgres.yml')
+ActiveRecord::Base.remove_connection
+ActiveRecord::Base.establish_connection(db_config['test'])
+
+ActiveRecord::Schema.define do
+  create_table :hats, force: true do |t|
+    t.string :title
+    t.string :description
+    t.string :state
+    t.string :tags
+    t.boolean :starred
+    t.string :child_id
+    t.integer :feathers
+    t.integer :feathers2
+    t.integer :cost
+    t.datetime :fav_date
+    t.datetime :fav_date2
+  end
+
+  create_table(:bat1s, force: true) { |t| t.date :fav_date }
+  create_table(:bat2s, force: true) { |t| t.datetime :fav_date }
+end
 
 module PG_Spec
 
@@ -41,31 +64,6 @@ module PG_Spec
   end
 
   describe Hat do
-
-    before(:all) do
-      db_config = YAML.load_file(__dir__ + '/../assets/postgres.yml')['test']
-      ActiveRecord::Base.remove_connection
-      ActiveRecord::Base.establish_connection(db_config)
-
-      ActiveRecord::Schema.define do
-        create_table :hats, force: true do |t|
-          t.string :title
-          t.string :description
-          t.string :state
-          t.string :tags
-          t.boolean :starred
-          t.string :child_id
-          t.integer :feathers
-          t.integer :feathers2
-          t.integer :cost
-          t.datetime :fav_date
-          t.datetime :fav_date2
-        end
-
-        create_table(:bat1s, force: true) { |t| t.date :fav_date }
-        create_table(:bat2s, force: true) { |t| t.datetime :fav_date }
-      end
-    end
 
     before(:each) do
       Hat.delete_all
