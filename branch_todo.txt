@@ -12,8 +12,6 @@ break fuzzing out into own test file.
 ---
 
 
-test against diff versions of sqlite.
-
 
 --
 gem 'simplecov'
@@ -24,6 +22,8 @@ ironically: simpleCov only works with ruby>2.5, thus i had to remove it to get b
 
 
 --------
+
+
 
 
 

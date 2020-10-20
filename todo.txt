@@ -35,3 +35,7 @@ https://github.com/mojombo/chronic#time-zones
 Further cleaning up the test suite.
 
 a script to bundle, install DB deps, set up dbs.
+
+test against diff versions of sqlite.
+
+make non-integration tests cover 100% of non backends code.
