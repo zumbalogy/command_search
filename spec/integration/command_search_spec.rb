@@ -348,6 +348,8 @@ describe CommandSearch do
         CommandSearch.search(list, query, options)
         CommandSearch.search(Owl, query, options)
         CommandSearch.search(Crow, query, options)
+        CommandSearch.search(Hawk, query, options)
+        CommandSearch.search(Swan, query, options)
         CommandSearch.search($ducks, query, options)
       rescue
         check = false
@@ -358,8 +360,7 @@ describe CommandSearch do
 
   it 'should handle fuzzing' do
     check = true
-    trials = 50
-    # trials = 500
+    trials = 100
     trials = 1234 if ENV['CI']
     trials.times do |i|
       query = (0...24).map { (rand(130)).chr }.join
@@ -377,6 +378,8 @@ describe CommandSearch do
         CommandSearch.search(list, query, options)
         CommandSearch.search(Owl, query, options)
         CommandSearch.search(Crow, query, options)
+        CommandSearch.search(Hawk, query, options)
+        CommandSearch.search(Swan, query, options)
         CommandSearch.search($ducks, query, options)
       rescue
         puts query.inspect
@@ -390,8 +393,7 @@ describe CommandSearch do
   it 'should handle permutations' do
     check = true
     strs = ['a', 'b', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
-    # size = 3
-    size = 2
+    size = 3
     size = 4 if ENV['CI']
     strs.repeated_permutation(size).each do |perm|
       begin
@@ -410,6 +412,8 @@ describe CommandSearch do
         CommandSearch.search(list, query, options)
         CommandSearch.search(Owl, query, options)
         CommandSearch.search(Crow, query, options)
+        CommandSearch.search(Hawk, query, options)
+        CommandSearch.search(Swan, query, options)
         CommandSearch.search($ducks, query, options)
       rescue
         print(perm.join(), '    ')
