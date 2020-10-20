@@ -13,6 +13,10 @@ It works with
 [PostgreSQL](https://www.postgresql.org/),
 and arrays of hashes.
 
+Note: MariaDB and Mysql5.x need to be
+[specified](##Setup)
+to `CommandSearch.build`.
+
 It provides basic search functionality as well as as quotation, negation, comparison, date handling, OR, and AND logic, so users can search for `flamingos` or `author:herbert` or `price<200 discount`.
 
 command_search makes it easy to add syntax and macros for users.
@@ -78,6 +82,10 @@ specify (`:`) or compare (`<`, `>`, `<=`, `>=`).
 
 ## Setup
 The `CommandSearch.search` function takes a collection, a query, and an options hash.
+
+Note: For MariaDB and Mysql5.x, please use the `CommandSearch.build`
+[function](https://github.com/zumbalogy/command_search/blob/master/lib/command_search.rb)
+with `:mysqlV5`.
 
 **Collection:**
 An array of hashes or a class connected to MongoDB, MySQL, SQLite, or PostgreSQL.
