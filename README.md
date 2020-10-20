@@ -14,7 +14,7 @@ It works with
 and arrays of hashes.
 
 Note: MariaDB and Mysql5.x need to be
-[specified](##Setup)
+[specified](#Setup)
 to `CommandSearch.build`.
 
 It provides basic search functionality as well as as quotation, negation, comparison, date handling, OR, and AND logic, so users can search for `flamingos` or `author:herbert` or `price<200 discount`.
