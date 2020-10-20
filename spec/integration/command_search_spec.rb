@@ -84,51 +84,17 @@ end
 
 describe CommandSearch do
   before(:all) do
-    Mongoid.purge!
-    Crow.delete_all
-    Swan.delete_all
-    Hawk.delete_all
-    Owl.delete_all
-
-    Owl.create(title: 'name name1 1')
-    Owl.create(title: 'name name2 2', description: 'desk desk1 1')
-    Owl.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
-    Owl.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
-    Owl.create(description: "desk new \n line")
-    Owl.create(tags: "multi tag, 'quoted tag'")
-    Owl.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
-    Owl.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
-    Owl.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
-
-    Crow.create(title: 'name name1 1')
-    Crow.create(title: 'name name2 2', description: 'desk desk1 1')
-    Crow.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
-    Crow.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
-    Crow.create(description: "desk new \n line")
-    Crow.create(tags: "multi tag, 'quoted tag'")
-    Crow.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
-    Crow.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
-    Crow.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
-
-    Hawk.create(title: 'name name1 1')
-    Hawk.create(title: 'name name2 2', description: 'desk desk1 1')
-    Hawk.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
-    Hawk.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
-    Hawk.create(description: "desk new \n line")
-    Hawk.create(tags: "multi tag, 'quoted tag'")
-    Hawk.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
-    Hawk.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
-    Hawk.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
-
-    Swan.create(title: 'name name1 1')
-    Swan.create(title: 'name name2 2', description: 'desk desk1 1')
-    Swan.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
-    Swan.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
-    Swan.create(description: "desk new \n line")
-    Swan.create(tags: "multi tag, 'quoted tag'")
-    Swan.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
-    Swan.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
-    Swan.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
+    [Owl, Swan, Crow, Hawk].each do |klass|
+      klass.create(title: 'name name1 1')
+      klass.create(title: 'name name2 2', description: 'desk desk1 1')
+      klass.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
+      klass.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
+      klass.create(description: "desk new \n line")
+      klass.create(tags: "multi tag, 'quoted tag'")
+      klass.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
+      klass.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
+      klass.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
+    end
   end
 
   it 'should be able to determine in memory vs mongo searches' do
