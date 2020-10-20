@@ -74,6 +74,18 @@ setup_table(:hawks, PG_CONFIG)
 setup_table(:crows, MYSQL_CONFIG)
 setup_table(:swans, SQLITE_CONFIG)
 
+[Owl, Swan, Crow, Hawk].each do |klass|
+  klass.create(title: 'name name1 1')
+  klass.create(title: 'name name2 2', description: 'desk desk1 1')
+  klass.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
+  klass.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
+  klass.create(description: "desk new \n line")
+  klass.create(tags: "multi tag, 'quoted tag'")
+  klass.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
+  klass.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
+  klass.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
+end
+
 def search_all(query, options, expected)
   CommandSearch.search(Owl, query, options).count.should == expected
   CommandSearch.search(Crow, query, options).count.should == expected
@@ -83,20 +95,6 @@ def search_all(query, options, expected)
 end
 
 describe CommandSearch do
-  before(:all) do
-    [Owl, Swan, Crow, Hawk].each do |klass|
-      klass.create(title: 'name name1 1')
-      klass.create(title: 'name name2 2', description: 'desk desk1 1')
-      klass.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
-      klass.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
-      klass.create(description: "desk new \n line")
-      klass.create(tags: "multi tag, 'quoted tag'")
-      klass.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
-      klass.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
-      klass.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
-    end
-  end
-
   it 'should be able to determine in memory vs mongo searches' do
     options = {
       fields: {
