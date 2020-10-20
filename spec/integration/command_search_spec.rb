@@ -1,30 +1,5 @@
 load(__dir__ + '/integration_helper.rb')
 
-class Owl
-  include Mongoid::Document
-  field :title,       type: String
-  field :description, type: String
-  field :state,       type: String
-  field :tags,        type: String
-  field :starred,     type: Boolean
-  field :child_id,    type: String
-  field :feathers,    type: Integer
-  field :cost,        type: Integer
-  field :fav_date,    type: Time
-end
-
-$ducks = [
-  { title: 'name name1 1' },
-  { title: 'name name2 2', description: 'desk desk1 1' },
-  { title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1' },
-  { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
-  { description: "desk new \n line" },
-  { tags: "multi tag, 'quoted tag'" },
-  { title: 'same_name', feathers: 2, cost: 0, fav_date: '2.months.ago' },
-  { title: 'same_name', feathers: 5, cost: 4, fav_date: '1.year.ago' },
-  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' }
-]
-
 def setup_table(table_name, config)
   ActiveRecord::Base.establish_connection(config)
   ActiveRecord::Schema.define do
@@ -74,16 +49,35 @@ setup_table(:hawks, PG_CONFIG)
 setup_table(:crows, MYSQL_CONFIG)
 setup_table(:swans, SQLITE_CONFIG)
 
+class Owl
+  include Mongoid::Document
+  field :title,       type: String
+  field :description, type: String
+  field :state,       type: String
+  field :tags,        type: String
+  field :starred,     type: Boolean
+  field :child_id,    type: String
+  field :feathers,    type: Integer
+  field :cost,        type: Integer
+  field :fav_date,    type: Time
+end
+
+$birds = [
+  { title: 'name name1 1' },
+  { title: 'name name2 2', description: 'desk desk1 1' },
+  { title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1' },
+  { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
+  { description: "desk new \n line" },
+  { tags: "multi tag, 'quoted tag'" },
+  { title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago },
+  { title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago },
+  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago }
+]
+
 [Owl, Swan, Crow, Hawk].each do |klass|
-  klass.create(title: 'name name1 1')
-  klass.create(title: 'name name2 2', description: 'desk desk1 1')
-  klass.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
-  klass.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
-  klass.create(description: "desk new \n line")
-  klass.create(tags: "multi tag, 'quoted tag'")
-  klass.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
-  klass.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
-  klass.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
+  $birds.each do |bird|
+    klass.create(bird)
+  end
 end
 
 def search_all(query, options, expected)
@@ -91,7 +85,7 @@ def search_all(query, options, expected)
   CommandSearch.search(Crow, query, options).count.should == expected
   CommandSearch.search(Hawk, query, options).count.should == expected
   CommandSearch.search(Swan, query, options).count.should == expected
-  CommandSearch.search($ducks, query, options).count.should == expected
+  CommandSearch.search($birds, query, options).count.should == expected
 end
 
 describe CommandSearch do
@@ -260,7 +254,7 @@ describe CommandSearch do
       'same_name',
       'same_name'
     ]
-    results2 = CommandSearch.search($ducks, 'sort:title', options)
+    results2 = CommandSearch.search($birds, 'sort:title', options)
     results2 = results2.sort_by { |x| x[sort_type.to_sym] || '' } if sort_type
     results2.map { |x| x[sort_type.to_sym] }.should == [
       nil,
@@ -314,7 +308,7 @@ describe CommandSearch do
         CommandSearch.search(Crow, query, options)
         CommandSearch.search(Hawk, query, options)
         CommandSearch.search(Swan, query, options)
-        CommandSearch.search($ducks, query, options)
+        CommandSearch.search($birds, query, options)
       rescue
         check = false
       end
@@ -344,7 +338,7 @@ describe CommandSearch do
         CommandSearch.search(Crow, query, options)
         CommandSearch.search(Hawk, query, options)
         CommandSearch.search(Swan, query, options)
-        CommandSearch.search($ducks, query, options)
+        CommandSearch.search($birds, query, options)
       rescue
         puts query.inspect
         check = false
@@ -378,7 +372,7 @@ describe CommandSearch do
         CommandSearch.search(Crow, query, options)
         CommandSearch.search(Hawk, query, options)
         CommandSearch.search(Swan, query, options)
-        CommandSearch.search($ducks, query, options)
+        CommandSearch.search($birds, query, options)
       rescue
         print(perm.join(), '    ')
         check = false
