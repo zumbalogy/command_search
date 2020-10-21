@@ -45,8 +45,9 @@ module CommandSearch
         "
       end
       if type == :quote
-        op = 'RLIKE BINARY'
-        val = "'#{build_quoted_regex(val)}'"
+        # op = 'RLIKE'
+        # val = "'#{build_quoted_regex(val)}'"
+        return "((REGEXP_LIKE(#{field}, '#{build_quoted_regex(val)}', 'c')) AND (#{field} IS NOT NULL))"
       elsif type == :str
         op = 'LIKE'
         val = quote_string(val)
