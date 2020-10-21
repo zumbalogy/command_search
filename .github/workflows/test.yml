@@ -23,27 +23,35 @@ jobs:
           - mysql: mariadb:10.1
             mongo: mongo:3.6
             postgres: postgres:9.5
+
           - mysql: mariadb:10.3
             mongo: mongo:4.0
             postgres: postgres:9
+
           - mysql: mariadb:latest
             mongo: mongo:4.2
             postgres: postgres:10
+
           - mysql: mysql:5.6
             mongo: mongo:4.4.1
             postgres: postgres:11
+
           - mysql: mysql:5.7
             mongo: mongo:latest
             postgres: postgres:12
+
           - mysql: mysql:8.0
             mongo: mongo:latest
             postgres: postgres:13
+
           - mysql: mysql:8.0.21
             mongo: mongo:latest
             postgres: postgres:13
+
           - mysql: mysql:8.0.22
             mongo: mongo:latest
             postgres: postgres:13
+
           - mysql: mysql:latest
             mongo: mongo:latest
             postgres: postgres:latest
