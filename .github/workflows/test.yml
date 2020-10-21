@@ -37,12 +37,12 @@ jobs:
             postgres: postgres:11
 
           - mysql: mysql:5.7
-            mongo: mongo:latest
+            mongo: mongo:4.4
             postgres: postgres:12
 
           - mysql: mysql:8.0
-            mongo: mongo:latest
-            postgres: postgres:13
+            mongo: mongo:4
+            postgres: postgres:12.4
 
           - mysql: mysql:8.0.21
             mongo: mongo:latest
@@ -50,7 +50,7 @@ jobs:
 
           - mysql: mysql:8.0.22
             mongo: mongo:latest
-            postgres: postgres:13
+            postgres: postgres:13.0
 
           - mysql: mysql:latest
             mongo: mongo:latest
