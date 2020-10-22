@@ -39,3 +39,7 @@ a script to bundle, install DB deps, set up dbs.
 test against diff versions of sqlite. (cache gems by sqlite version if need be)
 
 make non-integration tests cover 100% of non backends code.
+
+test against multiple configs and (mysql at least) collations
+
+make a note about using `build` not `search` if you are using multiple databases via activerecord.
