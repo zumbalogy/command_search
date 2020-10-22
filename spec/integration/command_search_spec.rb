@@ -1,26 +1,9 @@
-load(__dir__ + '/../spec_helper.rb')
+load(__dir__ + '/integration_helper.rb')
 
-db_config = YAML.load_file(__dir__ + '/../assets/postgres.yml')
-ActiveRecord::Base.remove_connection
-ActiveRecord::Base.establish_connection(db_config['test'])
-
-describe CommandSearch do
-
-  class Bird
-    include Mongoid::Document
-    field :title,       type: String
-    field :description, type: String
-    field :state,       type: String
-    field :tags,        type: String
-    field :starred,     type: Boolean
-    field :child_id,    type: String
-    field :feathers,    type: Integer
-    field :cost,        type: Integer
-    field :fav_date,    type: Time
-  end
-
+def setup_table(table_name, config)
+  ActiveRecord::Base.establish_connection(config)
   ActiveRecord::Schema.define do
-    create_table :crows, force: true do |t|
+    create_table table_name, force: true do |t|
       t.string :title
       t.string :description
       t.string :state
@@ -32,53 +15,80 @@ describe CommandSearch do
       t.datetime :fav_date
     end
   end
+  ActiveRecord::Base.remove_connection(config)
+end
 
-  class Crow < ActiveRecord::Base
+PG_CONFIG = YAML.load_file("#{__dir__}/../assets/postgres.yml")['test']
+MYSQL_CONFIG = YAML.load_file("#{__dir__}/../assets/mysql.yml")['test']
+SQLITE_CONFIG = YAML.load_file("#{__dir__}/../assets/sqlite.yml")['test']
+
+class Hawk < ActiveRecord::Base
+  establish_connection(PG_CONFIG)
+end
+
+class Crow < ActiveRecord::Base
+  establish_connection(MYSQL_CONFIG)
+end
+
+class Swan < ActiveRecord::Base
+  establish_connection(SQLITE_CONFIG)
+  class << self
+    undef :postgresql_connection
+    undef :mysql2_connection
   end
+end
 
-  $birds = [
-    { title: 'name name1 1' },
-    { title: 'name name2 2', description: 'desk desk1 1' },
-    { title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1' },
-    { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
-    { description: "desk new \n line" },
-    { tags: "multi tag, 'quoted tag'" },
-    { title: 'same_name', feathers: 2, cost: 0, fav_date: '2.months.ago' },
-    { title: 'same_name', feathers: 5, cost: 4, fav_date: '1.year.ago' },
-    { title: "someone's iHat", feathers: 8, cost: 100, fav_date: '1.week.ago' }
-  ]
-
-  def search_all(query, options, expected)
-    CommandSearch.search(Bird, query, options).count.should == expected
-    CommandSearch.search(Crow, query, options).count.should == expected
-    CommandSearch.search($birds, query, options).count.should == expected
+class Crow < ActiveRecord::Base
+  class << self
+    undef :postgresql_connection
+    undef :sqlite3_connection
   end
+end
 
-  before do
-    Mongoid.purge!
-    Crow.delete_all
-    Bird.delete_all
-    Bird.create(title: 'name name1 1')
-    Bird.create(title: 'name name2 2', description: 'desk desk1 1')
-    Bird.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
-    Bird.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
-    Bird.create(description: "desk new \n line")
-    Bird.create(tags: "multi tag, 'quoted tag'")
-    Bird.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
-    Bird.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
-    Bird.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
+setup_table(:hawks, PG_CONFIG)
+setup_table(:crows, MYSQL_CONFIG)
+setup_table(:swans, SQLITE_CONFIG)
 
-    Crow.create(title: 'name name1 1')
-    Crow.create(title: 'name name2 2', description: 'desk desk1 1')
-    Crow.create(title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1')
-    Crow.create(title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2')
-    Crow.create(description: "desk new \n line")
-    Crow.create(tags: "multi tag, 'quoted tag'")
-    Crow.create(title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago)
-    Crow.create(title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago)
-    Crow.create(title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago)
+class Owl
+  include Mongoid::Document
+  field :title,       type: String
+  field :description, type: String
+  field :state,       type: String
+  field :tags,        type: String
+  field :starred,     type: Boolean
+  field :child_id,    type: String
+  field :feathers,    type: Integer
+  field :cost,        type: Integer
+  field :fav_date,    type: Time
+end
+
+$birds = [
+  { title: 'name name1 1' },
+  { title: 'name name2 2', description: 'desk desk1 1' },
+  { title: 'name name3 3', description: 'desk desk2 2', tags: 'tags, tags1, 1' },
+  { title: 'name name4 4', description: 'desk desk3 3', tags: 'tags, tags2, 2' },
+  { description: "desk new \n line" },
+  { tags: "multi tag, 'quoted tag'" },
+  { title: 'same_name', feathers: 2, cost: 0, fav_date: 2.months.ago },
+  { title: 'same_name', feathers: 5, cost: 4, fav_date: 1.year.ago },
+  { title: "someone's iHat", feathers: 8, cost: 100, fav_date: 1.week.ago }
+]
+
+[Owl, Swan, Crow, Hawk].each do |klass|
+  $birds.each do |bird|
+    klass.create(bird)
   end
+end
 
+def search_all(query, options, expected)
+  CommandSearch.search(Owl, query, options).count.should == expected
+  CommandSearch.search(Crow, query, options).count.should == expected
+  CommandSearch.search(Hawk, query, options).count.should == expected
+  CommandSearch.search(Swan, query, options).count.should == expected
+  CommandSearch.search($birds, query, options).count.should == expected
+end
+
+describe CommandSearch do
   it 'should be able to determine in memory vs mongo searches' do
     options = {
       fields: {
@@ -224,7 +234,7 @@ describe CommandSearch do
         }
       }
     }
-    results = CommandSearch.search(Bird, 'sort:title name', options)
+    results = CommandSearch.search(Owl, 'sort:title name', options)
     results = results.order_by(sort_type => :asc) if sort_type
     results.map { |x| x[sort_type] }.should == [
       'name name1 1',
@@ -294,8 +304,10 @@ describe CommandSearch do
           }
         }
         CommandSearch.search(list, query, options)
-        CommandSearch.search(Bird, query, options)
+        CommandSearch.search(Owl, query, options)
         CommandSearch.search(Crow, query, options)
+        CommandSearch.search(Hawk, query, options)
+        CommandSearch.search(Swan, query, options)
         CommandSearch.search($birds, query, options)
       rescue
         check = false
@@ -306,8 +318,8 @@ describe CommandSearch do
 
   it 'should handle fuzzing' do
     check = true
-    trials = 500
-    trials = 123000 if ENV['CI']
+    trials = 100
+    trials = 1234 if ENV['CI']
     trials.times do |i|
       query = (0...24).map { (rand(130)).chr }.join
       begin
@@ -322,8 +334,10 @@ describe CommandSearch do
           }
         }
         CommandSearch.search(list, query, options)
-        CommandSearch.search(Bird, query, options)
+        CommandSearch.search(Owl, query, options)
         CommandSearch.search(Crow, query, options)
+        CommandSearch.search(Hawk, query, options)
+        CommandSearch.search(Swan, query, options)
         CommandSearch.search($birds, query, options)
       rescue
         puts query.inspect
@@ -338,7 +352,7 @@ describe CommandSearch do
     check = true
     strs = ['a', 'b', 'yy', '!', '', ' ', '0', '7', '-', '.', ':', '|', '<', '>', '=', '(', ')', '"', "'"]
     size = 3
-    size = 5 if ENV['CI']
+    size = 4 if ENV['CI']
     strs.repeated_permutation(size).each do |perm|
       begin
         list = [
@@ -354,8 +368,10 @@ describe CommandSearch do
         }
         query = perm.join()
         CommandSearch.search(list, query, options)
-        CommandSearch.search(Bird, query, options)
+        CommandSearch.search(Owl, query, options)
         CommandSearch.search(Crow, query, options)
+        CommandSearch.search(Hawk, query, options)
+        CommandSearch.search(Swan, query, options)
         CommandSearch.search($birds, query, options)
       rescue
         print(perm.join(), '    ')
@@ -364,5 +380,4 @@ describe CommandSearch do
     end
     check.should == true
   end
-
 end

@@ -9,6 +9,7 @@ load(__dir__ + '/command_search/backends/mongoer.rb')
 load(__dir__ + '/command_search/backends/postgres.rb')
 load(__dir__ + '/command_search/backends/sqlite.rb')
 load(__dir__ + '/command_search/backends/mysql.rb')
+load(__dir__ + '/command_search/backends/mysql_v5.rb')
 
 class Boolean; end
 
@@ -33,6 +34,10 @@ module CommandSearch
     if type == :mysql
       Normalizer.normalize!(ast, fields, false)
       return Mysql.build_query(ast)
+    end
+    if type == :mysqlV5
+      Normalizer.normalize!(ast, fields, false)
+      return MysqlV5.build_query(ast)
     end
     Normalizer.normalize!(ast, fields)
     return Mongoer.build_query(ast) if type == :mongo

@@ -1,4 +1,4 @@
-load(__dir__ + '/../spec_helper.rb')
+load(__dir__ + '/integration_helper.rb')
 
 module SQLite_Spec
 
@@ -26,8 +26,8 @@ module SQLite_Spec
       raw_vals = attrs.values.map do |x|
         next x if x.is_a?(Numeric)
         next "'#{x.gsub("'", "''")}'" if x.is_a?(String)
-        next x if x.is_a?(FalseClass)
-        next x if x.is_a?(TrueClass)
+        next 0 if x.is_a?(FalseClass)
+        next 1 if x.is_a?(TrueClass)
         "'#{x}'"
       end
       vals = raw_vals.join(',')

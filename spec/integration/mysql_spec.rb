@@ -1,29 +1,36 @@
-load(__dir__ + '/../spec_helper.rb')
+load(__dir__ + '/integration_helper.rb')
+
+DB.select_db('command_search_db_test')
+DB_VERSION = DB.query('SHOW VARIABLES WHERE Variable_name = "version"').first['Value']
+DB_COMMENT = DB.query('SHOW VARIABLES WHERE Variable_name = "version_comment"').first['Value']
+
+if DB_VERSION[0] == '5' || DB_COMMENT[/maria/i]
+  MYSQL_VERSION = :mysqlV5
+else
+  MYSQL_VERSION = :mysql
+end
+
+hat_schema = "
+  Title TEXT,
+  Description TEXT,
+  State TEXT,
+  Tags TEXT,
+  Starred Boolean,
+  Child_id TEXT,
+  Feathers INT,
+  Feathers2 INT,
+  Cost INT,
+  Fav_date DATETIME,
+  Fav_date2 DATETIME
+"
+DB.query("CREATE TABLE IF NOT EXISTS Hats(Id INTEGER PRIMARY KEY, #{hat_schema})")
+DB.query("CREATE TABLE IF NOT EXISTS Bats1(Id INTEGER PRIMARY KEY, Fav_date DATE)")
+DB.query("CREATE TABLE IF NOT EXISTS Bats2(Id INTEGER PRIMARY KEY, Fav_date DATETIME)")
 
 module MySQL_Spec
 
-  DB = Mysql2::Client.new(host: '127.0.0.1', username: 'root')
-  DB.select_db('command_search_db_test')
-
-  hat_schema = "
-    Title TEXT,
-    Description TEXT,
-    State TEXT,
-    Tags TEXT,
-    Starred Boolean,
-    Child_id TEXT,
-    Feathers INT,
-    Feathers2 INT,
-    Cost INT,
-    Fav_date DATETIME,
-    Fav_date2 DATETIME
-  "
-  DB.query("CREATE TABLE IF NOT EXISTS Hats(Id INTEGER PRIMARY KEY, #{hat_schema})")
-  DB.query("CREATE TABLE IF NOT EXISTS Bats1(Id INTEGER PRIMARY KEY, Fav_date DATE)")
-  DB.query("CREATE TABLE IF NOT EXISTS Bats2(Id INTEGER PRIMARY KEY, Fav_date DATETIME)")
-
   class Hat
-    E = (0..).each
+    E = (0..9999999).each
     def self.create(attrs)
       raw_vals = attrs.values.map do |x|
         next x if x.is_a?(Numeric)
@@ -74,7 +81,7 @@ module MySQL_Spec
           }
         }
       }
-      sql_query = CommandSearch.build(:mysql, query, options)
+      sql_query = CommandSearch.build(MYSQL_VERSION, query, options)
       return DB.query("SELECT * FROM Hats ORDER BY `#{sort_field}`") unless sql_query.length > 0
       DB.query("SELECT * FROM Hats WHERE #{sql_query} ORDER BY `#{sort_field}`")
     end
@@ -142,22 +149,26 @@ module MySQL_Spec
       Hat.create(title: '.a+.')
       Hat.create(title: '(b+)')
       Hat.create(title: 'c?')
+      Hat.create(title: '(+d)')
       Hat.create(title: 'x,y,z')
-      Hat.search('title:+').count.should == 8
-      Hat.search('+').count.should == 8
+      Hat.search('title:+').count.should == 9
+      Hat.search('+').count.should == 9
       Hat.search('title:+a').count.should == 3
       Hat.search('+a').count.should == 3
       Hat.search('title:a+').count.should == 5
       Hat.search('a+').count.should == 5
       Hat.search('title:"a+"').count.should == 2
       Hat.search('"a+"').count.should == 2
+      Hat.search('title:b+').count.should == 1
+      Hat.search('b+').count.should == 1
       Hat.search('title:"b+"').count.should == 1
       Hat.search('"b+"').count.should == 1
       Hat.search('title:"c"').count.should == 1
       Hat.search('"c"').count.should == 1
       Hat.search('title:"c?"').count.should == 1
+      Hat.search('title:"+d"').count.should == 1
+      Hat.search('title:"(+d)"').count.should == 1
       Hat.search('"c?"').count.should == 1
-
       Hat.search('"x"').count.should == 1
       Hat.search('y').count.should == 1
       Hat.search('"y"').count.should == 1
@@ -558,19 +569,19 @@ module MySQL_Spec
     it 'should handle different time data types' do
       class Bat1
         def self.search(query, options)
-          sql_query = CommandSearch.build(:mysql, query, options)
+          sql_query = CommandSearch.build(MYSQL_VERSION, query, options)
           DB.query("SELECT * FROM Bats1 WHERE #{sql_query}")
         end
       end
 
       class Bat2
         def self.search(query, options)
-          sql_query = CommandSearch.build(:mysql, query, options)
+          sql_query = CommandSearch.build(MYSQL_VERSION, query, options)
           DB.query("SELECT * FROM Bats2 WHERE #{sql_query}")
         end
       end
 
-      E = (0...).each
+      E = (0...999999999).each
       def make_bats(fav_date)
         e = E.next()
         DB.query("INSERT INTO Bats1(Id, Fav_date) VALUES(#{e}, '#{fav_date.strftime('%Y-%m-%d %H:%M:%S')}')")

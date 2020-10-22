@@ -1,5 +1,5 @@
 # Command Search
-[![CircleCI](https://circleci.com/gh/zumbalogy/command_search.svg?style=svg)](https://circleci.com/gh/zumbalogy/command_search)
+[![Github Actions](https://github.com/zumbalogy/command_search/workflows/Tests/badge.svg)](https://github.com/zumbalogy/command_search/actions?query=workflow%3ATests)
 [![Gem Version](https://badge.fury.io/rb/command_search.svg)](https://badge.fury.io/rb/command_search)
 [![Downloads](https://img.shields.io/gem/dt/command_search.svg?style=flat)](https://rubygems.org/gems/command_search)
 
@@ -8,9 +8,14 @@
 It works with
 [MongoDB](https://www.mongodb.com/),
 [MySQL](https://www.mysql.com/),
+[MariaDB](https://mariadb.org/),
 [SQLite](https://www.sqlite.org/),
 [PostgreSQL](https://www.postgresql.org/),
 and arrays of hashes.
+
+Note: MariaDB and Mysql5.x need to be
+[specified](#Setup)
+to `CommandSearch.build`.
 
 It provides basic search functionality as well as as quotation, negation, comparison, date handling, OR, and AND logic, so users can search for `flamingos` or `author:herbert` or `price<200 discount`.
 
@@ -77,6 +82,10 @@ specify (`:`) or compare (`<`, `>`, `<=`, `>=`).
 
 ## Setup
 The `CommandSearch.search` function takes a collection, a query, and an options hash.
+
+Note: For MariaDB and Mysql5.x, please use the `CommandSearch.build`
+[function](https://github.com/zumbalogy/command_search/blob/master/lib/command_search.rb)
+with `:mysqlV5`.
 
 **Collection:**
 An array of hashes or a class connected to MongoDB, MySQL, SQLite, or PostgreSQL.

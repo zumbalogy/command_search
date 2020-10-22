@@ -1,6 +1,0 @@
-test:
-  clients:
-    default:
-      database: mongoid_dev
-      hosts:
-        - localhost:27017

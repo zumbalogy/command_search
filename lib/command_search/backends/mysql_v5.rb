@@ -1,10 +1,23 @@
+# NOTE: This module supports MariaDB and MySql 5 with its distinct word break regex rules.
+
 module CommandSearch
-  module Sqlite
+  module MysqlV5
     module_function
 
     def quote_string(str)
       # activerecord/lib/active_record/connection_adapters/abstract/quoting.rb:62
       str.gsub('\\', '\&\&').gsub("'", "''")
+    end
+
+    def build_quoted_regex(str)
+      str = Regexp.escape(str)
+      str = quote_string(str)
+      if str[/(^\W)|(\W$)/]
+        head_border = '(^|[[:<:]]|\\\\()'
+        tail_border = '($|[[:>:]]|\\\\))'
+        return head_border + str + tail_border
+      end
+      '[[:<:]]' + str + '[[:>:]]'
     end
 
     def command_search(node)
@@ -16,9 +29,9 @@ module CommandSearch
       return '0 = 1' if field == '__CommandSearch_dummy_key__'
       if type == Boolean || type == :existence
         if val
-          return "NOT ((#{field} = 0) OR (#{field} IS NULL))"
+          return "(NOT ((#{field} IS NULL) OR (#{field} LIKE '0')))"
         end
-        return "((#{field} = 0) OR (#{field} IS NULL))"
+        return "((#{field} IS NULL) OR (#{field} LIKE '0'))"
       end
       if type == Time
         return '0 = 1' unless val
@@ -31,30 +44,16 @@ module CommandSearch
         "
       end
       if type == :quote
-        val = quote_string(val)
-        val.gsub!('[', '[[]')
-        val.gsub!('*', '[*]')
-        val.gsub!('?', '[?]')
-        border = '[ .,()?"\'\']'
-        return "
-          (
-            (#{field} IS NOT NULL) AND
-            (
-              (#{field} GLOB '#{val}') OR
-              (#{field} GLOB '*#{border}#{val}#{border}*') OR
-              (#{field} GLOB '*#{border}#{val}') OR
-              (#{field} GLOB '#{val}#{border}*')
-            )
-          )
-        "
-      elsif type == :str
+        op = 'RLIKE BINARY'
+        val = "'#{build_quoted_regex(val)}'"
+      elsif type == :number
+        op = '='
+      else # type == :str
         op = 'LIKE'
         val = quote_string(val)
         val.gsub!('%', '\%')
         val.gsub!('_', '\_')
-        val = "'%#{val}%' ESCAPE '\\'"
-      elsif type == :number
-        op = '='
+        val = "'%#{val}%'"
       end
       "((#{field} #{op} #{val}) AND (#{field} IS NOT NULL))"
     end

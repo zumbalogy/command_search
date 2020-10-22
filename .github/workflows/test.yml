@@ -1,0 +1,92 @@
+name: Tests
+on: push
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: [2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2, head, jruby, truffleruby, rubinius]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - run: |
+          gem install chronic
+          gem install rspec
+          rspec spec/*.rb
+  integration:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - mysql: mariadb:10.1
+            mongo: mongo:3.6
+            postgres: postgres:9.5
+
+          - mysql: mariadb:10.3
+            mongo: mongo:4.0
+            postgres: postgres:9
+
+          - mysql: mariadb:latest
+            mongo: mongo:4.2
+            postgres: postgres:10
+
+          - mysql: mysql:5.6
+            mongo: mongo:4.4.1
+            postgres: postgres:11
+
+          - mysql: mysql:5.7
+            mongo: mongo:4.4
+            postgres: postgres:12
+
+          - mysql: mysql:8.0
+            mongo: mongo:4
+            postgres: postgres:12.4
+
+          - mysql: mysql:8.0.21
+            mongo: mongo:latest
+            postgres: postgres:13
+
+          - mysql: mysql:8.0.22
+            mongo: mongo:latest
+            postgres: postgres:13.0
+
+          - mysql: mysql:latest
+            mongo: mongo:latest
+            postgres: postgres:latest
+    services:
+      mongodb:
+        image: ${{ matrix.mongo }}
+        ports:
+          - 27017:27017
+      mysql:
+        image: ${{ matrix.mysql }}
+        options: --health-cmd "mysqladmin ping"
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+      postgres:
+        image: ${{ matrix.postgres }}
+        options: --health-cmd pg_isready
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_USER: command_search_user_test
+          POSTGRES_DB: command_search_db_test
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: ${{ runner.os }}-gems-
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: head
+      - run: |
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 2
+          bundle exec rspec

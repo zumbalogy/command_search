@@ -1,3 +1,6 @@
+# NOTE: This module supports does not support MariaDB or eariler Mysql versions than 8.0, due to
+# changes in how word breaks are handled in regexes.
+
 module CommandSearch
   module Mysql
     module_function
@@ -42,16 +45,17 @@ module CommandSearch
         "
       end
       if type == :quote
-        op = 'RLIKE BINARY'
-        val = "'#{build_quoted_regex(val)}'"
-      elsif type == :str
+        val = build_quoted_regex(val)
+        return "(REGEXP_LIKE(#{field}, '#{val}', 'c') AND (#{field} IS NOT NULL))"
+      end
+      if type == :number
+        op = '='
+      else # type == :str
         op = 'LIKE'
         val = quote_string(val)
         val.gsub!('%', '\%')
         val.gsub!('_', '\_')
         val = "'%#{val}%'"
-      elsif type == :number
-        op = '='
       end
       "((#{field} #{op} #{val}) AND (#{field} IS NOT NULL))"
     end
