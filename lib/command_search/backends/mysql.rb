@@ -46,7 +46,7 @@ module CommandSearch
       end
       if type == :quote
         val = build_quoted_regex(val)
-        return "((REGEXP_LIKE(#{field}, '#{val}', 'c')) AND (#{field} IS NOT NULL))"
+        return "(REGEXP_LIKE(#{field}, '#{val}', 'c') AND (#{field} IS NOT NULL))"
       end
       if type == :number
         op = '='
