@@ -84,7 +84,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: head
-      - run: sudo rm /usr/bin/sqlite3
+      - run: sudo apt-get purge sqlite3
       - run: bundle install --jobs 4 --retry 2
       - run: bundle exec ruby -e 'require "sqlite3"; puts SQLite3.libversion'
       # - run: |
