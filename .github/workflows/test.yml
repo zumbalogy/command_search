@@ -88,7 +88,7 @@ jobs:
           bundle config path vendor/bundle
           bundle install --jobs 4 --retry 2
       - run: |
-          rm /usr/bin/sqlite3
+          sudo rm /usr/bin/sqlite3
           bundle exec ruby -e 'require "sqlite3"; puts SQLite3.libversion'
       # - run: |
       #     bundle config path vendor/bundle
