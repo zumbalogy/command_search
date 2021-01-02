@@ -3,8 +3,6 @@ source 'https://rubygems.org'
 gem 'chronic'
 
 group :development do
-  gem 'rbs', require: false
-
   gem 'mongoid', '7.2.0'
   gem 'activerecord'
   gem 'sqlite3'
