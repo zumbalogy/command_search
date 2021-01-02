@@ -3,7 +3,12 @@ require('mongoid')
 
 load(__dir__ + '/../lib/command_search.rb')
 
-Mongoid.load!(__dir__ + '/../spec/assets/mongoid.yml', :test)
+Mongoid.configure do |config|
+  config.clients.default = {
+    hosts: ['localhost:27017'],
+    database: 'mongoid_test'
+  }
+end
 
 class Bird
   include Mongoid::Document
