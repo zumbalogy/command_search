@@ -31,8 +31,13 @@ module CommandSearch
         if times
           search_node[:value] = [times.first, times.last]
         else
-          search_node[:value] = nil
-          return
+          time_parsed = Time.parse(str) rescue nil
+          if time_parsed
+            search_node[:value] = [time_parsed, time_parsed + 1]
+          else
+            search_node[:value] = nil
+            return
+          end
         end
       end
       return unless node[:type] == :compare
@@ -114,6 +119,7 @@ module CommandSearch
       end
     end
 
+    # TODO: default to false
     def normalize!(ast, fields, cast_all = true)
       ast.map! do |node|
         if node[:type] == :and || node[:type] == :or || node[:type] == :not

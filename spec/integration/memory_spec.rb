@@ -458,6 +458,18 @@ describe CommandSearch::Memory do
     CommandSearch.search(list4, '-foo<=1995', { fields: { foo: { type: DateTime } } }).count.should == 1
   end
 
+  it 'should handle dates BC/before-common-era' do
+    query = 'date:-0227-01-01'
+    list4 = [{ date: Time.new('1995') }]
+    CommandSearch.search(list4, query, { fields: { date: { type: DateTime } } })
+  end
+
+  it 'should not throw an error on a bad date' do
+    query = 'date:-0227-71-71'
+    list4 = [{ date: Time.new('1995') }]
+    CommandSearch.search(list4, query, { fields: { date: { type: DateTime } } })
+  end
+
   # it 'should handle searching ones that are not specified and also weird hash ones' do
   #   search('custom_s:penn').count.should == 1
   #   search('penn').count.should == 0
@@ -469,5 +481,4 @@ describe CommandSearch::Memory do
   #   search('custom_h_id:foo').count.should == 0
   #   search('custom_h.id:bar').count.should == 0
   # end
-
 end
