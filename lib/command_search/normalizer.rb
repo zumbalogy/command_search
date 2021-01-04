@@ -120,7 +120,7 @@ module CommandSearch
     end
 
     # TODO: default to false
-    def normalize!(ast, fields, cast_all = true)
+    def normalize!(ast, fields, cast_all = false)
       ast.map! do |node|
         if node[:type] == :and || node[:type] == :or || node[:type] == :not
           normalize!(node[:value], fields, cast_all)

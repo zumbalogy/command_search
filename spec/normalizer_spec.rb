@@ -11,7 +11,7 @@ describe CommandSearch::Normalizer do
 
   def norm(x, fields)
     ast = parse(x)
-    CommandSearch::Normalizer.normalize!(ast, fields)
+    CommandSearch::Normalizer.normalize!(ast, fields, true)
     ast
   end
 

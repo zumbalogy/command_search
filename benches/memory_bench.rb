@@ -30,7 +30,7 @@ Benchmark.ips() do |bm|
       ast = CommandSearch::Lexer.lex(input)
       CommandSearch::Parser.parse!(ast)
       CommandSearch::Optimizer.optimize!(ast)
-      CommandSearch::Normalizer.normalize!(ast, fields)
+      CommandSearch::Normalizer.normalize!(ast, fields, true)
       $hats.select { |x| CommandSearch::Memory.check(x, ast) }.count
     end
   end
