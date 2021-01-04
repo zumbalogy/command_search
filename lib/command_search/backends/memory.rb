@@ -20,6 +20,7 @@ module CommandSearch
         # item_val.to_s.match?(search)
       elsif type == Time
         item_time = item_val.to_time
+        return false if search.nil?
         search.first <= item_time && item_time < search.last
       else
         item_val == search

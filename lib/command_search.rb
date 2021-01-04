@@ -24,22 +24,22 @@ module CommandSearch
     Parser.parse!(ast)
     Optimizer.optimize!(ast)
     if type == :postgres
-      Normalizer.normalize!(ast, fields, false)
+      Normalizer.normalize!(ast, fields)
       return Postgres.build_query(ast)
     end
     if type == :sqlite
-      Normalizer.normalize!(ast, fields, false)
+      Normalizer.normalize!(ast, fields)
       return Sqlite.build_query(ast)
     end
     if type == :mysql
-      Normalizer.normalize!(ast, fields, false)
+      Normalizer.normalize!(ast, fields)
       return Mysql.build_query(ast)
     end
     if type == :mysqlV5
-      Normalizer.normalize!(ast, fields, false)
+      Normalizer.normalize!(ast, fields)
       return MysqlV5.build_query(ast)
     end
-    Normalizer.normalize!(ast, fields)
+    Normalizer.normalize!(ast, fields, true)
     return Mongoer.build_query(ast) if type == :mongo
     ast
   end

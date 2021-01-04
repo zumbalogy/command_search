@@ -590,6 +590,11 @@ describe Hat do
     search_bats('fav_date<1990-01-01',   1)
   end
 
+  it 'should not throw an error on a bad date' do
+    query = 'date:-0227-71-71'
+    Hat.search(query).count.should == 0
+  end
+
   it 'should handle NOTs with commands with numbers' do
     Hat.search('feathers:0').count.should == 0
     Hat.search('-feathers:0').count.should == 9

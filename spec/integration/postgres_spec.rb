@@ -1,4 +1,4 @@
-load(__dir__ + '/../spec_helper.rb')
+load(__dir__ + '/integration_helper.rb')
 
 db_config = YAML.load_file(__dir__ + '/../assets/postgres.yml')
 ActiveRecord::Base.remove_connection
@@ -485,6 +485,11 @@ module PG_Spec
       Hat.search('-fav_date<=1_day_ago|fav_date<=1_day_ago').count.should == 9
       Hat.search('-fav_date<=1_day_ago|desk1').count.should == 6
       Hat.search('-fav_date<=1_day_ago|-desk1').count.should == 9
+    end
+
+    it 'should not throw an error on a bad date' do
+      query = 'date:-0227-71-71'
+      Hat.search(query).count.should == 0
     end
 
     it 'should handle nesting via parentheses' do

@@ -18,7 +18,7 @@ Benchmark.ips do |bm|
       ast = CommandSearch::Lexer.lex(aliased)
       CommandSearch::Parser.parse!(ast)
       CommandSearch::Optimizer.optimize!(ast)
-      CommandSearch::Normalizer.normalize!(ast, fields)
+      CommandSearch::Normalizer.normalize!(ast, fields, true)
       CommandSearch::Mongoer.build_query(ast)
     end
   end
