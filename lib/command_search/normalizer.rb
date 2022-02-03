@@ -119,26 +119,27 @@ module CommandSearch
       end
     end
 
-    # TODO: default to false
     def normalize!(ast, fields, cast_all = false)
       ast.map! do |node|
-        if node[:type] == :and || node[:type] == :or || node[:type] == :not
+        type = node[:type]
+        if type == :and || type == :or || type == :not
           normalize!(node[:value], fields, cast_all)
           next node
         end
-        if node[:type] == :colon || node[:type] == :compare
-          clean_comparison!(node, fields) if node[:type] == :compare
+        if type == :colon || type == :compare
+          clean_comparison!(node, fields) if type == :compare
           key = dealias_key(node[:value][0][:value], fields)
           node[:value][0][:value] = key.to_s
           unless fields[key.to_sym] || fields[key.to_s]
             str_values = "#{key}#{node[:nest_op]}#{node[:value][1][:value]}"
-            node = { type: :str, value: str_values }
+            type = :str
+            node = { type: type, value: str_values }
           end
         end
-        if node[:type] == :str || node[:type] == :quote || node[:type] == :number
+        if type == :str || type == :quote || type == :number
           node = split_general_fields(node, fields)
         end
-        if node[:type] == :or
+        if type == :or
           node[:value].each { |x| type_cast!(x, fields, cast_all) }
         else
           type_cast!(node, fields, cast_all)

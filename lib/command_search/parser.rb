@@ -19,7 +19,7 @@ module CommandSearch
         if val.count > 1
           ast[opening..(i - 1)] = { type: :and, value: val }
           i -= val.length
-          next
+          # next
         elsif val.count == 1
           ast[opening] = val.first
         end
