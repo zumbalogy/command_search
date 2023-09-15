@@ -11,7 +11,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler: 1
+          bundler: 'none'
       - run: |
           gem install chronic
           gem install rspec
