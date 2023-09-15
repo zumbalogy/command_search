@@ -29,9 +29,9 @@ jobs:
             mongo: mongo:4.0
             postgres: postgres:9
 
-          # - mysql: mariadb:latest
-          #   mongo: mongo:4.2
-          #   postgres: postgres:10
+          - mysql: mariadb:10.6
+            mongo: mongo:4.2
+            postgres: postgres:10
 
           - mysql: mysql:5.6
             mongo: mongo:4.4.1
