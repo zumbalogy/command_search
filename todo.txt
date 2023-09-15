@@ -45,3 +45,5 @@ test against multiple configs and (mysql at least) collations
 make a note about using `build` not `search` if you are using multiple databases via activerecord.
 
 work with mariaDB 11
+
+potentially break out each DB into its own job with own matrix
