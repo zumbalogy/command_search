@@ -1,13 +1,28 @@
 name: Tests
 on: push
 jobs:
+  unit-legacy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: [2.1, 2.2]
+    steps:
+      - uses: actions/checkout@v2 # update this?
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler: 1
+      - run: |
+          gem install chronic
+          gem install rspec
+          rspec spec/*.rb
   unit:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: [2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2, 3.0, 3, head, jruby, truffleruby]
+        ruby: [2.3, 2.4, 2.5, 2.6, 2.7, 2, 3.0, 3, head, jruby, truffleruby]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2 # update this?
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
@@ -32,9 +47,9 @@ jobs:
             mongo: mongo:4.2
             postgres: postgres:10
 
-          # - mysql: mysql:5.6
-          #   mongo: mongo:4.4.1
-          #   postgres: postgres:11
+          - mysql: mysql:5.6
+            mongo: mongo:4.4.1
+            postgres: postgres:11
 
           - mysql: mysql:5.7
             mongo: mongo:4.4
