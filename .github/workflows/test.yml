@@ -33,6 +33,10 @@ jobs:
             mongo: mongo:4.2
             postgres: postgres:10
 
+          - mysql: mariadb:10.11
+            mongo: mongo:6
+            postgres: postgres:15
+
           - mysql: mysql:5.6
             mongo: mongo:4.4.1
             postgres: postgres:11
