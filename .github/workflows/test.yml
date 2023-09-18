@@ -7,11 +7,7 @@ jobs:
       matrix:
         # Ruby 2.2 setup is broken (https://github.com/ruby/setup-ruby/issues/496)
         # As of command_search v0.12.1, all the tests passed with Ruby 2.2.
-
-
-        # look at 3.1
-        #
-        ruby: [3.1, 2.1, 2.3, 2.4, 2.5, 2.6, 2.7, 2, 3.0, 3.2, 3.3, 3, head, jruby, truffleruby]
+        ruby: [2.1, 2.3, 2.4, 2.5, 2.6, 2.7, 2, 3.0, 3.1, 3.2, 3.3, 3, head, jruby, truffleruby]
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
