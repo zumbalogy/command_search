@@ -377,7 +377,16 @@ describe CommandSearch::Normalizer do
     x('t>=1903', '>=', Chronic.parse('1903-01-01 00:00:00'))
     x('t<=1903', '<=', Chronic.parse('1903-12-31 23:59:59'))
     x('t<1901-1-2', '<', Chronic.parse('1901-01-02 00:00:00'))
-    x('t<9', '<', Time.new('0009-01-01 00:00:00'))
+
+    x('t<1009', '<', Chronic.parse('1009-01-01 00:00:00'))
+    x('t<9', '<', Time.new(9, 1, 1))
+
+    begin
+      x('t<9', '<', Time.new('0009-01-01 00:00:00'))
+    rescue ArgumentError
+      puts 'Ruby 3.1 cannot construct Time objects from strings.'
+    end
+
     x('t<hello', '<', nil)
     x('t:hello', ':', nil)
 

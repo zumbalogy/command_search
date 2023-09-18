@@ -8,7 +8,7 @@
 It works with
 [MongoDB](https://www.mongodb.com/),
 [MySQL](https://www.mysql.com/),
-[MariaDB](https://mariadb.org/),
+[MariaDB 10](https://mariadb.org/),
 [SQLite](https://www.sqlite.org/),
 [PostgreSQL](https://www.postgresql.org/),
 and arrays of hashes.

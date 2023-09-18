@@ -23,7 +23,10 @@ module CommandSearch
       search_node[:type] = Time
       str = search_node[:value]
       if str == str.to_i.to_s
-        search_node[:value] = [Time.new(str), Time.new(str.to_i + 1)]
+        search_node[:value] = [
+          Time.new(str.rjust(4, '0')),
+          Time.new((str.to_i + 1).to_s.rjust(4, '0'))
+        ]
       else
         time_str = str.tr('._-', ' ')
         times = Chronic.parse(time_str, { guess: nil })
