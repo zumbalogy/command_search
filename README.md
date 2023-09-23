@@ -31,10 +31,6 @@ Some examples:
 command_search is written with performance in mind and should have minimal overhead for most queries.
 It does not require an engine and should be easy to set up.
 
-An example Rails app using command_search:
-[earthquake-search.herokuapp.com](https://earthquake-search.herokuapp.com/)
-([code](https://github.com/zumbalogy/command_search_example)).
-
 Feedback, questions, bug reports, pull requests, and suggestions are welcome.
 
 ## Install
